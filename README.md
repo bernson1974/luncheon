@@ -1,0 +1,46 @@
+# Luncheon (Lindholmen MVP)
+
+Next.js-app för lunchdejtar på Lindholmen.
+
+## Köra lokalt
+
+```bash
+cd Luncheon
+npm install
+npm run dev
+```
+
+Öppna **http://localhost:3000** i webbläsaren (http, inte https).
+
+**Mobil på samma Wi‑Fi:**
+
+```bash
+npm run dev:lan
+```
+
+Använd datorns IP-adress, t.ex. `http://192.168.x.x:3000`.
+
+## Om något strular lokalt
+
+1. Stoppa `npm run dev` (Ctrl+C).
+2. Rensa och installera om:
+
+   ```bash
+   npm run reinstall
+   ```
+
+   (Kräver Mac/Linux. På Windows: radera mapparna `node_modules` och `.next` manuellt, kör sedan `npm install`.)
+
+3. Starta igen: `npm run dev`.
+
+**”Connection failed” i webbläsaren** betyder nästan alltid att **ingen** kör `npm run dev` – starta servern och låt terminalfönstret vara öppet.
+
+## GitHub & Vercel
+
+- Kod pushas till GitHub med `git add` / `git commit` / `git push`.
+- Vercel bygger från GitHub när `main` uppdateras.
+
+## Övrigt
+
+- `npm run check` kör produktionsbygge (`next build`).
+- Data i MVP är in-memory och passar bäst för demo lokalt; i produktion behövs databas.

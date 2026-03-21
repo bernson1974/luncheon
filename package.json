@@ -3,13 +3,14 @@
   "version": "0.1.0",
   "private": true,
   "engines": {
-    "node": ">=20"
+    "node": ">=18.18.0"
   },
   "scripts": {
     "dev": "next dev",
     "dev:lan": "next dev -H 0.0.0.0",
     "build": "next build",
     "start": "next start",
+    "reinstall": "rm -rf node_modules .next && npm install",
     "lint": "node -e \"console.log('ESLint är borttaget från npm install (Vercel). Kör editor-lint eller lägg till eslint lokalt om du vill.')\"",
     "check": "npm run build"
   },
