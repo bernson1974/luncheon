@@ -1,0 +1,18 @@
+# Dependencies
+node_modules/
+
+# Next.js
+.next/
+out/
+
+# Env (hemliga nycklar – committa aldrig .env.local med secrets)
+.env*.local
+
+# Debug / OS
+.DS_Store
+*.log
+npm-debug.log*
+
+# IDE (valfritt – många committar inte dessa)
+# .idea/
+# .vscode/
