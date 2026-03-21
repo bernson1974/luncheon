@@ -40,6 +40,8 @@ Använd datorns IP-adress, t.ex. `http://192.168.x.x:3000`.
 - Kod pushas till GitHub med `git add` / `git commit` / `git push`.
 - Vercel bygger från GitHub när `main` uppdateras.
 
+**Om Vercel-build failar:** lägg **inte** `NODE_ENV=production` som miljövariabel för hela projektet i Vercel (då kan install-steget hoppa över paket och `next build` kraschar). Använd bara standardinställningar, eller sätt `NODE_ENV` endast där Vercel föreslår det för runtime.
+
 ## Övrigt
 
 - `npm run check` kör produktionsbygge (`next build`).
