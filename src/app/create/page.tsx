@@ -1,13 +1,14 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { getStoredAlias } from "@/lib/userAlias";
 import dynamic from "next/dynamic";
 import TimeQuarterSelect from "@/components/TimeQuarterSelect";
 import { restaurants } from "@/lib/restaurants";
 import type { LatLng } from "@/components/MeetingPointPicker";
+import { rememberCreatedDate } from "@/lib/creatorStorage";
 
 const MeetingPointPicker = dynamic(
   () => import("@/components/MeetingPointPicker"),
@@ -23,10 +24,18 @@ function getUserToken(): string {
   return token;
 }
 
+type WindowDate = { ymd: string; label: string };
+
 export default function CreatePage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const qpRestaurantId = searchParams.get("restaurantId");
+  const qpDate = searchParams.get("date");
 
   const [alias, setAlias] = useState("");
+  const [windowDates, setWindowDates] = useState<WindowDate[]>([]);
+  const [committedYmds, setCommittedYmds] = useState<string[]>([]);
+  const [lunchDateYmd, setLunchDateYmd] = useState("");
   const [timeStart, setTimeStart] = useState("12:00");
   const [timeEnd, setTimeEnd] = useState("");
   const [restaurantId, setRestaurantId] = useState(restaurants[0].id);
@@ -42,10 +51,70 @@ export default function CreatePage() {
     if (stored) setAlias(stored);
   }, []);
 
+  useEffect(() => {
+    async function loadWindow() {
+      try {
+        const res = await fetch("/api/lunch-window");
+        if (!res.ok) return;
+        const data = (await res.json()) as { dates: WindowDate[] };
+        setWindowDates(data.dates ?? []);
+      } catch {
+        /* ignore */
+      }
+    }
+    void loadWindow();
+  }, []);
+
+  useEffect(() => {
+    async function loadCommitments() {
+      const userToken = getUserToken();
+      try {
+        const res = await fetch(
+          `/api/user/commitments?userToken=${encodeURIComponent(userToken)}`
+        );
+        if (!res.ok) return;
+        const data = (await res.json()) as { committedYmds: string[] };
+        setCommittedYmds(data.committedYmds ?? []);
+      } catch {
+        /* ignore */
+      }
+    }
+    void loadCommitments();
+  }, []);
+
+  useEffect(() => {
+    if (qpRestaurantId && restaurants.some((r) => r.id === qpRestaurantId)) {
+      setRestaurantId(qpRestaurantId);
+    }
+  }, [qpRestaurantId]);
+
+  useEffect(() => {
+    if (windowDates.length === 0) return;
+    if (
+      qpDate &&
+      windowDates.some((d) => d.ymd === qpDate) &&
+      !committedYmds.includes(qpDate)
+    ) {
+      setLunchDateYmd(qpDate);
+      return;
+    }
+    setLunchDateYmd((prev) => {
+      if (prev && windowDates.some((d) => d.ymd === prev)) return prev;
+      const firstFree = windowDates.find((d) => !committedYmds.includes(d.ymd));
+      return (firstFree ?? windowDates[0]).ymd;
+    });
+  }, [windowDates, committedYmds, qpDate]);
+
   const selectedRestaurant = restaurants.find((r) => r.id === restaurantId) ?? restaurants[0];
   const mapCenter: LatLng = { lat: selectedRestaurant.latitude, lng: selectedRestaurant.longitude };
 
-  const isValid = alias.trim().length > 0 && topic.trim().length > 0 && timeStart.length > 0;
+  const isDateBlocked = lunchDateYmd.length > 0 && committedYmds.includes(lunchDateYmd);
+  const isValid =
+    alias.trim().length > 0 &&
+    topic.trim().length > 0 &&
+    timeStart.length > 0 &&
+    lunchDateYmd.length > 0 &&
+    !isDateBlocked;
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -62,6 +131,7 @@ export default function CreatePage() {
         body: JSON.stringify({
           creatorAlias: alias.trim(),
           creatorToken: userToken,
+          date: lunchDateYmd,
           timeStart,
           timeEnd: timeEnd || undefined,
           restaurantId,
@@ -77,12 +147,22 @@ export default function CreatePage() {
         }),
       });
 
+      if (res.status === 409) {
+        const err = await res.json().catch(() => ({}));
+        if (err.error === "busy_that_day") {
+          setError("Du har redan en lunchdejt den dagen. Välj ett annat datum eller lämna/avboka den andra först.");
+        } else {
+          setError("Kunde inte skapa lunchdejten just nu.");
+        }
+        setSubmitting(false);
+        return;
+      }
+
       if (!res.ok) throw new Error("Kunde inte skapa lunchdejten");
 
       const date = await res.json();
 
-      // Remember which date we created so the detail page can show creator UI
-      localStorage.setItem("myCreatedDateId", date.id);
+      rememberCreatedDate(date.id, userToken);
 
       router.push(`/date/${date.id}`);
     } catch {
@@ -99,8 +179,8 @@ export default function CreatePage() {
 
       <h1 className="page-title">Ny lunchdejt</h1>
       <p className="page-subtitle">
-        Fyll i detaljerna nedan. Din dejt blir synlig för alla på Lindholmen
-        direkt.
+        Välj dag (idag och upp till fem dagar framåt). Din dejt blir synlig för
+        alla på Lindholmen direkt.
       </p>
 
       <form onSubmit={handleSubmit}>
@@ -125,6 +205,42 @@ export default function CreatePage() {
               </Link>
               .
             </p>
+          </div>
+
+          <div style={{ marginBottom: "1rem" }}>
+            <label className="field-label" htmlFor="lunch-day">
+              Dag
+            </label>
+            <select
+              id="lunch-day"
+              className="field-select"
+              value={lunchDateYmd}
+              onChange={(e) => setLunchDateYmd(e.target.value)}
+              disabled={windowDates.length === 0}
+            >
+              {windowDates.length === 0 && (
+                <option value="">Laddar datum…</option>
+              )}
+              {windowDates.map((d) => (
+                <option
+                  key={d.ymd}
+                  value={d.ymd}
+                  disabled={committedYmds.includes(d.ymd)}
+                >
+                  {d.label}
+                  {committedYmds.includes(d.ymd) ? " (redan bokad)" : ""}
+                </option>
+              ))}
+            </select>
+            {isDateBlocked && (
+              <p className="secondary-text" style={{ marginTop: "0.35rem", color: "#b45309" }}>
+                Du har redan en dejt den här dagen. Välj en annan dag eller gå till{" "}
+                <Link href="/my-lunch" style={{ color: "#0f766e", fontWeight: 500 }}>
+                  Luncher
+                </Link>
+                .
+              </p>
+            )}
           </div>
 
           <div style={{ marginBottom: "1rem" }}>

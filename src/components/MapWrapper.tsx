@@ -15,7 +15,7 @@ const LindholmenMap = dynamic(() => import("./LindholmenMap"), {
   loading: () => (
     <div
       style={{
-        height: "260px",
+        height: "340px",
         borderRadius: "0.75rem",
         background: "#e2e8f0",
         display: "flex",
@@ -30,6 +30,12 @@ const LindholmenMap = dynamic(() => import("./LindholmenMap"), {
   )
 });
 
-export default function MapWrapper({ pins }: { pins: RestaurantPin[] }) {
-  return <LindholmenMap pins={pins} />;
+export default function MapWrapper({
+  pins,
+  selectedYmd,
+}: {
+  pins: RestaurantPin[];
+  selectedYmd: string;
+}) {
+  return <LindholmenMap pins={pins} selectedYmd={selectedYmd} />;
 }

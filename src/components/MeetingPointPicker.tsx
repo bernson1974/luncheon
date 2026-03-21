@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export interface LatLng {
   lat: number;
@@ -12,12 +12,30 @@ interface Props {
   value: LatLng | null;
   onChange: (pos: LatLng) => void;
   readonly?: boolean;
+  /** Visas i rutan ovan markören (readonly). */
+  description?: string;
 }
 
-export default function MeetingPointPicker({ center, value, onChange, readonly }: Props) {
+function meetingDescriptionPopupEl(text: string): HTMLDivElement {
+  const el = document.createElement("div");
+  el.className = "meeting-point-popup-desc";
+  el.style.cssText =
+    "max-width:280px;font-size:0.88rem;line-height:1.4;color:#0f172a;margin:0;padding:2px 0;";
+  el.textContent = text;
+  return el;
+}
+
+export default function MeetingPointPicker({
+  center,
+  value,
+  onChange,
+  readonly,
+  description,
+}: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<unknown>(null);
   const markerRef = useRef<unknown>(null);
+  const [leafletReadyTick, setLeafletReadyTick] = useState(0);
   // Keep a stable ref to onChange so Leaflet callbacks always use the latest version
   const onChangeRef = useRef(onChange);
   useEffect(() => { onChangeRef.current = onChange; }, [onChange]);
@@ -25,11 +43,13 @@ export default function MeetingPointPicker({ center, value, onChange, readonly }
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
 
+    let cancelled = false;
+
     async function init() {
       const L = (await import("leaflet")).default;
       await import("leaflet/dist/leaflet.css");
 
-      if (!containerRef.current || mapRef.current) return;
+      if (cancelled || !containerRef.current || mapRef.current) return;
 
       const icon = L.icon({
         iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
@@ -71,16 +91,19 @@ export default function MeetingPointPicker({ center, value, onChange, readonly }
           onChangeRef.current({ lat: e.latlng.lat, lng: e.latlng.lng });
         });
       } else {
-        marker.bindPopup("Mötesplats").openPopup();
+        /* Popup-text sätts i useEffect när readonly + description är klart */
       }
 
+      if (cancelled) return;
       mapRef.current = map;
       markerRef.current = marker;
+      setLeafletReadyTick((t) => t + 1);
     }
 
-    init();
+    void init();
 
     return () => {
+      cancelled = true;
       if (mapRef.current) {
         (mapRef.current as import("leaflet").Map).remove();
         mapRef.current = null;
@@ -101,6 +124,23 @@ export default function MeetingPointPicker({ center, value, onChange, readonly }
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [center.lat, center.lng]);
+
+  useEffect(() => {
+    if (!readonly || leafletReadyTick === 0) return;
+    const marker = markerRef.current as import("leaflet").Marker | null;
+    if (!marker) return;
+
+    const text = (description ?? "").trim() || "Mötesplats";
+    const el = meetingDescriptionPopupEl(text);
+    marker.unbindPopup();
+    marker.bindPopup(el, {
+      closeButton: false,
+      autoClose: false,
+      closeOnClick: false,
+      className: "meeting-point-desc-leaflet-popup",
+    });
+    marker.openPopup();
+  }, [readonly, description, leafletReadyTick]);
 
   return (
     <div

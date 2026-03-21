@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { listDates, createDate } from "@/lib/store";
+import { listDates, createDate, userHasCommitmentOnDate } from "@/lib/store";
+import { isYmdInSelectableLunchWindow } from "@/lib/lunchDateWindow";
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -7,6 +8,7 @@ export async function GET(request: NextRequest) {
     time: searchParams.get("time") ?? undefined,
     restaurantId: searchParams.get("restaurantId") ?? undefined,
     topic: searchParams.get("topic") ?? undefined,
+    date: searchParams.get("date") ?? undefined,
   };
 
   const dates = listDates(filters);
@@ -15,12 +17,49 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   const body = await request.json();
-  const { creatorAlias, creatorToken, timeStart, timeEnd, restaurantId, topic, maxParticipants, meetingPoint } = body;
+  const {
+    creatorAlias,
+    creatorToken,
+    date: dateYmd,
+    timeStart,
+    timeEnd,
+    restaurantId,
+    topic,
+    maxParticipants,
+    meetingPoint,
+  } = body;
 
-  if (!creatorAlias || !creatorToken || !timeStart || !restaurantId || !topic || !maxParticipants) {
+  if (
+    !creatorAlias ||
+    !creatorToken ||
+    !dateYmd ||
+    typeof dateYmd !== "string" ||
+    !timeStart ||
+    !restaurantId ||
+    !topic ||
+    !maxParticipants
+  ) {
     return NextResponse.json({ error: "missing_fields" }, { status: 400 });
   }
 
-  const date = createDate({ creatorAlias, creatorToken, timeStart, timeEnd, restaurantId, topic, maxParticipants, meetingPoint });
+  if (!isYmdInSelectableLunchWindow(dateYmd)) {
+    return NextResponse.json({ error: "invalid_date" }, { status: 400 });
+  }
+
+  if (userHasCommitmentOnDate(creatorToken, dateYmd)) {
+    return NextResponse.json({ error: "busy_that_day" }, { status: 409 });
+  }
+
+  const date = createDate({
+    creatorAlias,
+    creatorToken,
+    date: dateYmd,
+    timeStart,
+    timeEnd,
+    restaurantId,
+    topic,
+    maxParticipants,
+    meetingPoint,
+  });
   return NextResponse.json(date, { status: 201 });
 }

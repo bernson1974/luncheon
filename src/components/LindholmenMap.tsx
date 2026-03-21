@@ -1,11 +1,15 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import type { Map as LeafletMap, LayerGroup as LeafletLayerGroup } from "leaflet";
+import { lunchDateLabelSv } from "@/lib/lunchDateWindow";
+
+type LeafletNs = typeof import("leaflet");
 
 const LINDHOLMEN_LAT = 57.7065;
 const LINDHOLMEN_LNG = 11.9384;
 
-interface RestaurantPin {
+export interface RestaurantPin {
   id: string;
   name: string;
   lat: number;
@@ -15,11 +19,13 @@ interface RestaurantPin {
 
 interface Props {
   pins?: RestaurantPin[];
+  /** Vald dag – används i popup och länk till Hitta. */
+  selectedYmd: string;
 }
 
-function makeBadgeIcon(L: typeof import("leaflet"), count: number) {
+function makeBadgeIcon(L: LeafletNs, count: number) {
   const color = count > 0 ? "#0f766e" : "#94a3b8";
-  const textColor = count > 0 ? "#ffffff" : "#ffffff";
+  const textColor = "#ffffff";
   const html = `
     <div style="
       position: relative;
@@ -49,7 +55,7 @@ function makeBadgeIcon(L: typeof import("leaflet"), count: number) {
     className: "",
     iconSize: [32, 32],
     iconAnchor: [16, 16],
-    popupAnchor: [0, -18]
+    popupAnchor: [0, -18],
   });
 }
 
@@ -63,43 +69,84 @@ const DEFAULT_PINS: RestaurantPin[] = [
   { id: "burgery", name: "Burgery", lat: 57.7066, lng: 11.9382, dateCount: 0 },
   { id: "wok-of-fame", name: "Wok of Fame", lat: 57.7073, lng: 11.9368, dateCount: 0 },
   { id: "paj-och-mer", name: "Paj & Mer", lat: 57.707, lng: 11.9393, dateCount: 0 },
-  { id: "chalmers-karen", name: "Chalmers Kåren", lat: 57.7076, lng: 11.9377, dateCount: 0 }
+  { id: "chalmers-karen", name: "Chalmers Kåren", lat: 57.7076, lng: 11.9377, dateCount: 0 },
 ];
 
-export default function LindholmenMap({ pins }: Props) {
+export default function LindholmenMap({ pins, selectedYmd }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const mapRef = useRef<unknown>(null);
+  const mapRef = useRef<LeafletMap | null>(null);
+  const markersLayerRef = useRef<LeafletLayerGroup | null>(null);
+  const leafletRef = useRef<LeafletNs | null>(null);
+  const [mapReady, setMapReady] = useState(false);
   const [error, setError] = useState(false);
 
   const activePins = pins ?? DEFAULT_PINS;
+  const dayLabel = selectedYmd ? lunchDateLabelSv(selectedYmd) : "";
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
 
+    let cancelled = false;
+
     async function initMap() {
       try {
-        const L = (await import("leaflet")).default;
+        const raw = await import("leaflet");
+        const L = (raw as { default?: LeafletNs }).default ?? (raw as unknown as LeafletNs);
         await import("leaflet/dist/leaflet.css");
 
-        if (!containerRef.current || mapRef.current) return;
+        if (cancelled || !containerRef.current || mapRef.current) return;
 
         const map = L.map(containerRef.current, {
-          scrollWheelZoom: false
+          scrollWheelZoom: false,
         }).setView([LINDHOLMEN_LAT, LINDHOLMEN_LNG], 16);
 
         L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
           attribution:
-            '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+            '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
         }).addTo(map);
 
-        activePins.forEach((pin) => {
-          const icon = makeBadgeIcon(L, pin.dateCount);
-          const countText =
-            pin.dateCount > 0
-              ? `${pin.dateCount} lunchdejt${pin.dateCount > 1 ? "er" : ""} idag`
-              : "Inga dejter idag";
-          const linkHref = `/browse?restaurantId=${pin.id}`;
-          const popupHtml = `
+        const markersLayer = L.layerGroup().addTo(map);
+
+        mapRef.current = map;
+        markersLayerRef.current = markersLayer;
+        leafletRef.current = L;
+        setMapReady(true);
+      } catch {
+        if (!cancelled) setError(true);
+      }
+    }
+
+    void initMap();
+
+    return () => {
+      cancelled = true;
+      if (mapRef.current) {
+        mapRef.current.remove();
+        mapRef.current = null;
+        markersLayerRef.current = null;
+        leafletRef.current = null;
+        setMapReady(false);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!mapReady || !markersLayerRef.current || !leafletRef.current) return;
+
+    const L = leafletRef.current;
+    const layer = markersLayerRef.current;
+    layer.clearLayers();
+
+    const ymdQ = encodeURIComponent(selectedYmd);
+
+    for (const pin of activePins) {
+      const icon = makeBadgeIcon(L, pin.dateCount);
+      const countText =
+        pin.dateCount > 0
+          ? `${pin.dateCount} lunchdejt${pin.dateCount > 1 ? "er" : ""} · ${dayLabel}`
+          : `Inga dejter · ${dayLabel}`;
+      const linkHref = `/browse?restaurantId=${encodeURIComponent(pin.id)}&date=${ymdQ}`;
+      const popupHtml = `
             <div style="font-family: system-ui, sans-serif; font-size: 13px; line-height: 1.5;">
               <strong>${pin.name}</strong><br>
               <span style="color: #64748b;">${countText}</span><br>
@@ -109,40 +156,24 @@ export default function LindholmenMap({ pins }: Props) {
               >Se dejtar →</a>
             </div>
           `;
-          L.marker([pin.lat, pin.lng], { icon })
-            .addTo(map)
-            .bindPopup(popupHtml);
-        });
-
-        mapRef.current = map;
-      } catch {
-        setError(true);
-      }
+      L.marker([pin.lat, pin.lng], { icon })
+        .bindPopup(popupHtml)
+        .addTo(layer);
     }
-
-    initMap();
-
-    return () => {
-      if (mapRef.current) {
-        (mapRef.current as import("leaflet").Map).remove();
-        mapRef.current = null;
-      }
-    };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [mapReady, activePins, selectedYmd, dayLabel]);
 
   if (error) {
     return (
       <div
         style={{
-          height: "260px",
+          height: "340px",
           borderRadius: "0.75rem",
           background: "#e2e8f0",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
           color: "#64748b",
-          fontSize: "0.85rem"
+          fontSize: "0.85rem",
         }}
       >
         Lindholmen, Göteborg
@@ -153,7 +184,7 @@ export default function LindholmenMap({ pins }: Props) {
   return (
     <div
       ref={containerRef}
-      style={{ borderRadius: "0.75rem", overflow: "hidden", height: "260px" }}
+      style={{ borderRadius: "0.75rem", overflow: "hidden", height: "340px" }}
     />
   );
 }

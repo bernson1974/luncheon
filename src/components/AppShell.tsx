@@ -62,14 +62,28 @@ export default function AppShell({ children }: { children: ReactNode }) {
             className="app-nav-pill"
             aria-current={path === "/" ? "page" : undefined}
           >
-            Hem
+            Karta
           </Link>
           <Link
             href="/my-lunch"
             className="app-nav-pill"
             aria-current={path === "/my-lunch" ? "page" : undefined}
           >
-            Min lunch
+            Luncher
+          </Link>
+          <Link
+            href="/create"
+            className="app-nav-pill"
+            aria-current={path === "/create" ? "page" : undefined}
+          >
+            Skapa
+          </Link>
+          <Link
+            href="/browse"
+            className="app-nav-pill"
+            aria-current={path.startsWith("/browse") ? "page" : undefined}
+          >
+            Hitta
           </Link>
         </nav>
         <Link

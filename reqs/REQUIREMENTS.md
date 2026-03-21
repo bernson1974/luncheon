@@ -25,7 +25,8 @@ Inga komplicerade algoritmer – användaren väljer själv.
 | Princip | Beskrivning |
 |---|---|
 | Inga publika profiler | Inga profilsidor, ingen sökfunktion efter personer, ingen synlig historik. |
-| Dagsbaserat | En lunchdejt gäller enbart för den dag den skapas. |
+| Planeringsfönster | Lunchdejtar planeras inom **idag + fem dagar** (Stockholmstid). Varje dejt gäller ett valt datum inom fönstret. |
+| En lunch per dag | En användare kan som mest vara skapare eller deltagare på **en** lunchdejt per kalenderdag. |
 | Låg friktion, hög integritet | Minimalt med personuppgifter – alias synligt enbart inom bekräftad grupp. |
 | Användarstyrt | Inga dolda algoritmer; användaren ser och väljer öppet. |
 
@@ -59,15 +60,15 @@ Screen 1: Startsida – välj roll
 | FR-03 | Användaren ska kunna ange eller välja **restaurang** (från en kurerad lista för Lindholmen). |
 | FR-04 | Användaren ska kunna ange ett **samtalsämne** (fritext, t.ex. "AI och framtidens jobb", "Premier League"). |
 | FR-05 | Användaren ska kunna ange hur många fler deltagare som är välkomna (max antal platser). |
-| FR-06 | En lunchdejt är kopplad till dagens datum och området Lindholmen. |
+| FR-06 | En lunchdejt är kopplad till ett **valt datum** inom planeringsfönstret (idag + fem dagar) och området Lindholmen. |
 | FR-07 | En publicerad lunchdejt ska vara synlig för andra användare i listvyn direkt efter publicering. |
-| FR-08 | Skaparen ska kunna ta bort sin lunchdejt så länge den inte har några deltagare, eller stänga den för fler joiners. |
+| FR-08 | Skaparen ska kunna **avboka** sin lunchdejt (MVP: dejten markeras som avbokad; exakt policy för deltagare kan förenklas). |
 
 ### 4.2 Bläddra och filtrera lunchdejtar
 
 | ID | Krav |
 |---|---|
-| FR-09 | Användaren ska kunna se en lista med alla öppna lunchdejtar för dagens datum på Lindholmen. |
+| FR-09 | Användaren ska kunna se en lista med öppna lunchdejtar inom planeringsfönstret på Lindholmen, med valfri **dagfiltrering**. |
 | FR-10 | Listan ska kunna filtreras på **klockslag** (t.ex. "visa dejtar som startar mellan 11:30–13:00"). |
 | FR-11 | Listan ska kunna filtreras på **restaurang**. |
 | FR-12 | Listan ska kunna filtreras på **samtalsämne** (fritextsök eller förvald tagg). |
@@ -82,7 +83,7 @@ Screen 1: Startsida – välj roll
 | FR-16 | Användaren ska kunna klicka in på en lunchdejt och se dess detaljer (tid, restaurang, samtalsämne, befintliga deltagares alias). |
 | FR-17 | Användaren ska kunna **joina** en lunchdejt. |
 | FR-18 | Efter join ska användaren se en bekräftelseskärm med fullständiga detaljer: tid, restaurang, samtalsämne och alla deltagares alias. |
-| FR-19 | Användaren ska kunna **lämna** en dejt som de har joinat, så länge lunchen inte har startat. |
+| FR-19 | Användaren ska kunna **lämna** en dejt som de har joinat (MVP: när som helst innan vidare produktregler). |
 | FR-20 | När en användare joinar ska antalet lediga platser minska med ett i realtid (eller vid nästa sidladdning). |
 
 ### 4.4 Restaurangdata
@@ -91,7 +92,7 @@ Screen 1: Startsida – välj roll
 |---|---|
 | FR-21 | Systemet ska innehålla en manuellt kurerad lista av restauranger på Lindholmen. |
 | FR-22 | Varje restaurang ska ha: namn, koordinater (lat/lng), kök och öppettider per veckodag. |
-| FR-23 | Vid val av restaurang vid skapande av dejt ska systemet kontrollera att restaurangen är öppen vid det angivna klockslaget. |
+| FR-23 | Vid val av restaurang vid skapande av dejt ska systemet kontrollera att restaurangen är öppen vid det angivna klockslaget (**mål**; i MVP kan kontrollen vara förenklad eller saknas). |
 
 ---
 
@@ -103,7 +104,7 @@ Screen 1: Startsida – välj roll
 | NFR-02 | **Responsivitet**: UI:t ska vara mobile-first och fungera på små skärmar, men även skalas upp till desktop. |
 | NFR-03 | **Realtid (önskvärt)**: Antalet lediga platser och listan med lunchdejtar ska uppdateras utan att användaren behöver ladda om sidan. |
 | NFR-04 | **Tillgänglighet**: Hög kontrast och läsbar typografi (WCAG AA som miniminivå). |
-| NFR-05 | **Enkelhet**: Max en tydlig primäråtgärd per skärm. |
+| NFR-05 | **Enkelhet**: Tydlig primäråtgärd per **flöde**; startsidan får ha flera snabbval (t.ex. karta + kort åtgärder) utan att konkurrera visuellt. |
 
 ---
 
@@ -152,12 +153,13 @@ Screen 1: Startsida – välj roll
 - Val av område; i MVP är enbart `Lindholmen` valbart.
 
 ### Screen 1 – Startsida
-- Två tydliga primäråtgärder:
-  - **"Lägg upp lunchdejt"** → navigerar till Screen 2a.
-  - **"Hitta en lunchdejt"** → navigerar till Screen 2b.
+- Översikt (t.ex. karta) och **snabbval**: Min lunch (om bokad), lägg upp dejt, hitta dejt.
+- **"Lägg upp lunchdejt"** → Screen 2a.
+- **"Hitta en lunchdejt"** → Screen 2b.
 
 ### Screen 2a – Skapa lunchdejt
 - Formulär med:
+  - **Dag** (inom planeringsfönstret)
   - Alias
   - Klockslag (start, valfri sluttid)
   - Restaurangval (dropdown/sökning ur kurerad lista)
@@ -167,7 +169,7 @@ Screen 1: Startsida – välj roll
 - Primäråtgärd: **"Publicera lunchdejt"**.
 
 ### Screen 2b – Bläddra lunchdejtar
-- Lista med öppna lunchdejtar för idag på Lindholmen.
+- Lista med öppna lunchdejtar inom planeringsfönstret på Lindholmen; filter inkl. **valfri dag**.
 - Filterrad: klockslag, restaurang, samtalsämne.
 - Varje listpost visar: tid, restaurang, samtalsämne, `X platser kvar`.
 - Klick på en post öppnar detaljer (inline eller ny skärm).

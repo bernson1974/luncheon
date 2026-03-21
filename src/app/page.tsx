@@ -1,65 +1,41 @@
-import Link from "next/link";
-import MapWrapper from "@/components/MapWrapper";
-import MyLunchButton from "@/components/MyLunchButton";
+import HomeMapSection, {
+  type CountsByYmd,
+  type HomeMapDay,
+  type HomeRestaurantPinBase,
+} from "@/components/HomeMapSection";
 import { listDates } from "@/lib/store";
 import { restaurants } from "@/lib/restaurants";
+import { selectableLunchDateYmds } from "@/lib/lunchDateWindow";
+
+/** Undvik gammal förrenderad statisk HTML utan att behöva rensa .next manuellt. */
+export const dynamic = "force-dynamic";
 
 export default function HomePage() {
-  const dates = listDates();
+  const ymds = selectableLunchDateYmds();
 
-  const pins = restaurants.map((r) => ({
+  const days: HomeMapDay[] = ymds.map((ymd) => ({ ymd }));
+
+  const countsByYmd: CountsByYmd = {};
+  for (const ymd of ymds) {
+    countsByYmd[ymd] = {};
+    for (const d of listDates({ date: ymd })) {
+      const rid = d.restaurant.id;
+      countsByYmd[ymd][rid] = (countsByYmd[ymd][rid] ?? 0) + 1;
+    }
+  }
+
+  const restaurantPins: HomeRestaurantPinBase[] = restaurants.map((r) => ({
     id: r.id,
     name: r.name,
-    lat: r.latitude,
-    lng: r.longitude,
-    dateCount: dates.filter((d) => d.restaurantId === r.id).length
+    latitude: r.latitude,
+    longitude: r.longitude,
   }));
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "1rem", flex: 1 }}>
-      <section style={{ marginBottom: "0.5rem" }}>
-        <h1 className="page-title">Luncheon</h1>
-        <p className="page-subtitle">
-          Hitta lunchsällskap på Lindholmen – här och nu. Inga profiler, inga
-          komplicerade algoritmer. Lägg upp en dejt eller joina en som redan
-          finns.
-        </p>
-      </section>
-
-      <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-        <MyLunchButton />
-
-        <Link href="/create" className="home-cta-card">
-          <div className="home-cta-title">Lägg upp en lunchdejt</div>
-          <div className="home-cta-desc">
-            Välj tid, restaurang och samtalsämne. Andra på Lindholmen kan sedan
-            joina dig.
-          </div>
-        </Link>
-
-        <Link href="/browse" className="home-cta-card">
-          <div className="home-cta-title">Hitta en lunchdejt</div>
-          <div className="home-cta-desc">
-            Se alla öppna lunchdejtar för idag. Filtrera på tid, restaurang
-            eller ämne och joina den som passar.
-          </div>
-        </Link>
+    <div className="home-page-stack" style={{ display: "flex", flexDirection: "column", flex: 1 }}>
+      <div className="home-map-block">
+        <HomeMapSection days={days} countsByYmd={countsByYmd} restaurants={restaurantPins} />
       </div>
-
-      <div style={{ marginTop: "0.75rem" }}>
-        <p className="secondary-text" style={{ marginBottom: "0.5rem" }}>
-          Aktiva lunchdejter på Lindholmen idag:
-        </p>
-        <MapWrapper pins={pins} />
-        <p className="secondary-text" style={{ marginTop: "0.4rem", fontSize: "0.75rem" }}>
-          Grön siffra = antal dejter på restaurangen. Grå = inga dejter ännu.
-        </p>
-      </div>
-
-      <p className="secondary-text" style={{ marginTop: "auto", paddingTop: "2rem" }}>
-        Begränsat till Lindholmen, Göteborg. Inga publika profiler – ditt alias
-        visas enbart för dem i samma dejt.
-      </p>
     </div>
   );
 }

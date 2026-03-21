@@ -6,6 +6,8 @@ import Link from "next/link";
 import dynamic from "next/dynamic";
 import type { LunchDatePublic } from "@/lib/models";
 import { getStoredAlias } from "@/lib/userAlias";
+import { forgetCreatedDate, isCreatorOfDateInStorage } from "@/lib/creatorStorage";
+import { lunchDateLabelSv } from "@/lib/lunchDateWindow";
 
 const MeetingPointPicker = dynamic(
   () => import("@/components/MeetingPointPicker"),
@@ -34,8 +36,7 @@ function getUserToken(): string {
 type Role = "creator" | "participant" | "visitor";
 
 function deriveRole(dateId: string, userToken: string, date: LunchDatePublic): Role {
-  const createdId = localStorage.getItem("myCreatedDateId");
-  if (createdId === dateId) return "creator";
+  if (isCreatorOfDateInStorage(dateId, userToken)) return "creator";
 
   const joinedTokenKey = `joined:${dateId}`;
   if (localStorage.getItem(joinedTokenKey) === userToken) return "participant";
@@ -84,18 +85,21 @@ export default function DateDetailPage() {
     setUserToken(token);
     setRole(deriveRole(id, token, data));
 
-    // Check if user already has another lunch booked
-    const createdId = localStorage.getItem("myCreatedDateId");
-    const hasOtherCreated = createdId && createdId !== id;
-    let hasOtherJoined = false;
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i);
-      if (key?.startsWith("joined:") && key !== `joined:${id}`) {
-        hasOtherJoined = true;
-        break;
+    let busySameDay = false;
+    try {
+      const cRes = await fetch(
+        `/api/user/commitments?userToken=${encodeURIComponent(token)}`
+      );
+      if (cRes.ok) {
+        const { committedYmds } = (await cRes.json()) as { committedYmds: string[] };
+        busySameDay =
+          committedYmds.includes(data.date) &&
+          deriveRole(id, token, data) === "visitor";
       }
+    } catch {
+      busySameDay = false;
     }
-    setAlreadyHasLunch(!!(hasOtherCreated || hasOtherJoined));
+    setAlreadyHasLunch(busySameDay);
     setLoading(false);
   }, [id]);
 
@@ -125,6 +129,8 @@ export default function DateDetailPage() {
       if (res.status === 409) {
         const err = await res.json();
         if (err.error === "already_joined") setJoinError("Du har redan joinat denna dejt.");
+        else if (err.error === "busy_that_day")
+          setJoinError("Du har redan en lunchdejt den här dagen.");
         else if (err.error === "full") setJoinError("Dejten är tyvärr fullbokad.");
         else if (err.error === "not_open") setJoinError("Dejten är inte längre öppen.");
         else setJoinError("Kunde inte joina. Försök igen.");
@@ -169,7 +175,7 @@ export default function DateDetailPage() {
       body: JSON.stringify({ creatorToken: userToken }),
     });
 
-    localStorage.removeItem("myCreatedDateId");
+    forgetCreatedDate(id);
     router.push("/browse");
   }
 
@@ -187,8 +193,8 @@ export default function DateDetailPage() {
       <div>
         <Link href="/browse" className="back-link">← Tillbaka</Link>
         <p className="page-subtitle">Dejten hittades inte – den kan ha avbokats.</p>
-        <Link href="/browse">
-          <button className="primary-button" type="button">Se alla lunchdejtar</button>
+        <Link href="/browse" className="primary-button">
+          Se alla lunchdejtar
         </Link>
       </div>
     );
@@ -213,6 +219,10 @@ export default function DateDetailPage() {
 
       {/* Details card */}
       <div className="card">
+        <div className="detail-row">
+          <span className="detail-label">Dag</span>
+          <span>{lunchDateLabelSv(date.date)}</span>
+        </div>
         <div className="detail-row">
           <span className="detail-label">Tid</span>
           <span>
@@ -260,12 +270,8 @@ export default function DateDetailPage() {
             value={{ lat: date.meetingPoint.latitude, lng: date.meetingPoint.longitude }}
             onChange={() => {}}
             readonly
+            description={date.meetingPoint.description}
           />
-          {date.meetingPoint.description && (
-            <p style={{ marginTop: "0.5rem", fontSize: "0.9rem", color: "#0f172a" }}>
-              {date.meetingPoint.description}
-            </p>
-          )}
         </div>
       )}
 
@@ -274,13 +280,15 @@ export default function DateDetailPage() {
         <p className="field-label" style={{ marginBottom: "0.25rem" }}>
           Deltagare ({date.participants.length + 1} / {date.maxParticipants})
         </p>
-        <ul className="participant-list">
-          <li>
+        <ul className="participant-list my-lunch-participant-list">
+          <li className="participant-list-row participant-list-row--creator">
             <strong>{date.creatorAlias}</strong>
-            <span className="secondary-text" style={{ marginLeft: "0.4rem", fontSize: "0.78rem" }}>skapare</span>
+            <span className="participant-role-pill">Skapare</span>
           </li>
           {date.participants.map((p) => (
-            <li key={p.id}>{p.alias}</li>
+            <li key={p.id} className="participant-list-row">
+              {p.alias}
+            </li>
           ))}
         </ul>
       </div>
@@ -317,7 +325,7 @@ export default function DateDetailPage() {
                 onClick={handleLeave}
                 disabled={acting}
               >
-                {acting ? "Lämnar…" : "Lämna dejten"}
+                {acting ? "Avbokar…" : "Avboka lunchen"}
               </button>
             </div>
           )}
@@ -325,13 +333,13 @@ export default function DateDetailPage() {
           {role === "visitor" && !isFull && alreadyHasLunch && (
             <div className="card" style={{ background: "#fffbeb", border: "1px solid #fde68a" }}>
               <p style={{ margin: 0, fontSize: "0.9rem", color: "#92400e", fontWeight: 500 }}>
-                Du har redan en lunchdejt bokad idag.
+                Du har redan en lunchdejt bokad den här dagen.
               </p>
               <p className="secondary-text" style={{ marginTop: "0.4rem", marginBottom: "0.75rem" }}>
-                Du kan bara ha en dejt åt gången. Lämna eller avboka din befintliga dejt om du vill byta.
+                Du kan bara ha en lunch per dag. Lämna eller avboka den andra dejten om du vill gå med i denna.
               </p>
-              <Link href="/my-lunch">
-                <button className="secondary-button" type="button">Se min befintliga dejt</button>
+              <Link href="/my-lunch" className="secondary-button">
+                Se min befintliga dejt
               </Link>
             </div>
           )}
@@ -384,10 +392,12 @@ export default function DateDetailPage() {
           {role === "visitor" && isFull && (
             <div className="empty-state" style={{ padding: "1.5rem 0" }}>
               <p>Den här dejten är tyvärr fullbokad.</p>
-              <Link href="/browse">
-                <button className="secondary-button" type="button" style={{ maxWidth: "240px", marginInline: "auto" }}>
-                  Se andra lunchdejtar
-                </button>
+              <Link
+                href="/browse"
+                className="secondary-button"
+                style={{ maxWidth: "240px", marginInline: "auto" }}
+              >
+                Se andra lunchdejtar
               </Link>
             </div>
           )}
@@ -397,10 +407,12 @@ export default function DateDetailPage() {
       {isCancelled && (
         <div className="empty-state" style={{ padding: "1.5rem 0" }}>
           <p>Den här dejten har avbokats.</p>
-          <Link href="/browse">
-            <button className="secondary-button" type="button" style={{ maxWidth: "240px", marginInline: "auto" }}>
-              Se andra lunchdejtar
-            </button>
+          <Link
+            href="/browse"
+            className="secondary-button"
+            style={{ maxWidth: "240px", marginInline: "auto" }}
+          >
+            Se andra lunchdejtar
           </Link>
         </div>
       )}

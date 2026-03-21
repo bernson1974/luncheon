@@ -95,10 +95,8 @@ export default function SettingsPage() {
           <p className="secondary-text" style={{ marginTop: "0.4rem", marginBottom: "0.75rem" }}>
             Andra ser ditt nuvarande alias i dejten. Lämna eller avboka först om du vill byta namn.
           </p>
-          <Link href="/my-lunch">
-            <button className="secondary-button" type="button" style={{ marginTop: 0 }}>
-              Till min lunch
-            </button>
+          <Link href="/my-lunch" className="secondary-button" style={{ marginTop: 0 }}>
+            Till luncher
           </Link>
         </div>
       )}

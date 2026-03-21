@@ -1,12 +1,13 @@
 import type { LunchDate, Participant, LunchDatePublic, ParticipantPublic } from "./models";
 import { getRestaurantById, restaurants } from "./restaurants";
+import { isYmdInSelectableLunchWindow, stockholmTodayYmd } from "./lunchDateWindow";
 
 interface StoreData {
   dates: LunchDate[];
   participants: Participant[];
 }
 
-const today = new Date().toISOString().split("T")[0];
+const today = stockholmTodayYmd();
 
 const seedDates: LunchDate[] = [
   {
@@ -103,15 +104,47 @@ function toPublicDate(date: LunchDate, allParticipants: Participant[]): LunchDat
 
 // ─── Queries ─────────────────────────────────────────────────────────────────
 
+/** True om användaren redan är skapare eller deltagare på någon (icke-avbokad) dejt den dagen. */
+export function userHasCommitmentOnDate(userToken: string, ymd: string): boolean {
+  for (const d of store.dates) {
+    if (d.status === "cancelled" || d.date !== ymd) continue;
+    if (d.creatorToken === userToken) return true;
+    const joined = store.participants.some(
+      (p) => p.lunchDateId === d.id && p.userToken === userToken
+    );
+    if (joined) return true;
+  }
+  return false;
+}
+
+/** Unika kalenderdagar (YYYY-MM-DD) där användaren har en aktiv roll. */
+export function getCommittedDateYmdsForUser(userToken: string): string[] {
+  const set = new Set<string>();
+  for (const d of store.dates) {
+    if (d.status === "cancelled") continue;
+    if (d.creatorToken === userToken) set.add(d.date);
+  }
+  for (const p of store.participants) {
+    if (p.userToken !== userToken) continue;
+    const lunch = store.dates.find((ld) => ld.id === p.lunchDateId);
+    if (lunch && lunch.status !== "cancelled") set.add(lunch.date);
+  }
+  return [...set].sort();
+}
+
 export function listDates(filters?: {
   time?: string;
   restaurantId?: string;
   topic?: string;
+  date?: string;
 }): LunchDatePublic[] {
-  const todayStr = new Date().toISOString().split("T")[0];
   let dates = store.dates.filter(
-    (d) => d.date === todayStr && d.status !== "cancelled"
+    (d) => isYmdInSelectableLunchWindow(d.date) && d.status !== "cancelled"
   );
+
+  if (filters?.date) {
+    dates = dates.filter((d) => d.date === filters.date);
+  }
 
   if (filters?.restaurantId) {
     dates = dates.filter((d) => d.restaurantId === filters.restaurantId);
@@ -125,7 +158,10 @@ export function listDates(filters?: {
   }
 
   return dates
-    .sort((a, b) => a.timeStart.localeCompare(b.timeStart))
+    .sort((a, b) => {
+      const c = a.date.localeCompare(b.date);
+      return c !== 0 ? c : a.timeStart.localeCompare(b.timeStart);
+    })
     .map((d) => toPublicDate(d, store.participants));
 }
 
@@ -140,6 +176,7 @@ export function getDate(id: string): LunchDatePublic | null {
 export function createDate(input: {
   creatorAlias: string;
   creatorToken: string;
+  date: string;
   timeStart: string;
   timeEnd?: string;
   restaurantId: string;
@@ -150,7 +187,6 @@ export function createDate(input: {
   const date: LunchDate = {
     id: crypto.randomUUID(),
     area: "Lindholmen",
-    date: new Date().toISOString().split("T")[0],
     status: "open",
     createdAt: new Date().toISOString(),
     ...input,
@@ -179,6 +215,10 @@ export function joinDate(
     (p) => p.lunchDateId === id && p.userToken === userToken
   );
   if (alreadyJoined) return { ok: false, error: "already_joined" };
+
+  if (userHasCommitmentOnDate(userToken, date.date)) {
+    return { ok: false, error: "busy_that_day" };
+  }
 
   if (spotsLeft(date, store.participants) === 0) {
     return { ok: false, error: "full" };

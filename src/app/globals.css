@@ -171,6 +171,21 @@ button {
   cursor: default;
 }
 
+/* <Link> som ser ut som knapp (undvik <a><button> – ogiltig HTML / a11y) */
+a.primary-button,
+a.secondary-button,
+a.danger-button {
+  display: block;
+  text-align: center;
+  text-decoration: none;
+}
+
+a.primary-button:hover,
+a.secondary-button:hover,
+a.danger-button:hover {
+  text-decoration: none;
+}
+
 /* ─── Badges ──────────────────────────────────────────────────────────────── */
 
 .badge {
@@ -338,7 +353,9 @@ button {
 
 .date-card-footer {
   display: flex;
-  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.75rem;
+  justify-content: flex-start;
   align-items: center;
   margin-top: 0.6rem;
   font-size: 0.8rem;
@@ -390,6 +407,62 @@ button {
   border-bottom: none;
 }
 
+.my-lunch-participant-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  margin-top: 0.35rem;
+}
+
+/* Inga streck mellan rader – undviker dubbel linje mot sektionens border under listan */
+.my-lunch-participant-list.participant-list li {
+  border-bottom: none;
+  padding-top: 0.2rem;
+  padding-bottom: 0.2rem;
+}
+
+.my-lunch-participant-list .participant-list-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem 0.5rem;
+}
+
+/* Min lunch: Mötesplats-rad med åtgärd */
+.my-lunch-meeting-header {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.my-lunch-meeting-header .field-label {
+  margin-bottom: 0;
+}
+
+.my-lunch-meeting-header .danger-button {
+  width: auto;
+  margin-top: 0;
+  padding: 0.4rem 0.85rem;
+  font-size: 0.82rem;
+  white-space: nowrap;
+}
+
+.participant-role-pill {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #0f766e;
+  background: #f0fdfa;
+  border: 1px solid #ccfbf1;
+  border-radius: 999px;
+  padding: 0.12rem 0.45rem;
+  line-height: 1.2;
+}
+
 /* ─── Split actions ───────────────────────────────────────────────────────── */
 
 .split-buttons {
@@ -405,7 +478,7 @@ button {
   margin-top: 0;
 }
 
-/* ─── Home page cards ─────────────────────────────────────────────────────── */
+/* ─── Home page cards (övriga sidor kan fortfarande använda) ──────────────── */
 
 .home-cta-card {
   border-radius: 0.75rem;
@@ -435,6 +508,98 @@ button {
   font-size: 0.875rem;
   color: #64748b;
   line-height: 1.5;
+}
+
+/* ─── Min lunch: dags-tabbar ──────────────────────────────────────────────── */
+
+.my-lunch-tablist {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  gap: 0.35rem;
+  overflow-x: auto;
+  padding-bottom: 0.35rem;
+  margin-top: 0.5rem;
+  margin-bottom: 0.85rem;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+}
+
+/* Startsida: dagflikar direkt ovanför kartan */
+.home-map-block .home-map-tablist {
+  margin-top: 0;
+}
+
+/* Startsida: samma logik som Luncher – grön ton om du har bokning, utgråad annars (fortfarande klickbar) */
+.home-map-tab--has-booking:not(.my-lunch-tab--active) {
+  border-color: #5eead4;
+  background: #ecfdf5;
+  color: #0f766e;
+}
+
+.home-map-tab--no-user-booking:not(.my-lunch-tab--active) {
+  opacity: 0.42;
+  cursor: pointer;
+  background: #f1f5f9;
+  color: #94a3b8;
+  border-color: #e2e8f0;
+}
+
+.home-map-tab--no-user-booking:not(.my-lunch-tab--active):hover {
+  opacity: 0.72;
+  border-color: #cbd5e1;
+}
+
+.home-map-tab--no-user-booking.my-lunch-tab--active,
+.home-map-tab--has-booking.my-lunch-tab--active {
+  opacity: 1;
+}
+
+.my-lunch-tab {
+  flex: 1 1 0;
+  min-width: 3.15rem;
+  max-width: 5.5rem;
+  padding: 0.45rem 0.35rem;
+  border-radius: 0.5rem;
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  font-size: 0.68rem;
+  font-weight: 600;
+  line-height: 1.2;
+  color: #0f172a;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+}
+
+.my-lunch-tab:hover:not(:disabled) {
+  border-color: #0f766e;
+  color: #0f766e;
+}
+
+.my-lunch-tab--active {
+  border-color: #0f766e;
+  background: #f0fdfa;
+  color: #0f766e;
+}
+
+.my-lunch-tab:disabled {
+  opacity: 0.42;
+  cursor: not-allowed;
+  background: #f1f5f9;
+  color: #94a3b8;
+  border-color: #e2e8f0;
+}
+
+.my-lunch-tab-today {
+  display: block;
+  font-size: 0.58rem;
+  font-weight: 500;
+  color: #64748b;
+  margin-top: 0.15rem;
+}
+
+.my-lunch-tab--active .my-lunch-tab-today {
+  color: #0f766e;
 }
 
 /* ─── Empty state ─────────────────────────────────────────────────────────── */
