@@ -35,6 +35,8 @@ Använd datorns IP-adress, t.ex. `http://192.168.x.x:3000`.
 
 **”Connection failed” i webbläsaren** betyder nästan alltid att **ingen** kör `npm run dev` – starta servern och låt terminalfönstret vara öppet.
 
+**”Another next dev server is already running”** eller fel port: du har redan en `next dev` igång. Stoppa den med **Ctrl+C** i den terminalen, eller kör `kill <PID>` (PID står i felmeddelandet). Öppna sedan **samma port** som terminalen visar (3000 eller 3001).
+
 ## GitHub & Vercel
 
 - Kod pushas till GitHub med `git add` / `git commit` / `git push`.
