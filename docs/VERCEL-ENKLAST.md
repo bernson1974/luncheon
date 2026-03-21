@@ -1,35 +1,57 @@
-# Vercel utan Git-webhook (mest pålitligt)
+# Vercel – varför våra tidigare “klicka här”-steg kan vara fel
 
-Om inget nytt dyker upp under **Deployments** när du pushar till GitHub, **strunta i det till att börja med**. Deploya från **din dator** i stället – då behövs ingen webhook.
+**Jag (AI) ser inte Vercels dashboard.** Menytext, layout och språk ändras. Därför ska du **inte** lita på att steg som “gå till X → Y” från en chatt alltid stämmer med det du ser.
 
-## Krav
+**Använd Vercels egna dokumentation** när du navigerar på webben:
 
-- Du har kört `npm install` i projektmappen och `npm run build` fungerar lokalt.
+| Vad du vill göra | Officiell sida (engelska) |
+|------------------|---------------------------|
+| Hur deployment funkar (Git, CLI, hooks) | https://vercel.com/docs/deployments/overview |
+| Koppla Git / importera repo | https://vercel.com/docs/git |
+| Deploy **från terminal** (pålitligt, samma kommando över tid) | https://vercel.com/docs/projects/deploy-from-cli |
+| Vercel CLI (alla kommandon) | https://vercel.com/docs/cli |
 
-## Steg (kör i Terminal)
+---
 
-```bash
-cd /Users/mattiasbernson/Desktop/Luncheon
-npx vercel login
-npx vercel
-```
+## Deploy från terminal (enligt Vercels egen guide)
 
-Svara på frågorna (konto, projekt – välj befintligt **luncheon-mvp** eller skapa nytt).
+Detta är **inte** beroende av att hitta rätt knapp på deras sajt.
 
-När det gått igenom får du en **preview-URL**.
+1. Installera CLI (välj ett sätt – från [Vercel CLI docs](https://vercel.com/docs/cli)):
 
-För **produktion** (fast länk du kan dela):
+   ```bash
+   npm i -g vercel
+   ```
 
-```bash
-npx vercel --prod
-```
+   Eller utan global install: `npx vercel` i stället för `vercel` i kommandona nedan.
 
-Det är allt. Ingen “Build”-knapp i webben, ingen Git-koppling för första gången.
+2. I **projektroten** (mappen som innehåller `package.json`):
 
-## Om du vill ha auto-deploy från Git senare
+   ```bash
+   cd /Users/mattiasbernson/Desktop/Luncheon
+   vercel login
+   vercel link
+   ```
 
-Först när ovan fungerar: **Vercel → Project → Settings → Git** och koppla `bernson1974/luncheon`. Om det strular igen har du ändå **CLI** som alltid kan deploya.
+   `vercel link` kopplar mappen till ett Vercel-projekt (skapar mappen `.vercel/` – den är **gitignorad** i det här repot).
 
-## Om `npx vercel` klagar
+3. **Preview:**
 
-Klistra in **hela** feltexten från terminalen (eller skärmdump) – då är det konkret fel att felsöka, inte gissningar.
+   ```bash
+   vercel deploy
+   ```
+
+4. **Produktion:**
+
+   ```bash
+   vercel deploy --prod
+   ```
+
+Exakt ordning och extra steg finns här: **https://vercel.com/docs/projects/deploy-from-cli**
+
+---
+
+## Om något går fel
+
+- Öppna **samma sida** som ovan och jämför med din terminal – Vercel ändrar sällan CLI på samma sätt som dashboard.
+- Klistra in **hela** felmeddelandet från terminalen om du ber någon (eller en AI) om hjälp – då slipper ni gissa.

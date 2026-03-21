@@ -5,6 +5,9 @@ node_modules/
 .next/
 out/
 
+# Vercel CLI (lokal länk till projekt – skapa med `vercel link`)
+.vercel/
+
 # Env (hemliga nycklar – committa aldrig .env.local med secrets)
 .env*.local
 
