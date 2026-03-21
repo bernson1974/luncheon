@@ -8,6 +8,9 @@ out/
 # Env (hemliga nycklar – committa aldrig .env.local med secrets)
 .env*.local
 
+# TypeScript incremental
+*.tsbuildinfo
+
 # Debug / OS
 .DS_Store
 *.log
