@@ -41,17 +41,37 @@ export default function AppShell({ children }: { children: ReactNode }) {
     return null;
   }
 
+  const path = pathname ?? "";
+
   return (
     <>
       <header
         style={{
           display: "flex",
           alignItems: "center",
-          justifyContent: "flex-end",
+          justifyContent: "space-between",
+          gap: "0.75rem",
+          flexWrap: "wrap",
           marginBottom: "0.5rem",
           minHeight: "2.25rem"
         }}
       >
+        <nav className="app-top-nav" aria-label="Huvudnavigering">
+          <Link
+            href="/"
+            className="app-nav-pill"
+            aria-current={path === "/" ? "page" : undefined}
+          >
+            Hem
+          </Link>
+          <Link
+            href="/my-lunch"
+            className="app-nav-pill"
+            aria-current={path === "/my-lunch" ? "page" : undefined}
+          >
+            Min lunch
+          </Link>
+        </nav>
         <Link
           href="/settings"
           className="settings-icon-link"

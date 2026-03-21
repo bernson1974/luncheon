@@ -196,6 +196,41 @@ button {
   color: #94a3b8;
 }
 
+/* ─── App shell top nav ───────────────────────────────────────────────────── */
+
+.app-top-nav {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.app-nav-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #475569;
+  text-decoration: none;
+  border: 1px solid #e2e8f0;
+  background: #fff;
+  transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+}
+
+.app-nav-pill:hover {
+  color: #0f766e;
+  border-color: #99f6e4;
+  background: #f0fdfa;
+}
+
+.app-nav-pill[aria-current="page"] {
+  color: #0f766e;
+  border-color: #5eead4;
+  background: #ecfdf5;
+}
+
 /* ─── Navigation ──────────────────────────────────────────────────────────── */
 
 .back-link {
