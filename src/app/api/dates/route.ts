@@ -9,6 +9,7 @@ export async function GET(request: NextRequest) {
     restaurantId: searchParams.get("restaurantId") ?? undefined,
     topic: searchParams.get("topic") ?? undefined,
     date: searchParams.get("date") ?? undefined,
+    cuisine: searchParams.get("cuisine") ?? undefined,
   };
 
   const dates = listDates(filters);

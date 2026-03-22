@@ -6,13 +6,9 @@ import dynamic from "next/dynamic";
 import type { LunchDatePublic } from "@/lib/models";
 import { syncLocalBookingStateWithServer } from "@/lib/bookingState";
 import { forgetCreatedDate, isCreatorOfDateInStorage, listCreatorDateIdsFromStorage } from "@/lib/creatorStorage";
-import {
-  lunchDateLabel,
-  lunchDateShortTabLabel,
-  selectableLunchDateYmds,
-  stockholmTodayYmd,
-} from "@/lib/lunchDateWindow";
+import { lunchDateLabel, selectableLunchDateYmds } from "@/lib/lunchDateWindow";
 import { cuisineLabel } from "@/lib/cuisineLabels";
+import DayPickerSubtabs from "@/components/DayPickerSubtabs";
 
 const MeetingPointPicker = dynamic(
   () => import("@/components/MeetingPointPicker"),
@@ -226,8 +222,6 @@ export default function MyLunchPage() {
   const [loading, setLoading] = useState(true);
   const [selectedYmd, setSelectedYmd] = useState<string | null>(null);
 
-  const todayYmd = stockholmTodayYmd();
-
   const load = useCallback(async () => {
     setLoading(true);
 
@@ -314,9 +308,6 @@ export default function MyLunchPage() {
   if (loading) {
     return (
       <div>
-        <Link href="/" className="back-link">
-          ← Back
-        </Link>
         <p className="secondary-text" style={{ textAlign: "center", paddingTop: "2rem" }}>
           Loading…
         </p>
@@ -326,39 +317,15 @@ export default function MyLunchPage() {
 
   return (
     <div>
-      <Link href="/" className="back-link">
-        ← Back
-      </Link>
-
-      <div
-        className="my-lunch-tablist"
-        role="tablist"
-        aria-label="Lunch by day"
-      >
-        {windowDates.map((w) => {
-          const hasBooking = Boolean(bookedByYmd[w.ymd]);
-          const isActive = hasBooking && selectedYmd === w.ymd;
-          return (
-            <button
-              key={w.ymd}
-              type="button"
-              role="tab"
-              aria-selected={isActive}
-              disabled={!hasBooking}
-              id={`my-lunch-tab-${w.ymd}`}
-              className={`my-lunch-tab${isActive ? " my-lunch-tab--active" : ""}`}
-              onClick={() => {
-                if (hasBooking) setSelectedYmd(w.ymd);
-              }}
-            >
-              <span style={{ display: "block" }}>{lunchDateShortTabLabel(w.ymd)}</span>
-              {w.ymd === todayYmd && (
-                <span className="my-lunch-tab-today">Today</span>
-              )}
-            </button>
-          );
-        })}
-      </div>
+      <DayPickerSubtabs
+        days={windowDates.map((w) => ({ ymd: w.ymd }))}
+        selectedYmd={selectedYmd ?? ""}
+        onSelect={(ymd) => setSelectedYmd(ymd)}
+        ariaLabel="Lunch by day"
+        idPrefix="my-lunch"
+        isDisabled={(ymd) => !bookedByYmd[ymd]}
+        isActive={(ymd) => Boolean(bookedByYmd[ymd]) && selectedYmd === ymd}
+      />
 
       {!hasAnyBooking && (
         <div className="empty-state" style={{ paddingTop: "0.5rem" }}>

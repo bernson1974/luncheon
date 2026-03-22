@@ -58,10 +58,15 @@ export default function AppShell({ children }: { children: ReactNode }) {
   }
 
   const path = pathname ?? "";
+  /** Map, My Bites, Join: undertabbar (dagar / filter) direkt under huvudtabbar */
+  const flushSubtabsUnderMain =
+    path === "/" || path === "/my-lunch" || path === "/browse";
 
   return (
     <>
-      <header className="app-shell-header">
+      <header
+        className={`app-shell-header${flushSubtabsUnderMain ? " app-shell-header--flush-subtabs" : ""}`}
+      >
         <nav className="app-tab-bar" aria-label="Main navigation">
           {MAIN_TABS.map((tab) => {
             const active = tab.isActive(path);

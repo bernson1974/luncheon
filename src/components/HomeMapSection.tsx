@@ -2,11 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import MapWrapper from "@/components/MapWrapper";
-import { getUserBookedDateYmds } from "@/lib/bookingState";
-import {
-  lunchDateShortTabLabel,
-  stockholmTodayYmd,
-} from "@/lib/lunchDateWindow";
+import DayPickerSubtabs from "@/components/DayPickerSubtabs";
 
 export type HomeMapDay = {
   ymd: string;
@@ -22,6 +18,12 @@ export type HomeRestaurantPinBase = {
 /** ymd → restaurantId → count of dates that day */
 export type CountsByYmd = Record<string, Record<string, number>>;
 
+function dayHasAnyBookings(ymd: string, countsByYmd: CountsByYmd): boolean {
+  const c = countsByYmd[ymd];
+  if (!c) return false;
+  return Object.values(c).some((n) => n > 0);
+}
+
 export default function HomeMapSection({
   days,
   countsByYmd,
@@ -32,18 +34,30 @@ export default function HomeMapSection({
   restaurants: HomeRestaurantPinBase[];
 }) {
   const [selectedYmd, setSelectedYmd] = useState(days[0]?.ymd ?? "");
-  const [userBookedYmds, setUserBookedYmds] = useState<Set<string> | null>(null);
+
+  const hasAnyBookingsInWindow = useMemo(
+    () => days.some((d) => dayHasAnyBookings(d.ymd, countsByYmd)),
+    [days, countsByYmd]
+  );
+
+  /** Tomma dagar är ej klickbara när minst en annan dag har minst en dejt (som My Bites). */
+  const isDayDisabled = (ymd: string) =>
+    hasAnyBookingsInWindow && !dayHasAnyBookings(ymd, countsByYmd);
 
   useEffect(() => {
-    let cancelled = false;
-    void (async () => {
-      const ymds = await getUserBookedDateYmds();
-      if (!cancelled) setUserBookedYmds(ymds);
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+    setSelectedYmd((prev) => {
+      const prevOk =
+        prev &&
+        days.some((d) => d.ymd === prev) &&
+        (!hasAnyBookingsInWindow || dayHasAnyBookings(prev, countsByYmd));
+      if (prevOk) return prev;
+      if (hasAnyBookingsInWindow) {
+        const first = days.find((d) => dayHasAnyBookings(d.ymd, countsByYmd));
+        return first?.ymd ?? days[0]?.ymd ?? "";
+      }
+      return days[0]?.ymd ?? "";
+    });
+  }, [days, countsByYmd, hasAnyBookingsInWindow]);
 
   const pins = useMemo(() => {
     const counts = countsByYmd[selectedYmd] ?? {};
@@ -56,53 +70,21 @@ export default function HomeMapSection({
     }));
   }, [selectedYmd, countsByYmd, restaurants]);
 
-  const todayYmd = stockholmTodayYmd();
-
   if (days.length === 0) {
     return null;
   }
 
   return (
     <>
-      <div
-        className="my-lunch-tablist home-map-tablist"
-        role="tablist"
-        aria-label="Choose day for map"
-      >
-        {days.map((d) => {
-          const isActive = selectedYmd === d.ymd;
-          const hasUserBooking =
-            userBookedYmds !== null && userBookedYmds.has(d.ymd);
-          const tabClass = [
-            "my-lunch-tab",
-            userBookedYmds !== null &&
-              (hasUserBooking
-                ? "home-map-tab--has-booking"
-                : "home-map-tab--no-user-booking"),
-            isActive ? "my-lunch-tab--active" : "",
-          ]
-            .filter(Boolean)
-            .join(" ");
-          return (
-            <button
-              key={d.ymd}
-              type="button"
-              role="tab"
-              aria-selected={isActive}
-              id={`home-map-tab-${d.ymd}`}
-              className={tabClass}
-              onClick={() => setSelectedYmd(d.ymd)}
-            >
-              <span style={{ display: "block" }}>
-                {lunchDateShortTabLabel(d.ymd)}
-              </span>
-              {d.ymd === todayYmd && (
-                <span className="my-lunch-tab-today">Today</span>
-              )}
-            </button>
-          );
-        })}
-      </div>
+      <DayPickerSubtabs
+        days={days}
+        selectedYmd={selectedYmd}
+        onSelect={setSelectedYmd}
+        ariaLabel="Choose day for map"
+        idPrefix="home-map"
+        isDisabled={isDayDisabled}
+        isActive={(ymd) => !isDayDisabled(ymd) && selectedYmd === ymd}
+      />
 
       <MapWrapper pins={pins} selectedYmd={selectedYmd} />
     </>

@@ -137,6 +137,7 @@ export function listDates(filters?: {
   restaurantId?: string;
   topic?: string;
   date?: string;
+  cuisine?: string;
 }): LunchDatePublic[] {
   let dates = store.dates.filter(
     (d) => isYmdInSelectableLunchWindow(d.date) && d.status !== "cancelled"
@@ -148,6 +149,12 @@ export function listDates(filters?: {
 
   if (filters?.restaurantId) {
     dates = dates.filter((d) => d.restaurantId === filters.restaurantId);
+  }
+  if (filters?.cuisine) {
+    dates = dates.filter((d) => {
+      const r = getRestaurantById(d.restaurantId);
+      return r?.cuisine === filters.cuisine;
+    });
   }
   if (filters?.topic) {
     const q = filters.topic.toLowerCase();

@@ -46,3 +46,15 @@ export function lunchDateShortTabLabel(ymd: string): string {
   const noon = fromZonedTime(`${ymd}T12:00:00`, LUNCH_TIMEZONE);
   return formatInTimeZone(noon, LUNCH_TIMEZONE, "EEE M/d", { locale: enUS });
 }
+
+/** Weekday abbreviation, e.g. "Mon" (English, 3 letters typical). */
+export function lunchDateWeekday3(ymd: string): string {
+  const noon = fromZonedTime(`${ymd}T12:00:00`, LUNCH_TIMEZONE);
+  return formatInTimeZone(noon, LUNCH_TIMEZONE, "EEE", { locale: enUS });
+}
+
+/** Date line under weekday, e.g. "Mar 19". */
+export function lunchDateMonthDayLine(ymd: string): string {
+  const noon = fromZonedTime(`${ymd}T12:00:00`, LUNCH_TIMEZONE);
+  return formatInTimeZone(noon, LUNCH_TIMEZONE, "MMM d", { locale: enUS });
+}

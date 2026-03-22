@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { getStoredAlias, setStoredAlias } from "@/lib/userAlias";
@@ -46,7 +46,7 @@ export default function SettingsPage() {
     return () => window.removeEventListener("focus", onFocus);
   }, [refreshBookingLock]);
 
-  function handleSubmit(e: React.FormEvent) {
+  function handleSubmit(e: FormEvent) {
     e.preventDefault();
     if (hasBookedLunchDate()) {
       setError("You can’t change your display name while you have an active lunch booking.");
@@ -70,10 +70,6 @@ export default function SettingsPage() {
 
   return (
     <div>
-      <Link href="/" className="back-link">
-        ← Back
-      </Link>
-
       <h1 className="page-title">Name</h1>
       <p className="page-subtitle">
         This is how others see you when you create or join a date. It’s stored only
