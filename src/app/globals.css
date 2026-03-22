@@ -258,6 +258,17 @@ a.danger-button:hover {
 
 /* ─── App shell: mobile-style tab bar (5 equal tabs, touch-friendly) ───────── */
 
+:root {
+  /* Tap row height; header spacer above tabs = 50% of this */
+  --app-tab-bar-min-height: 52px;
+}
+
+@media (min-width: 420px) {
+  :root {
+    --app-tab-bar-min-height: 56px;
+  }
+}
+
 /* Pull tab bar to horizontal edges of <main> (matches Tailwind px-4 = 1rem) */
 .app-shell-header {
   width: calc(100% + 2rem);
@@ -266,7 +277,10 @@ a.danger-button:hover {
   margin-right: -1rem;
   margin-bottom: 0.75rem;
   box-sizing: border-box;
-  padding-top: env(safe-area-inset-top, 0);
+  /* Safe area + half a “tab button” height of breathing room above the bar */
+  padding-top: calc(
+    env(safe-area-inset-top, 0px) + (var(--app-tab-bar-min-height) * 0.5)
+  );
 }
 
 .app-tab-bar {
@@ -285,7 +299,7 @@ a.danger-button:hover {
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 52px;
+  min-height: var(--app-tab-bar-min-height);
   padding: 0.5rem 0.15rem;
   font-size: clamp(0.62rem, 2.85vw, 0.8rem);
   font-weight: 700;
@@ -306,7 +320,6 @@ a.danger-button:hover {
 
 @media (min-width: 420px) {
   .app-tab-bar__tab {
-    min-height: 56px;
     font-size: 0.82rem;
     padding-left: 0.25rem;
     padding-right: 0.25rem;
