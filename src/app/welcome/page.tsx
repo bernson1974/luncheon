@@ -4,10 +4,27 @@ import { useEffect, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { getStoredAlias, setStoredAlias } from "@/lib/userAlias";
 
+const WELCOME_BG = "#6eb8aa";
+const DEFAULT_BG = "#f8fafc";
+
 export default function WelcomePage() {
   const router = useRouter();
   const [alias, setAlias] = useState("");
   const [error, setError] = useState("");
+
+  /* Grönt hela vägen till kanten på iPhone (notch, home indicator) */
+  useEffect(() => {
+    const html = document.documentElement;
+    const body = document.body;
+    const prevHtml = html.style.background;
+    const prevBody = body.style.background;
+    html.style.background = WELCOME_BG;
+    body.style.background = WELCOME_BG;
+    return () => {
+      html.style.background = prevHtml || "";
+      body.style.background = prevBody || DEFAULT_BG;
+    };
+  }, []);
 
   useEffect(() => {
     if (getStoredAlias()) {

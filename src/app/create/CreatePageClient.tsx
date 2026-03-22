@@ -9,6 +9,7 @@ import TimeQuarterSelect from "@/components/TimeQuarterSelect";
 import { restaurants } from "@/lib/restaurants";
 import type { LatLng } from "@/components/MeetingPointPicker";
 import { rememberCreatedDate } from "@/lib/creatorStorage";
+import { setUserTokenCookie } from "@/lib/userTokenCookie";
 
 const MeetingPointPicker = dynamic(
   () => import("@/components/MeetingPointPicker"),
@@ -168,6 +169,7 @@ export default function CreatePageClient() {
       const date = await res.json();
 
       rememberCreatedDate(date.id, userToken);
+      setUserTokenCookie(userToken);
 
       router.push(`/date/${date.id}`);
     } catch {

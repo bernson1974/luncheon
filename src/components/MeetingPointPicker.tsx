@@ -113,17 +113,15 @@ export default function MeetingPointPicker({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Keep marker in sync if center changes (restaurant changed)
+  // Keep map and marker in sync when center/value change (e.g. switching days in My Bites)
   useEffect(() => {
     if (!mapRef.current || !markerRef.current) return;
     const map = mapRef.current as import("leaflet").Map;
     const marker = markerRef.current as import("leaflet").Marker;
-    map.setView([center.lat, center.lng], 17);
-    if (!value) {
-      marker.setLatLng([center.lat, center.lng]);
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [center.lat, center.lng]);
+    const pos = value ?? center;
+    map.setView([pos.lat, pos.lng], 17);
+    marker.setLatLng([pos.lat, pos.lng]);
+  }, [center.lat, center.lng, value?.lat, value?.lng]);
 
   useEffect(() => {
     if (!readonly || leafletReadyTick === 0) return;

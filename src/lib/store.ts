@@ -132,6 +132,34 @@ export function getCommittedDateYmdsForUser(userToken: string): string[] {
   return [...set].sort();
 }
 
+export type UserDateRole = "creator" | "participant";
+
+/** Dates where the user is creator or participant. For My Bites, works across sessions. */
+export function listDatesForUser(userToken: string): (LunchDatePublic & { role: UserDateRole })[] {
+  const result: (LunchDatePublic & { role: UserDateRole })[] = [];
+  for (const d of store.dates) {
+    if (d.status === "cancelled" || !isYmdInSelectableLunchWindow(d.date)) continue;
+    if (d.creatorToken === userToken) {
+      const pub = getDate(d.id);
+      if (pub) result.push({ ...pub, role: "creator" });
+    }
+  }
+  for (const p of store.participants) {
+    if (p.userToken !== userToken) continue;
+    const lunch = store.dates.find((ld) => ld.id === p.lunchDateId);
+    if (lunch && lunch.status !== "cancelled" && isYmdInSelectableLunchWindow(lunch.date)) {
+      const pub = getDate(lunch.id);
+      if (pub && !result.some((r) => r.id === pub.id)) {
+        result.push({ ...pub, role: "participant" });
+      }
+    }
+  }
+  return result.sort((a, b) => {
+    const c = a.date.localeCompare(b.date);
+    return c !== 0 ? c : a.timeStart.localeCompare(b.timeStart);
+  });
+}
+
 export function listDates(filters?: {
   time?: string;
   restaurantId?: string;

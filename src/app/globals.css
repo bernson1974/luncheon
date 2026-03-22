@@ -318,16 +318,28 @@ a.danger-button:hover {
   color: #94a3b8;
 }
 
-/* ─── App shell: mobile-style tab bar (5 equal tabs, touch-friendly) ───────── */
+/* ─── App shell: responsive tab bar (5 equal tabs) ─────────────────────────── */
 
 :root {
-  /* Tap row height (+60% vs previous 52px); header spacer above = 50% of this */
-  --app-tab-bar-min-height: 83px;
+  /* Mobile-first: kompakt bar så innehåll syns utan scroll (~56px ≈ Apple 44pt min) */
+  --app-tab-bar-min-height: 52px;
 }
 
 @media (min-width: 420px) {
   :root {
-    --app-tab-bar-min-height: 90px;
+    --app-tab-bar-min-height: 62px;
+  }
+}
+
+@media (min-width: 640px) {
+  :root {
+    --app-tab-bar-min-height: 72px;
+  }
+}
+
+@media (min-width: 1024px) {
+  :root {
+    --app-tab-bar-min-height: 83px;
   }
 }
 
@@ -1124,7 +1136,10 @@ a.danger-button:hover {
 .welcome-landing {
   /* Full-bleed mellangrön mot <main> px-4 py-6; fyll hela höjden så inget grått syns under */
   margin: -1.5rem -1rem;
-  padding: 3rem 1rem max(2.25rem, calc(1.5rem + env(safe-area-inset-bottom, 0px)));
+  padding:
+    calc(3rem + env(safe-area-inset-top, 0px))
+    1rem
+    max(2.25rem, calc(1.5rem + env(safe-area-inset-bottom, 0px)));
   /* +3rem kompenserar mains py-6 så ytan täcker ända ner */
   min-height: calc(100dvh + 3rem);
   width: calc(100% + 2rem);

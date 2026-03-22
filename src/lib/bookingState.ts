@@ -38,11 +38,12 @@ export async function syncLocalBookingStateWithServer(): Promise<boolean> {
       if (key?.startsWith(CREATOR_KEY_PREFIX)) creatorKeys.push(key);
     }
 
+    /* Don't remove on 404 – serverless may hit different instance with empty store */
     for (const key of creatorKeys) {
       const id = key.slice(CREATOR_KEY_PREFIX.length);
       const res = await fetch(`/api/dates/${id}`);
       if (!res.ok) {
-        localStorage.removeItem(key);
+        if (res.status !== 404) localStorage.removeItem(key);
         continue;
       }
       const d = (await res.json()) as LunchDatePublic;
@@ -56,9 +57,7 @@ export async function syncLocalBookingStateWithServer(): Promise<boolean> {
     const legacyCreated = localStorage.getItem("myCreatedDateId");
     if (legacyCreated) {
       const res = await fetch(`/api/dates/${legacyCreated}`);
-      if (!res.ok) {
-        localStorage.removeItem("myCreatedDateId");
-      } else {
+      if (res.ok) {
         const d = (await res.json()) as LunchDatePublic;
         if (d.status === "cancelled") {
           localStorage.removeItem("myCreatedDateId");
@@ -78,7 +77,7 @@ export async function syncLocalBookingStateWithServer(): Promise<boolean> {
       const id = key.slice("joined:".length);
       const res = await fetch(`/api/dates/${id}`);
       if (!res.ok) {
-        localStorage.removeItem(key);
+        if (res.status !== 404) localStorage.removeItem(key);
         continue;
       }
       const d = (await res.json()) as LunchDatePublic;

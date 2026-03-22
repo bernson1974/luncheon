@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import { listDates } from "@/lib/store";
 import BrowsePageClient from "./BrowsePageClient";
 
 function BrowseFallback() {
@@ -9,10 +10,12 @@ function BrowseFallback() {
   );
 }
 
+/** Same data source as Map – server-rendered, avoids API route hitting wrong instance */
 export default function BrowsePage() {
+  const allDates = listDates();
   return (
     <Suspense fallback={<BrowseFallback />}>
-      <BrowsePageClient />
+      <BrowsePageClient initialDates={allDates} />
     </Suspense>
   );
 }

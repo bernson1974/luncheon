@@ -36,11 +36,28 @@ const CUISINE_KEYS = [...new Set(restaurants.map((r) => r.cuisine))].sort((a, b)
   cuisineLabel(a).localeCompare(cuisineLabel(b), "en")
 );
 
-export default function BrowsePageClient() {
+function filterDates(
+  dates: LunchDatePublic[],
+  filters: { date?: string; time?: string; restaurantId?: string; cuisine?: string; topic?: string }
+): LunchDatePublic[] {
+  let out = [...dates];
+  if (filters.date) out = out.filter((d) => d.date === filters.date);
+  if (filters.restaurantId) out = out.filter((d) => d.restaurantId === filters.restaurantId);
+  if (filters.cuisine) out = out.filter((d) => d.restaurant.cuisine === filters.cuisine);
+  if (filters.topic?.trim()) {
+    const q = filters.topic.toLowerCase();
+    out = out.filter((d) => d.topic.toLowerCase().includes(q));
+  }
+  if (filters.time) out = out.filter((d) => d.timeStart >= filters.time!);
+  return out.sort((a, b) => {
+    const c = a.date.localeCompare(b.date);
+    return c !== 0 ? c : a.timeStart.localeCompare(b.timeStart);
+  });
+}
+
+export default function BrowsePageClient({ initialDates }: { initialDates: LunchDatePublic[] }) {
   const searchParams = useSearchParams();
   const baseId = useId();
-  const [dates, setDates] = useState<LunchDatePublic[]>([]);
-  const [loading, setLoading] = useState(true);
   const [windowDates, setWindowDates] = useState<WindowDate[]>([]);
   const [activeFilterTab, setActiveFilterTab] = useState<BrowseFilterTabId>("topic");
 
@@ -67,26 +84,17 @@ export default function BrowsePageClient() {
     void loadWindow();
   }, []);
 
-  useEffect(() => {
-    async function load() {
-      setLoading(true);
-      try {
-        const params = new URLSearchParams();
-        if (filterTime) params.set("time", filterTime);
-        if (filterDate) params.set("date", filterDate);
-        if (filterRestaurant) params.set("restaurantId", filterRestaurant);
-        if (filterCuisine) params.set("cuisine", filterCuisine);
-        if (filterTopic) params.set("topic", filterTopic);
-
-        const res = await fetch(`/api/dates?${params}`);
-        const data = await res.json();
-        setDates(data);
-      } finally {
-        setLoading(false);
-      }
-    }
-    load();
-  }, [filterTime, filterDate, filterRestaurant, filterCuisine, filterTopic]);
+  const dates = useMemo(
+    () =>
+      filterDates(initialDates, {
+        date: filterDate || undefined,
+        time: filterTime || undefined,
+        restaurantId: filterRestaurant || undefined,
+        cuisine: filterCuisine || undefined,
+        topic: filterTopic || undefined,
+      }),
+    [initialDates, filterDate, filterTime, filterRestaurant, filterCuisine, filterTopic]
+  );
 
   /** Prefill Create with current filters (restaurant + day). */
   const createPrefillHref = useMemo(() => {
@@ -318,11 +326,7 @@ export default function BrowsePageClient() {
       </section>
 
       <section className="browse-dates-list" aria-label="Lunch dates">
-        {loading ? (
-          <p className="secondary-text" style={{ textAlign: "center", paddingTop: "1rem" }}>
-            Loading…
-          </p>
-        ) : dates.length === 0 ? (
+        {dates.length === 0 ? (
           <div className="empty-state">
             <p>No open lunch dates match your filters.</p>
             <Link
