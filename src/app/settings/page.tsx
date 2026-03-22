@@ -74,7 +74,7 @@ export default function SettingsPage() {
         ← Back
       </Link>
 
-      <h1 className="page-title">Settings</h1>
+      <h1 className="page-title">Name</h1>
       <p className="page-subtitle">
         This is how others see you when you create or join a date. It’s stored only
         in this browser — no account.

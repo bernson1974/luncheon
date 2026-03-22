@@ -20,7 +20,7 @@ const MAIN_TABS: {
     label: "Join",
     isActive: (p) => p.startsWith("/browse") || p.startsWith("/date/"),
   },
-  { href: "/settings", label: "Settings", isActive: (p) => p === "/settings" },
+  { href: "/settings", label: "Name", isActive: (p) => p === "/settings" },
 ];
 
 export default function AppShell({ children }: { children: ReactNode }) {
@@ -72,7 +72,8 @@ export default function AppShell({ children }: { children: ReactNode }) {
                 className={`app-tab-bar__tab${active ? " app-tab-bar__tab--active" : ""}`}
                 aria-current={active ? "page" : undefined}
               >
-                {tab.label}
+                <span className="app-tab-bar__tab__icon-slot" aria-hidden />
+                <span className="app-tab-bar__tab__label">{tab.label}</span>
               </Link>
             );
           })}
