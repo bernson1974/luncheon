@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import type { Map as LeafletMap, LayerGroup as LeafletLayerGroup } from "leaflet";
-import { lunchDateLabelSv } from "@/lib/lunchDateWindow";
+import { lunchDateLabel } from "@/lib/lunchDateWindow";
 
 type LeafletNs = typeof import("leaflet");
 
@@ -19,7 +19,7 @@ export interface RestaurantPin {
 
 interface Props {
   pins?: RestaurantPin[];
-  /** Vald dag – används i popup och länk till Hitta. */
+  /** Selected day for popup and Find link. */
   selectedYmd: string;
 }
 
@@ -81,7 +81,7 @@ export default function LindholmenMap({ pins, selectedYmd }: Props) {
   const [error, setError] = useState(false);
 
   const activePins = pins ?? DEFAULT_PINS;
-  const dayLabel = selectedYmd ? lunchDateLabelSv(selectedYmd) : "";
+  const dayLabel = selectedYmd ? lunchDateLabel(selectedYmd) : "";
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
@@ -143,8 +143,8 @@ export default function LindholmenMap({ pins, selectedYmd }: Props) {
       const icon = makeBadgeIcon(L, pin.dateCount);
       const countText =
         pin.dateCount > 0
-          ? `${pin.dateCount} lunchdejt${pin.dateCount > 1 ? "er" : ""} · ${dayLabel}`
-          : `Inga dejter · ${dayLabel}`;
+          ? `${pin.dateCount} lunch date${pin.dateCount > 1 ? "s" : ""} · ${dayLabel}`
+          : `No dates · ${dayLabel}`;
       const linkHref = `/browse?restaurantId=${encodeURIComponent(pin.id)}&date=${ymdQ}`;
       const popupHtml = `
             <div style="font-family: system-ui, sans-serif; font-size: 13px; line-height: 1.5;">
@@ -153,7 +153,7 @@ export default function LindholmenMap({ pins, selectedYmd }: Props) {
               <a
                 href="${linkHref}"
                 style="color: #0f766e; font-weight: 600; text-decoration: none; margin-top: 4px; display: inline-block;"
-              >Se dejtar →</a>
+              >View dates →</a>
             </div>
           `;
       L.marker([pin.lat, pin.lng], { icon })
@@ -176,7 +176,7 @@ export default function LindholmenMap({ pins, selectedYmd }: Props) {
           fontSize: "0.85rem",
         }}
       >
-        Lindholmen, Göteborg
+        Lindholmen, Gothenburg
       </div>
     );
   }

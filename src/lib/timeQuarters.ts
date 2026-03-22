@@ -1,5 +1,5 @@
 /**
- * Snäpper "HH:mm" till närmaste kvart (00, 15, 30, 45), inom 00:00–23:45.
+ * Snap "HH:mm" to nearest quarter (00, 15, 30, 45), within 00:00–23:45.
  */
 export function snapTimeToQuarterHour(time: string): string {
   const trimmed = time.trim();

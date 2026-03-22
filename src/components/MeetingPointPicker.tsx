@@ -12,7 +12,7 @@ interface Props {
   value: LatLng | null;
   onChange: (pos: LatLng) => void;
   readonly?: boolean;
-  /** Visas i rutan ovan markören (readonly). */
+  /** Shown in popup above marker (readonly). */
   description?: string;
 }
 
@@ -79,7 +79,7 @@ export default function MeetingPointPicker({
       }).addTo(map);
 
       if (!readonly) {
-        marker.bindPopup("Dra mig dit ni ska mötas.").openPopup();
+        marker.bindPopup("Drag me to where you’ll meet.").openPopup();
 
         marker.on("dragend", () => {
           const pos = marker.getLatLng();
@@ -91,7 +91,7 @@ export default function MeetingPointPicker({
           onChangeRef.current({ lat: e.latlng.lat, lng: e.latlng.lng });
         });
       } else {
-        /* Popup-text sätts i useEffect när readonly + description är klart */
+        /* Popup set in useEffect when readonly + description ready */
       }
 
       if (cancelled) return;
@@ -130,7 +130,7 @@ export default function MeetingPointPicker({
     const marker = markerRef.current as import("leaflet").Marker | null;
     if (!marker) return;
 
-    const text = (description ?? "").trim() || "Mötesplats";
+    const text = (description ?? "").trim() || "Meeting point";
     const el = meetingDescriptionPopupEl(text);
     marker.unbindPopup();
     marker.bindPopup(el, {

@@ -13,7 +13,7 @@
     "build": "next build",
     "start": "next start",
     "reinstall": "rm -rf node_modules .next && npm install",
-    "lint": "node -e \"console.log('ESLint är borttaget från npm install (Vercel). Kör editor-lint eller lägg till eslint lokalt om du vill.')\"",
+    "lint": "node -e \"console.log('ESLint removed from npm install (Vercel). Use editor lint or add eslint locally if needed.')\"",
     "check": "npm run build"
   },
   "dependencies": {

@@ -7,11 +7,12 @@ import type { LunchDatePublic } from "@/lib/models";
 import { syncLocalBookingStateWithServer } from "@/lib/bookingState";
 import { forgetCreatedDate, isCreatorOfDateInStorage, listCreatorDateIdsFromStorage } from "@/lib/creatorStorage";
 import {
-  lunchDateLabelSv,
-  lunchDateShortTabLabelSv,
+  lunchDateLabel,
+  lunchDateShortTabLabel,
   selectableLunchDateYmds,
   stockholmTodayYmd,
 } from "@/lib/lunchDateWindow";
+import { cuisineLabel } from "@/lib/cuisineLabels";
 
 const MeetingPointPicker = dynamic(
   () => import("@/components/MeetingPointPicker"),
@@ -22,16 +23,6 @@ const MeetingPointPicker = dynamic(
     ),
   }
 );
-
-const CUISINE_LABELS: Record<string, string> = {
-  indian: "Indiskt",
-  thai: "Thaimat",
-  swedish: "Svensk husmanskost",
-  japanese: "Japanskt / Sushi",
-  pizza: "Pizza",
-  burgers: "Burgare",
-  asian: "Asiatiskt",
-};
 
 type WindowDate = { ymd: string; label: string };
 
@@ -73,11 +64,11 @@ function MyLunchDayPanel({
   const maxP = date.maxParticipants;
 
   function statusDetail(): string {
-    if (date.status === "cancelled") return "Avbokad";
+    if (date.status === "cancelled") return "Cancelled";
     if (bookedCount === 1) {
-      return `${bookedCount}/${maxP} plats är bokad.`;
+      return `${bookedCount}/${maxP} spot booked.`;
     }
-    return `${bookedCount}/${maxP} platser är bokade.`;
+    return `${bookedCount}/${maxP} spots booked.`;
   }
 
   const isCancelled = date.status === "cancelled";
@@ -93,7 +84,7 @@ function MyLunchDayPanel({
 
   async function handleCancelDejt() {
     if (acting || !userToken) return;
-    if (!confirm("Vill du avboka dejten? Den försvinner från listan.")) return;
+    if (!confirm("Cancel this date? It will be removed from the list.")) return;
     setActing(true);
     setActionErr("");
     try {
@@ -106,7 +97,7 @@ function MyLunchDayPanel({
       forgetCreatedDate(date.id);
       onBookingChanged?.();
     } catch {
-      setActionErr("Kunde inte avboka. Försök igen.");
+      setActionErr("Couldn’t cancel. Try again.");
     } finally {
       setActing(false);
     }
@@ -114,7 +105,7 @@ function MyLunchDayPanel({
 
   async function handleLeaveDejt() {
     if (acting || !userToken) return;
-    if (!confirm("Vill du avboka lunchen?")) return;
+    if (!confirm("Leave this lunch?")) return;
     setActing(true);
     setActionErr("");
     try {
@@ -127,7 +118,7 @@ function MyLunchDayPanel({
       localStorage.removeItem(`joined:${date.id}`);
       onBookingChanged?.();
     } catch {
-      setActionErr("Kunde inte avboka lunchen. Försök igen.");
+      setActionErr("Couldn’t leave. Try again.");
     } finally {
       setActing(false);
     }
@@ -135,7 +126,7 @@ function MyLunchDayPanel({
 
   const meetingHeaderRow = (
     <div className="my-lunch-meeting-header">
-      <p className="field-label">Mötesplats</p>
+      <p className="field-label">Meeting point</p>
       {showBookingAction && (
         <button
           type="button"
@@ -144,10 +135,10 @@ function MyLunchDayPanel({
           onClick={isCreator ? handleCancelDejt : handleLeaveDejt}
         >
           {acting
-            ? "Vänta…"
+            ? "Please wait…"
             : isCreator
-              ? "Avboka dejten"
-              : "Avboka lunchen"}
+              ? "Cancel date"
+              : "Cancel lunch"}
         </button>
       )}
     </div>
@@ -157,28 +148,28 @@ function MyLunchDayPanel({
     <div
       role="tabpanel"
       aria-labelledby={ariaLabelledBy}
-      aria-label={ariaLabelledBy ? undefined : `Dejt ${lunchDateLabelSv(date.date)}`}
+      aria-label={ariaLabelledBy ? undefined : `Date ${lunchDateLabel(date.date)}`}
     >
       <div className="card my-lunch-main-card">
         <div className="my-lunch-details-section">
           <div className="detail-row">
-            <span className="detail-label">Ställe</span>
+            <span className="detail-label">Place</span>
             <span>
               {date.restaurant.name}
               <span className="secondary-text" style={{ marginLeft: "0.4rem" }}>
-                ({CUISINE_LABELS[date.restaurant.cuisine] ?? date.restaurant.cuisine})
+                ({cuisineLabel(date.restaurant.cuisine)})
               </span>
             </span>
           </div>
           <div className="detail-row">
-            <span className="detail-label">Tid</span>
+            <span className="detail-label">Time</span>
             <span>
               {date.timeStart}
               {date.timeEnd ? `–${date.timeEnd}` : ""}
             </span>
           </div>
           <div className="detail-row">
-            <span className="detail-label">Ämne</span>
+            <span className="detail-label">Topic</span>
             <span className="topic-tag">{date.topic}</span>
           </div>
           <div className="detail-row">
@@ -186,7 +177,7 @@ function MyLunchDayPanel({
             <span>{statusDetail()}</span>
           </div>
           <div className="detail-row">
-            <span className="detail-label">Skapare</span>
+            <span className="detail-label">Host</span>
             <span>{date.creatorAlias}</span>
           </div>
         </div>
@@ -221,7 +212,7 @@ function MyLunchDayPanel({
             <p style={{ color: "#dc2626", fontSize: "0.82rem", marginBottom: "0.5rem" }}>{actionErr}</p>
           )}
           <p style={{ margin: 0, fontSize: "0.85rem", color: "#92400e" }}>
-            Ingen mötesplats är angiven för den här dejten.
+            No meeting point has been set for this date.
           </p>
         </div>
       )}
@@ -249,7 +240,7 @@ export default function MyLunchPage() {
     if (windowList.length === 0) {
       windowList = selectableLunchDateYmds().map((ymd) => ({
         ymd,
-        label: lunchDateLabelSv(ymd),
+        label: lunchDateLabel(ymd),
       }));
     }
     setWindowDates(windowList);
@@ -324,10 +315,10 @@ export default function MyLunchPage() {
     return (
       <div>
         <Link href="/" className="back-link">
-          ← Tillbaka
+          ← Back
         </Link>
         <p className="secondary-text" style={{ textAlign: "center", paddingTop: "2rem" }}>
-          Laddar…
+          Loading…
         </p>
       </div>
     );
@@ -336,13 +327,13 @@ export default function MyLunchPage() {
   return (
     <div>
       <Link href="/" className="back-link">
-        ← Tillbaka
+        ← Back
       </Link>
 
       <div
         className="my-lunch-tablist"
         role="tablist"
-        aria-label="Lunch per dag"
+        aria-label="Lunch by day"
       >
         {windowDates.map((w) => {
           const hasBooking = Boolean(bookedByYmd[w.ymd]);
@@ -360,9 +351,9 @@ export default function MyLunchPage() {
                 if (hasBooking) setSelectedYmd(w.ymd);
               }}
             >
-              <span style={{ display: "block" }}>{lunchDateShortTabLabelSv(w.ymd)}</span>
+              <span style={{ display: "block" }}>{lunchDateShortTabLabel(w.ymd)}</span>
               {w.ymd === todayYmd && (
-                <span className="my-lunch-tab-today">Idag</span>
+                <span className="my-lunch-tab-today">Today</span>
               )}
             </button>
           );
@@ -371,21 +362,21 @@ export default function MyLunchPage() {
 
       {!hasAnyBooking && (
         <div className="empty-state" style={{ paddingTop: "0.5rem" }}>
-          <p>Du har ingen planerad lunchdejt i fönstret (idag + fem dagar).</p>
+          <p>You don’t have a planned lunch date in this window (today + five days).</p>
           <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem", marginTop: "1rem" }}>
             <Link
               href="/create"
               className="primary-button"
               style={{ maxWidth: "260px", marginInline: "auto" }}
             >
-              Lägg upp en dejt
+              Create a date
             </Link>
             <Link
               href="/browse"
               className="secondary-button"
               style={{ maxWidth: "260px", marginInline: "auto" }}
             >
-              Hitta en dejt att joina
+              Find a date to join
             </Link>
           </div>
         </div>
@@ -401,7 +392,7 @@ export default function MyLunchPage() {
 
       {hasAnyBooking && !activeDate && (
         <p className="secondary-text" style={{ textAlign: "center", paddingTop: "1rem" }}>
-          Välj en dag med dejt i tabbarna ovan.
+          Pick a day with a booking in the tabs above.
         </p>
       )}
     </div>

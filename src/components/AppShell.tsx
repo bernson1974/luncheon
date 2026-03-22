@@ -7,6 +7,22 @@ import { getStoredAlias } from "@/lib/userAlias";
 
 const PUBLIC_PATHS = new Set(["/welcome"]);
 
+const MAIN_TABS: {
+  href: string;
+  label: string;
+  isActive: (path: string) => boolean;
+}[] = [
+  { href: "/", label: "Map", isActive: (p) => p === "/" },
+  { href: "/my-lunch", label: "My Bites", isActive: (p) => p === "/my-lunch" },
+  { href: "/create", label: "Invite", isActive: (p) => p === "/create" },
+  {
+    href: "/browse",
+    label: "Join",
+    isActive: (p) => p.startsWith("/browse") || p.startsWith("/date/"),
+  },
+  { href: "/settings", label: "Settings", isActive: (p) => p === "/settings" },
+];
+
 export default function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
@@ -28,7 +44,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
   if (!ready) {
     return (
       <div className="app-shell-loading" style={{ padding: "2rem", textAlign: "center", color: "#64748b" }}>
-        Laddar…
+        Loading…
       </div>
     );
   }
@@ -45,58 +61,22 @@ export default function AppShell({ children }: { children: ReactNode }) {
 
   return (
     <>
-      <header
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          gap: "0.75rem",
-          flexWrap: "wrap",
-          marginBottom: "0.5rem",
-          minHeight: "2.25rem"
-        }}
-      >
-        <nav className="app-top-nav" aria-label="Huvudnavigering">
-          <Link
-            href="/"
-            className="app-nav-pill"
-            aria-current={path === "/" ? "page" : undefined}
-          >
-            Karta
-          </Link>
-          <Link
-            href="/my-lunch"
-            className="app-nav-pill"
-            aria-current={path === "/my-lunch" ? "page" : undefined}
-          >
-            Luncher
-          </Link>
-          <Link
-            href="/create"
-            className="app-nav-pill"
-            aria-current={path === "/create" ? "page" : undefined}
-          >
-            Skapa
-          </Link>
-          <Link
-            href="/browse"
-            className="app-nav-pill"
-            aria-current={path.startsWith("/browse") ? "page" : undefined}
-          >
-            Hitta
-          </Link>
+      <header className="app-shell-header">
+        <nav className="app-tab-bar" aria-label="Main navigation">
+          {MAIN_TABS.map((tab) => {
+            const active = tab.isActive(path);
+            return (
+              <Link
+                key={tab.href}
+                href={tab.href}
+                className={`app-tab-bar__tab${active ? " app-tab-bar__tab--active" : ""}`}
+                aria-current={active ? "page" : undefined}
+              >
+                {tab.label}
+              </Link>
+            );
+          })}
         </nav>
-        <Link
-          href="/settings"
-          className="settings-icon-link"
-          aria-label="Inställningar"
-          title="Inställningar"
-        >
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-            <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" />
-            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1Z" />
-          </svg>
-        </Link>
       </header>
       {children}
     </>

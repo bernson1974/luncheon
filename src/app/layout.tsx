@@ -3,13 +3,13 @@ import type { ReactNode } from "react";
 import AppShell from "@/components/AppShell";
 
 export const metadata = {
-  title: "Lindholmen Lunch",
-  description: "Here-and-now lunch matching on Lindholmen"
+  title: "Luncheon · Lindholmen",
+  description: "Find lunch company on Lindholmen, Gothenburg"
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="sv">
+    <html lang="en">
       <body className="min-h-screen bg-slate-50 text-slate-900">
         <main
           className="flex min-h-screen w-full flex-col px-4 py-6"

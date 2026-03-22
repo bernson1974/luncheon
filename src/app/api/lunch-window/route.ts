@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
-import { lunchDateLabelSv, selectableLunchDateYmds } from "@/lib/lunchDateWindow";
+import { lunchDateLabel, selectableLunchDateYmds } from "@/lib/lunchDateWindow";
 
-/** Datum som får väljas vid skapande + etiketter (sv-SE, Stockholm). */
+/** Selectable create dates + labels (Europe/Stockholm, English locale). */
 export async function GET() {
   const ymds = selectableLunchDateYmds();
   const dates = ymds.map((ymd) => ({
     ymd,
-    label: lunchDateLabelSv(ymd),
+    label: lunchDateLabel(ymd),
   }));
   return NextResponse.json({ dates });
 }

@@ -31,7 +31,7 @@ export type LunchDateStatus = "open" | "full" | "cancelled";
 export interface MeetingPoint {
   latitude: number;
   longitude: number;
-  description?: string; // e.g. "Vid den röda bänken utanför ingången"
+  description?: string; // e.g. "Red bench outside the entrance"
 }
 
 export interface LunchDate {

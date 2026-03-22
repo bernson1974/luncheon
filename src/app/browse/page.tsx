@@ -6,21 +6,8 @@ import Link from "next/link";
 import type { LunchDatePublic } from "@/lib/models";
 import { restaurants } from "@/lib/restaurants";
 import TimeQuarterSelect from "@/components/TimeQuarterSelect";
-import { lunchDateLabelSv } from "@/lib/lunchDateWindow";
-
-const CUISINE_LABELS: Record<string, string> = {
-  indian: "Indiskt",
-  thai: "Thaimat",
-  swedish: "Svensk husmanskost",
-  japanese: "Japanskt / Sushi",
-  pizza: "Pizza",
-  burgers: "Burgare",
-  asian: "Asiatiskt",
-};
-
-function cuisineLabel(cuisine: string): string {
-  return CUISINE_LABELS[cuisine] ?? cuisine;
-}
+import { cuisineLabel } from "@/lib/cuisineLabels";
+import { lunchDateLabel } from "@/lib/lunchDateWindow";
 
 function badgeClass(status: string): string {
   if (status === "open") return "badge badge-open";
@@ -29,9 +16,9 @@ function badgeClass(status: string): string {
 }
 
 function badgeLabel(status: string): string {
-  if (status === "open") return "Öppen";
+  if (status === "open") return "Open";
   if (status === "full") return "Full";
-  return "Avbokad";
+  return "Cancelled";
 }
 
 type WindowDate = { ymd: string; label: string };
@@ -83,7 +70,7 @@ export default function BrowsePage() {
     load();
   }, [filterTime, filterDate, filterRestaurant, filterTopic]);
 
-  /** Förifyller Skapa med valt filter (restaurang + dag). */
+  /** Prefill Create with current filters (restaurant + day). */
   const createPrefillHref = useMemo(() => {
     const p = new URLSearchParams();
     if (filterRestaurant) p.set("restaurantId", filterRestaurant);
@@ -95,12 +82,12 @@ export default function BrowsePage() {
   return (
     <div>
       <Link href="/" className="back-link">
-        ← Tillbaka
+        ← Back
       </Link>
 
-      <h1 className="page-title">Lunchdejtar</h1>
+      <h1 className="page-title">Lunch dates</h1>
       <p className="page-subtitle">
-        Lindholmen · idag och fem dagar framåt (Stockholmstid)
+        Lindholmen · today and five days ahead (Stockholm time)
       </p>
 
       <div className="filter-row">
@@ -108,9 +95,9 @@ export default function BrowsePage() {
           className="filter-select"
           value={filterDate}
           onChange={(e) => setFilterDate(e.target.value)}
-          aria-label="Filtrera på dag"
+          aria-label="Filter by day"
         >
-          <option value="">Alla dagar</option>
+          <option value="">All days</option>
           {windowDates.map((d) => (
             <option key={d.ymd} value={d.ymd}>
               {d.label}
@@ -122,16 +109,16 @@ export default function BrowsePage() {
           value={filterTime}
           onChange={setFilterTime}
           allowEmpty
-          emptyLabel="Alla tider"
+          emptyLabel="All times"
           selectClassName="filter-select"
-          groupAriaLabel="Visa dejtar från tid"
+          groupAriaLabel="Filter dates from time"
         />
         <select
           className="filter-select"
           value={filterRestaurant}
           onChange={(e) => setFilterRestaurant(e.target.value)}
         >
-          <option value="">Alla restauranger</option>
+          <option value="">All restaurants</option>
           {restaurants.map((r) => (
             <option key={r.id} value={r.id}>
               {r.name}
@@ -141,7 +128,7 @@ export default function BrowsePage() {
         <input
           className="filter-input"
           type="text"
-          placeholder="Sök ämne…"
+          placeholder="Search topic…"
           value={filterTopic}
           onChange={(e) => setFilterTopic(e.target.value)}
         />
@@ -149,17 +136,17 @@ export default function BrowsePage() {
 
       {loading ? (
         <p className="secondary-text" style={{ textAlign: "center", paddingTop: "2rem" }}>
-          Laddar…
+          Loading…
         </p>
       ) : dates.length === 0 ? (
         <div className="empty-state">
-          <p>Inga öppna lunchdejtar matchar din sökning.</p>
+          <p>No open lunch dates match your filters.</p>
           <Link
             href={createPrefillHref}
             className="primary-button"
             style={{ maxWidth: "260px", marginInline: "auto", marginTop: "1rem" }}
           >
-            Lägg upp den första
+            Create the first one
           </Link>
         </div>
       ) : (
@@ -176,20 +163,20 @@ export default function BrowsePage() {
                 <span className={badgeClass(date.status)}>{badgeLabel(date.status)}</span>
               </div>
               <div className="date-card-footer">
-                <span>{lunchDateLabelSv(date.date)}</span>
+                <span>{lunchDateLabel(date.date)}</span>
                 <span>
                   {date.timeStart}
                   {date.timeEnd ? `–${date.timeEnd}` : ""}
                 </span>
                 <span>
-                  Skapare: <strong>{date.creatorAlias}</strong>
+                  Host: <strong>{date.creatorAlias}</strong>
                 </span>
                 <span>
                   {date.status === "open"
-                    ? `${date.spotsLeft} plats${date.spotsLeft !== 1 ? "er" : ""} kvar`
+                    ? `${date.spotsLeft} spot${date.spotsLeft !== 1 ? "s" : ""} left`
                     : date.status === "full"
-                    ? "Fullbokad"
-                    : "Avbokad"}
+                    ? "Fully booked"
+                    : "Cancelled"}
                 </span>
               </div>
             </Link>

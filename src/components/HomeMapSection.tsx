@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import MapWrapper from "@/components/MapWrapper";
 import { getUserBookedDateYmds } from "@/lib/bookingState";
 import {
-  lunchDateShortTabLabelSv,
+  lunchDateShortTabLabel,
   stockholmTodayYmd,
 } from "@/lib/lunchDateWindow";
 
@@ -19,7 +19,7 @@ export type HomeRestaurantPinBase = {
   longitude: number;
 };
 
-/** ymd → restaurantId → antal dejter den dagen */
+/** ymd → restaurantId → count of dates that day */
 export type CountsByYmd = Record<string, Record<string, number>>;
 
 export default function HomeMapSection({
@@ -67,7 +67,7 @@ export default function HomeMapSection({
       <div
         className="my-lunch-tablist home-map-tablist"
         role="tablist"
-        aria-label="Välj dag för kartan"
+        aria-label="Choose day for map"
       >
         {days.map((d) => {
           const isActive = selectedYmd === d.ymd;
@@ -94,10 +94,10 @@ export default function HomeMapSection({
               onClick={() => setSelectedYmd(d.ymd)}
             >
               <span style={{ display: "block" }}>
-                {lunchDateShortTabLabelSv(d.ymd)}
+                {lunchDateShortTabLabel(d.ymd)}
               </span>
               {d.ymd === todayYmd && (
-                <span className="my-lunch-tab-today">Idag</span>
+                <span className="my-lunch-tab-today">Today</span>
               )}
             </button>
           );

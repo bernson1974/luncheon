@@ -7,7 +7,7 @@ import { listDates } from "@/lib/store";
 import { restaurants } from "@/lib/restaurants";
 import { selectableLunchDateYmds } from "@/lib/lunchDateWindow";
 
-/** Undvik gammal förrenderad statisk HTML utan att behöva rensa .next manuellt. */
+/** Avoid stale static prerender without manually clearing .next */
 export const dynamic = "force-dynamic";
 
 export default function HomePage() {

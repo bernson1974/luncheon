@@ -25,7 +25,7 @@ const LindholmenMap = dynamic(() => import("./LindholmenMap"), {
         fontSize: "0.85rem"
       }}
     >
-      Laddar karta…
+      Loading map…
     </div>
   )
 });

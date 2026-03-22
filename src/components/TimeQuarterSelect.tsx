@@ -18,17 +18,17 @@ function parseParts(value: string): { hour: string; minute: string } {
 export type TimeQuarterSelectProps = {
   value: string;
   onChange: (time: string) => void;
-  /** Måste alltid ha tid (t.ex. starttid) */
+  /** Must always have a time (e.g. start) */
   required?: boolean;
-  /** Tillåt tomt värde – tom timrad rensar (sluttid, filter) */
+  /** Allow empty – empty hour clears value (end time, filters) */
   allowEmpty?: boolean;
-  /** Yttre wrapper (t.ex. klass för filter-rad) */
+  /** Outer wrapper class */
   className?: string;
-  /** Klass på båda select (field-select eller filter-select) */
+  /** Class on both selects */
   selectClassName?: string;
-  /** Tillgängligt namn för gruppen */
+  /** Accessible name for the group */
   groupAriaLabel: string;
-  /** Etikett för tom timme när allowEmpty */
+  /** Label for empty hour when allowEmpty */
   emptyLabel?: string;
 };
 
@@ -40,7 +40,7 @@ export default function TimeQuarterSelect({
   className = "",
   selectClassName = "field-select",
   groupAriaLabel,
-  emptyLabel = "Ingen",
+  emptyLabel = "None",
 }: TimeQuarterSelectProps) {
   const { hour, minute } = parseParts(value);
   const minuteDisabled = allowEmpty && !hour;
@@ -68,7 +68,7 @@ export default function TimeQuarterSelect({
     >
       <select
         className={selectClassName}
-        aria-label={`${groupAriaLabel} – timme`}
+        aria-label={`${groupAriaLabel} – hour`}
         value={hour}
         onChange={(e) => handleHourChange(e.target.value)}
         required={required}
@@ -87,7 +87,7 @@ export default function TimeQuarterSelect({
       </span>
       <select
         className={selectClassName}
-        aria-label={`${groupAriaLabel} – minut (kvartal)`}
+        aria-label={`${groupAriaLabel} – minute (quarter)`}
         value={minuteDisabled ? "00" : minute}
         disabled={minuteDisabled}
         onChange={(e) => handleMinuteChange(e.target.value)}

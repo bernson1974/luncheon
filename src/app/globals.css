@@ -78,20 +78,65 @@ button {
   color: #64748b;
 }
 
-.settings-icon-link {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.45rem;
-  border-radius: 999px;
-  color: #64748b;
-  text-decoration: none;
-  transition: color 0.15s ease, background 0.15s ease;
+/* Create form: total group size (2–8), touch-friendly segments */
+.participant-size-block {
+  margin-bottom: 1rem;
 }
 
-.settings-icon-link:hover {
-  color: #0f766e;
+.participant-size-lead {
+  margin: 0.2rem 0 0.55rem;
+  font-size: 0.8rem;
+  line-height: 1.35;
+}
+
+.participant-segments {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 0.35rem;
+}
+
+.participant-segment {
+  min-height: 48px;
+  padding: 0.35rem 0.2rem;
+  border-radius: 0.6rem;
+  border: 2px solid #e2e8f0;
+  background: #f8fafc;
+  color: #475569;
+  font-size: clamp(0.95rem, 4vw, 1.05rem);
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    color 0.12s ease,
+    background 0.12s ease,
+    border-color 0.12s ease,
+    box-shadow 0.12s ease;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+.participant-segment:hover {
+  border-color: #cbd5e1;
+  background: #f1f5f9;
+  color: #0f172a;
+}
+
+.participant-segment:focus-visible {
+  outline: 2px solid #0f766e;
+  outline-offset: 2px;
+}
+
+.participant-segment--active,
+.participant-segment[aria-checked="true"] {
+  border-color: #0f766e;
   background: #ecfdf5;
+  color: #0f766e;
+  box-shadow: 0 0 0 1px rgba(15, 118, 110, 0.2);
+}
+
+.participant-size-foot {
+  margin: 0.55rem 0 0;
+  font-size: 0.8rem;
+  line-height: 1.4;
 }
 
 .chip {
@@ -211,55 +256,122 @@ a.danger-button:hover {
   color: #94a3b8;
 }
 
-/* ─── App shell top nav ───────────────────────────────────────────────────── */
+/* ─── App shell: mobile-style tab bar (5 equal tabs, touch-friendly) ───────── */
 
-.app-top-nav {
+/* Pull tab bar to horizontal edges of <main> (matches Tailwind px-4 = 1rem) */
+.app-shell-header {
+  width: calc(100% + 2rem);
+  max-width: none;
+  margin-left: -1rem;
+  margin-right: -1rem;
+  margin-bottom: 0.75rem;
+  box-sizing: border-box;
+  padding-top: env(safe-area-inset-top, 0);
+}
+
+.app-tab-bar {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  width: 100%;
+  background: #ffffff;
+  border-bottom: 1px solid #e2e8f0;
+  box-shadow: 0 1px 0 rgba(15, 23, 42, 0.04);
+}
+
+.app-tab-bar__tab {
+  flex: 1 1 0;
+  min-width: 0;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-}
-
-.app-nav-pill {
-  display: inline-flex;
-  align-items: center;
-  padding: 0.35rem 0.75rem;
-  border-radius: 999px;
-  font-size: 0.82rem;
-  font-weight: 600;
-  color: #475569;
+  justify-content: center;
+  min-height: 52px;
+  padding: 0.5rem 0.15rem;
+  font-size: clamp(0.62rem, 2.85vw, 0.8rem);
+  font-weight: 700;
+  line-height: 1.15;
+  text-align: center;
   text-decoration: none;
-  border: 1px solid #e2e8f0;
-  background: #fff;
-  transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+  color: #64748b;
+  border: none;
+  border-bottom: 3px solid transparent;
+  background: transparent;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  transition:
+    color 0.12s ease,
+    background 0.12s ease,
+    border-color 0.12s ease;
 }
 
-.app-nav-pill:hover {
+@media (min-width: 420px) {
+  .app-tab-bar__tab {
+    min-height: 56px;
+    font-size: 0.82rem;
+    padding-left: 0.25rem;
+    padding-right: 0.25rem;
+  }
+}
+
+.app-tab-bar__tab:hover {
   color: #0f766e;
-  border-color: #99f6e4;
+  background: #f8fafc;
+}
+
+.app-tab-bar__tab:active {
+  background: #ecfeff;
+}
+
+.app-tab-bar__tab--active,
+.app-tab-bar__tab[aria-current="page"] {
+  color: #0f766e;
+  border-bottom-color: #0f766e;
   background: #f0fdfa;
 }
 
-.app-nav-pill[aria-current="page"] {
-  color: #0f766e;
-  border-color: #5eead4;
+.app-tab-bar__tab--active:hover,
+.app-tab-bar__tab[aria-current="page"]:hover {
   background: #ecfdf5;
 }
 
 /* ─── Navigation ──────────────────────────────────────────────────────────── */
 
+/* Back control as compact outline button (keep <Link> for navigation) */
 .back-link {
   display: inline-flex;
   align-items: center;
-  gap: 0.3rem;
-  font-size: 0.85rem;
-  color: #0f766e;
-  text-decoration: none;
+  justify-content: center;
+  gap: 0.35rem;
+  padding: 0.45rem 0.95rem;
   margin-bottom: 1.25rem;
+  border-radius: 999px;
+  border: 1.5px solid #0f766e;
+  background: #ffffff;
+  color: #0f766e;
+  font-size: 0.85rem;
+  font-weight: 600;
+  font-family: inherit;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease,
+    color 0.15s ease,
+    box-shadow 0.15s ease;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
 }
 
 .back-link:hover {
-  text-decoration: underline;
+  text-decoration: none;
+  background: #f0fdfa;
+  border-color: #0d9488;
+  color: #0f766e;
+  box-shadow: 0 2px 4px rgba(15, 23, 42, 0.08);
+}
+
+.back-link:focus-visible {
+  outline: 2px solid #0f766e;
+  outline-offset: 2px;
 }
 
 /* ─── Filters ─────────────────────────────────────────────────────────────── */
@@ -283,7 +395,7 @@ a.danger-button:hover {
   font: inherit;
 }
 
-/* Två select: timme + endast kvartsminuter */
+/* Two selects: hour + quarter minutes only */
 .time-quarter-selects {
   display: flex;
   flex-direction: row;
@@ -428,7 +540,7 @@ a.danger-button:hover {
   gap: 0.4rem 0.5rem;
 }
 
-/* Min lunch: Mötesplats-rad med åtgärd */
+/* My lunch: meeting point row with action */
 .my-lunch-meeting-header {
   display: flex;
   flex-direction: row;
@@ -478,7 +590,7 @@ a.danger-button:hover {
   margin-top: 0;
 }
 
-/* ─── Home page cards (övriga sidor kan fortfarande använda) ──────────────── */
+/* ─── Home page cards (other pages may still use) ─────────────────────────── */
 
 .home-cta-card {
   border-radius: 0.75rem;
@@ -525,12 +637,12 @@ a.danger-button:hover {
   scrollbar-width: thin;
 }
 
-/* Startsida: dagflikar direkt ovanför kartan */
+/* Home: day tabs directly above map */
 .home-map-block .home-map-tablist {
   margin-top: 0;
 }
 
-/* Startsida: samma logik som Luncher – grön ton om du har bokning, utgråad annars (fortfarande klickbar) */
+/* Home: like My Bites tab – green tint if booked, muted if not (still clickable) */
 .home-map-tab--has-booking:not(.my-lunch-tab--active) {
   border-color: #5eead4;
   background: #ecfdf5;

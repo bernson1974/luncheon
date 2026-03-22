@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCommittedDateYmdsForUser } from "@/lib/store";
 
-/** Kalenderdagar (YYYY-MM-DD) där användaren redan är skapare eller deltagare. */
+/** Calendar days (YYYY-MM-DD) where the user is already host or participant. */
 export async function GET(request: NextRequest) {
   const userToken = request.nextUrl.searchParams.get("userToken");
   if (!userToken) {

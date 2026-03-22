@@ -19,7 +19,7 @@ const seedDates: LunchDate[] = [
     timeStart: "12:00",
     timeEnd: "13:00",
     restaurantId: "krishna-das",
-    topic: "Startup-kultur i Göteborg",
+    topic: "Startup culture in Gothenburg",
     maxParticipants: 4,
     status: "open",
     createdAt: new Date().toISOString(),
@@ -33,7 +33,7 @@ const seedDates: LunchDate[] = [
     timeStart: "11:30",
     timeEnd: "12:30",
     restaurantId: "thai-orchid",
-    topic: "AI och framtidens jobb",
+    topic: "AI and the future of work",
     maxParticipants: 3,
     status: "open",
     createdAt: new Date().toISOString(),
@@ -46,7 +46,7 @@ const seedDates: LunchDate[] = [
     area: "Lindholmen",
     timeStart: "12:30",
     restaurantId: "smaka",
-    topic: "Premier League – spelomgång 32",
+    topic: "Premier League – matchweek 32",
     maxParticipants: 5,
     status: "open",
     createdAt: new Date().toISOString(),
@@ -104,7 +104,7 @@ function toPublicDate(date: LunchDate, allParticipants: Participant[]): LunchDat
 
 // ─── Queries ─────────────────────────────────────────────────────────────────
 
-/** True om användaren redan är skapare eller deltagare på någon (icke-avbokad) dejt den dagen. */
+/** True if user is already host or participant on any non-cancelled date that day. */
 export function userHasCommitmentOnDate(userToken: string, ymd: string): boolean {
   for (const d of store.dates) {
     if (d.status === "cancelled" || d.date !== ymd) continue;
@@ -117,7 +117,7 @@ export function userHasCommitmentOnDate(userToken: string, ymd: string): boolean
   return false;
 }
 
-/** Unika kalenderdagar (YYYY-MM-DD) där användaren har en aktiv roll. */
+/** Unique calendar days (YYYY-MM-DD) where the user has an active role. */
 export function getCommittedDateYmdsForUser(userToken: string): string[] {
   const set = new Set<string>();
   for (const d of store.dates) {

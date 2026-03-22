@@ -26,6 +26,13 @@ function getUserToken(): string {
 
 type WindowDate = { ymd: string; label: string };
 
+const PARTICIPANT_MIN = 2;
+const PARTICIPANT_MAX = 8;
+const PARTICIPANT_CHOICES = Array.from(
+  { length: PARTICIPANT_MAX - PARTICIPANT_MIN + 1 },
+  (_, i) => PARTICIPANT_MIN + i
+);
+
 export default function CreatePage() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -150,15 +157,17 @@ export default function CreatePage() {
       if (res.status === 409) {
         const err = await res.json().catch(() => ({}));
         if (err.error === "busy_that_day") {
-          setError("Du har redan en lunchdejt den dagen. Välj ett annat datum eller lämna/avboka den andra först.");
+          setError(
+            "You already have a lunch date that day. Pick another day or leave/cancel the other one first."
+          );
         } else {
-          setError("Kunde inte skapa lunchdejten just nu.");
+          setError("Couldn’t create the lunch date right now.");
         }
         setSubmitting(false);
         return;
       }
 
-      if (!res.ok) throw new Error("Kunde inte skapa lunchdejten");
+      if (!res.ok) throw new Error("Could not create lunch date");
 
       const date = await res.json();
 
@@ -166,7 +175,7 @@ export default function CreatePage() {
 
       router.push(`/date/${date.id}`);
     } catch {
-      setError("Något gick fel. Försök igen.");
+      setError("Something went wrong. Try again.");
       setSubmitting(false);
     }
   }
@@ -174,20 +183,20 @@ export default function CreatePage() {
   return (
     <div>
       <Link href="/" className="back-link">
-        ← Tillbaka
+        ← Back
       </Link>
 
-      <h1 className="page-title">Ny lunchdejt</h1>
+      <h1 className="page-title">Create new lunch invitation</h1>
       <p className="page-subtitle">
-        Välj dag (idag och upp till fem dagar framåt). Din dejt blir synlig för
-        alla på Lindholmen direkt.
+        Pick a day (today and up to five days ahead). Your date is visible to everyone
+        on Lindholmen right away.
       </p>
 
       <form onSubmit={handleSubmit}>
         <div className="card">
           <div style={{ marginBottom: "1rem" }}>
             <label className="field-label" htmlFor="alias">
-              Ditt namn / alias
+              Your name / display name
             </label>
             <input
               id="alias"
@@ -199,9 +208,9 @@ export default function CreatePage() {
               style={{ background: "#f1f5f9", cursor: "default" }}
             />
             <p className="secondary-text" style={{ marginTop: "0.35rem" }}>
-              Byt alias under{" "}
+              Change it in{" "}
               <Link href="/settings" style={{ color: "#0f766e", fontWeight: 500 }}>
-                inställningar
+                settings
               </Link>
               .
             </p>
@@ -209,7 +218,7 @@ export default function CreatePage() {
 
           <div style={{ marginBottom: "1rem" }}>
             <label className="field-label" htmlFor="lunch-day">
-              Dag
+              Day
             </label>
             <select
               id="lunch-day"
@@ -219,7 +228,7 @@ export default function CreatePage() {
               disabled={windowDates.length === 0}
             >
               {windowDates.length === 0 && (
-                <option value="">Laddar datum…</option>
+                <option value="">Loading dates…</option>
               )}
               {windowDates.map((d) => (
                 <option
@@ -228,15 +237,15 @@ export default function CreatePage() {
                   disabled={committedYmds.includes(d.ymd)}
                 >
                   {d.label}
-                  {committedYmds.includes(d.ymd) ? " (redan bokad)" : ""}
+                  {committedYmds.includes(d.ymd) ? " (already booked)" : ""}
                 </option>
               ))}
             </select>
             {isDateBlocked && (
               <p className="secondary-text" style={{ marginTop: "0.35rem", color: "#b45309" }}>
-                Du har redan en dejt den här dagen. Välj en annan dag eller gå till{" "}
+                You already have a date that day. Pick another day or go to{" "}
                 <Link href="/my-lunch" style={{ color: "#0f766e", fontWeight: 500 }}>
-                  Luncher
+                  My Bites
                 </Link>
                 .
               </p>
@@ -244,31 +253,31 @@ export default function CreatePage() {
           </div>
 
           <div style={{ marginBottom: "1rem" }}>
-            <label className="field-label">Tid (kvartal: :00, :15, :30, :45)</label>
+            <label className="field-label">Time (quarters: :00, :15, :30, :45)</label>
             <div className="field-row">
               <div style={{ flex: 1, minWidth: 0 }}>
                 <label className="field-label" style={{ fontSize: "0.78rem", color: "#64748b" }}>
-                  Startar
+                  Starts
                 </label>
                 <TimeQuarterSelect
                   value={timeStart}
                   onChange={setTimeStart}
                   required
                   selectClassName="field-select"
-                  groupAriaLabel="Starttid"
+                  groupAriaLabel="Start time"
                 />
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <label className="field-label" style={{ fontSize: "0.78rem", color: "#64748b" }}>
-                  Slutar (valfritt)
+                  Ends (optional)
                 </label>
                 <TimeQuarterSelect
                   value={timeEnd}
                   onChange={setTimeEnd}
                   allowEmpty
-                  emptyLabel="Ingen"
+                  emptyLabel="None"
                   selectClassName="field-select"
-                  groupAriaLabel="Sluttid"
+                  groupAriaLabel="End time"
                 />
               </div>
             </div>
@@ -276,7 +285,7 @@ export default function CreatePage() {
 
           <div style={{ marginBottom: "1rem" }}>
             <label className="field-label" htmlFor="restaurant">
-              Restaurang
+              Restaurant
             </label>
             <select
               id="restaurant"
@@ -294,10 +303,10 @@ export default function CreatePage() {
 
           <div style={{ marginBottom: "1rem" }}>
             <label className="field-label">
-              Mötesplats
+              Meeting point
             </label>
             <p className="secondary-text" style={{ marginBottom: "0.5rem" }}>
-              Klicka på kartan eller dra nålen dit ni ska mötas.
+              Click the map or drag the pin to where you’ll meet.
             </p>
             <MeetingPointPicker
               center={mapCenter}
@@ -307,7 +316,7 @@ export default function CreatePage() {
             <input
               className="field-input"
               type="text"
-              placeholder='T.ex. "Vid den röda bänken utanför ingången"'
+              placeholder='e.g. "Red bench outside the entrance"'
               value={meetingDescription}
               onChange={(e) => setMeetingDescription(e.target.value)}
               maxLength={120}
@@ -317,13 +326,13 @@ export default function CreatePage() {
 
           <div style={{ marginBottom: "1rem" }}>
             <label className="field-label" htmlFor="topic">
-              Samtalsämne
+              Conversation topic
             </label>
             <input
               id="topic"
               className="field-input"
               type="text"
-              placeholder="T.ex. AI och framtidens jobb, Premier League..."
+              placeholder="e.g. AI and the future of work, Premier League…"
               value={topic}
               onChange={(e) => setTopic(e.target.value)}
               maxLength={120}
@@ -331,26 +340,33 @@ export default function CreatePage() {
             />
           </div>
 
-          <div style={{ marginBottom: "0.5rem" }}>
-            <label className="field-label" htmlFor="max">
-              Max antal deltagare (inkl. dig)
-            </label>
-            <div style={{ display: "flex", alignItems: "center", gap: "1rem", marginTop: "0.4rem" }}>
-              <input
-                id="max"
-                type="range"
-                min={2}
-                max={8}
-                value={maxParticipants}
-                onChange={(e) => setMaxParticipants(Number(e.target.value))}
-                style={{ flex: 1 }}
-              />
-              <span style={{ fontWeight: 600, fontSize: "1.1rem", minWidth: "1.5rem", textAlign: "center" }}>
-                {maxParticipants}
-              </span>
+          <div className="participant-size-block">
+            <p id="max-participants-label" className="field-label" style={{ marginBottom: 0 }}>
+              How many in total?
+            </p>
+            <p className="secondary-text participant-size-lead">You’re included in this number.</p>
+            <div
+              className="participant-segments"
+              role="radiogroup"
+              aria-labelledby="max-participants-label"
+            >
+              {PARTICIPANT_CHOICES.map((n) => (
+                <button
+                  key={n}
+                  type="button"
+                  role="radio"
+                  aria-checked={maxParticipants === n}
+                  className={`participant-segment${maxParticipants === n ? " participant-segment--active" : ""}`}
+                  onClick={() => setMaxParticipants(n)}
+                >
+                  {n}
+                </button>
+              ))}
             </div>
-            <p className="secondary-text" style={{ marginTop: "0.25rem" }}>
-              {maxParticipants - 1} person{maxParticipants - 1 !== 1 ? "er" : ""} kan joina utöver dig.
+            <p className="secondary-text participant-size-foot">
+              {maxParticipants === 2
+                ? "1 other person can join."
+                : `${maxParticipants - 1} others can join.`}
             </p>
           </div>
         </div>
@@ -366,7 +382,7 @@ export default function CreatePage() {
           type="submit"
           disabled={!isValid || submitting}
         >
-          {submitting ? "Publicerar…" : "Publicera lunchdejt"}
+          {submitting ? "Publishing…" : "Publish lunch date"}
         </button>
       </form>
     </div>

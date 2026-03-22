@@ -49,17 +49,17 @@ export default function SettingsPage() {
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (hasBookedLunchDate()) {
-      setError("Du kan inte byta alias medan du har en bokad dejt.");
+      setError("You can’t change your display name while you have an active lunch booking.");
       setAliasLocked(true);
       return;
     }
     const trimmed = alias.trim();
     if (trimmed.length < 1) {
-      setError("Alias kan inte vara tomt.");
+      setError("Display name can’t be empty.");
       return;
     }
     if (trimmed.length > 40) {
-      setError("Max 40 tecken.");
+      setError("Max 40 characters.");
       return;
     }
     setStoredAlias(trimmed);
@@ -71,13 +71,13 @@ export default function SettingsPage() {
   return (
     <div>
       <Link href="/" className="back-link">
-        ← Tillbaka
+        ← Back
       </Link>
 
-      <h1 className="page-title">Inställningar</h1>
+      <h1 className="page-title">Settings</h1>
       <p className="page-subtitle">
-        Så här visas du för andra när du skapar eller joinar en dejt. Det sparas
-        bara i den här webbläsaren – ingen inloggning.
+        This is how others see you when you create or join a date. It’s stored only
+        in this browser — no account.
       </p>
 
       {aliasLocked && (
@@ -90,20 +90,20 @@ export default function SettingsPage() {
           }}
         >
           <p style={{ margin: 0, fontSize: "0.9rem", color: "#92400e", fontWeight: 500 }}>
-            Alias kan inte ändras medan du har en bokad lunchdejt.
+            You can’t change your display name while you have an active lunch booking.
           </p>
           <p className="secondary-text" style={{ marginTop: "0.4rem", marginBottom: "0.75rem" }}>
-            Andra ser ditt nuvarande alias i dejten. Lämna eller avboka först om du vill byta namn.
+            Others see your current name on the date. Leave or cancel first if you want to change it.
           </p>
           <Link href="/my-lunch" className="secondary-button" style={{ marginTop: 0 }}>
-            Till luncher
+            Go to My Bites
           </Link>
         </div>
       )}
 
       <form onSubmit={handleSubmit} className="card">
         <label className="field-label" htmlFor="settings-alias">
-          Alias
+          Display name
         </label>
         <input
           id="settings-alias"
@@ -127,11 +127,11 @@ export default function SettingsPage() {
         )}
         {saved && !aliasLocked && (
           <p style={{ color: "#0f766e", fontSize: "0.875rem", marginTop: "0.5rem", fontWeight: 500 }}>
-            Sparat.
+            Saved.
           </p>
         )}
         <button className="primary-button" type="submit" disabled={aliasLocked}>
-          {aliasLocked ? "Byt alias när du inte har bokad dejt" : "Spara alias"}
+          {aliasLocked ? "Change name when you have no booking" : "Save display name"}
         </button>
       </form>
     </div>

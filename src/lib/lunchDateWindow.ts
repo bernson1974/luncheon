@@ -1,21 +1,21 @@
 import { addDays } from "date-fns";
 import { formatInTimeZone, fromZonedTime } from "date-fns-tz";
-import { sv } from "date-fns/locale";
+import { enUS } from "date-fns/locale";
 
-/** Alla datum i appen (lista, skapa) utgår från denna tidszon. */
+/** App dates (lists, create) use this timezone. */
 export const LUNCH_TIMEZONE = "Europe/Stockholm";
 
-/** Antal kalenderdagar från och med idag som man får planera lunch (idag + 5 framåt = 6 dagar). */
+/** Calendar days from today allowed for planning (today + 5 ahead = 6 days). */
 export const LUNCH_WINDOW_DAYS = 6;
 
-/** Dagens datum i Stockholm som YYYY-MM-DD. */
+/** Today's date in Stockholm as YYYY-MM-DD. */
 export function stockholmTodayYmd(now: Date = new Date()): string {
   return formatInTimeZone(now, LUNCH_TIMEZONE, "yyyy-MM-dd");
 }
 
 /**
- * De datum (YYYY-MM-DD) som får användas för nya dejter och som visas i listor,
- * i ordning: idag, imorgon, … (+5 dagar).
+ * YYYY-MM-DD values allowed for new dates and shown in lists,
+ * in order: today, tomorrow, … (+5 days).
  */
 export function selectableLunchDateYmds(now: Date = new Date()): string[] {
   const out: string[] = [];
@@ -35,13 +35,14 @@ export function isYmdInSelectableLunchWindow(
   return selectableLunchDateYmds(now).includes(ymd);
 }
 
-export function lunchDateLabelSv(ymd: string): string {
+/** Long label for a YMD, e.g. "Wednesday, Mar 19". */
+export function lunchDateLabel(ymd: string): string {
   const noon = fromZonedTime(`${ymd}T12:00:00`, LUNCH_TIMEZONE);
-  return formatInTimeZone(noon, LUNCH_TIMEZONE, "EEEE d MMM", { locale: sv });
+  return formatInTimeZone(noon, LUNCH_TIMEZONE, "EEEE, MMM d", { locale: enUS });
 }
 
-/** Kompakt etikett för tabbar, t.ex. "ons 19/3". */
-export function lunchDateShortTabLabelSv(ymd: string): string {
+/** Short tab label, e.g. "Wed 3/19". */
+export function lunchDateShortTabLabel(ymd: string): string {
   const noon = fromZonedTime(`${ymd}T12:00:00`, LUNCH_TIMEZONE);
-  return formatInTimeZone(noon, LUNCH_TIMEZONE, "EEE d/M", { locale: sv });
+  return formatInTimeZone(noon, LUNCH_TIMEZONE, "EEE M/d", { locale: enUS });
 }

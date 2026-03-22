@@ -1,6 +1,6 @@
 /**
- * Sparar vilka lunchdejtar denna webbläsare skapat (flera dagar möjliga).
- * Värdet är userToken så vi kan verifiera mot server.
+ * Tracks lunch dates this browser created (multiple days possible).
+ * Value is userToken for server verification.
  */
 export const CREATOR_KEY_PREFIX = "creator:";
 
@@ -8,7 +8,7 @@ export function creatorStorageKey(dateId: string): string {
   return `${CREATOR_KEY_PREFIX}${dateId}`;
 }
 
-/** Migrera äldre enkelnyckel myCreatedDateId → creator:<id>. */
+/** Migrate legacy single key myCreatedDateId → creator:<id>. */
 export function migrateLegacyCreatorStorage(userToken: string | null): void {
   if (typeof window === "undefined" || !userToken) return;
   const legacy = localStorage.getItem("myCreatedDateId");

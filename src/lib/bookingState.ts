@@ -6,8 +6,8 @@ import {
 } from "@/lib/creatorStorage";
 
 /**
- * True om den här webbläsaren har en aktiv bokning: skapat en dejt eller joinat en.
- * (Endast localStorage – använd `syncLocalBookingStateWithServer` för att städa bort spöknycklar.)
+ * True if this browser has an active booking: created a date or joined one.
+ * (localStorage only – use `syncLocalBookingStateWithServer` to prune stale keys.)
  */
 export function hasBookedLunchDate(): boolean {
   if (typeof window === "undefined") return false;
@@ -20,9 +20,9 @@ export function hasBookedLunchDate(): boolean {
 }
 
 /**
- * Jämför localStorage med API: tar bort ogiltiga creator/joined-nycklar.
- * Returnerar true om det fortfarande finns minst en giltig bokning.
- * Anropas bara från klient.
+ * Reconcile localStorage with API: removes invalid creator/joined keys.
+ * Returns true if at least one valid booking remains.
+ * Client-only.
  */
 export async function syncLocalBookingStateWithServer(): Promise<boolean> {
   if (typeof window === "undefined") return false;
@@ -96,8 +96,8 @@ export async function syncLocalBookingStateWithServer(): Promise<boolean> {
 }
 
 /**
- * Kalenderdagar (YYYY-MM-DD) där denna webbläsare har en aktiv dejt (skapare eller deltagare).
- * Synkar localStorage mot server innan lista byggs.
+ * Calendar days (YYYY-MM-DD) where this browser has an active date (host or participant).
+ * Syncs localStorage with server before building the set.
  */
 export async function getUserBookedDateYmds(): Promise<Set<string>> {
   if (typeof window === "undefined") return new Set();
