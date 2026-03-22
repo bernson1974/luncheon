@@ -4,9 +4,18 @@
   box-sizing: border-box;
 }
 
+html,
 body {
   margin: 0;
-  background: #f8fafc;
+  overflow-x: hidden;
+}
+
+html {
+  background: #6eb8aa;
+}
+
+body {
+  background: #6eb8aa;
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
@@ -346,11 +355,13 @@ a.danger-button:hover {
 /* Same horizontal inset as <main> (px-4): no negative margins — avoids edge tabs feeling “cut off” */
 .app-shell-header {
   width: 100%;
-  max-width: none;
+  max-width: 100%;
+  min-width: 0;
   margin-left: 0;
   margin-right: 0;
   margin-bottom: 0.75rem;
   box-sizing: border-box;
+  overflow: hidden;
   /* Safe area + half a “tab button” height of breathing room above the bar */
   padding-top: calc(
     env(safe-area-inset-top, 0px) + (var(--app-tab-bar-min-height) * 0.5)
@@ -371,6 +382,7 @@ a.danger-button:hover {
   flex-direction: row;
   align-items: stretch;
   width: 100%;
+  min-width: 0;
   background: #6eb8aa;
   border-bottom: 1px solid #0f766e;
   box-shadow: none;
@@ -439,6 +451,10 @@ a.danger-button:hover {
   font-size: clamp(0.6rem, 2.75vw, 0.78rem);
   line-height: 1.1;
   text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
 }
 
 @media (min-width: 420px) {
@@ -544,6 +560,8 @@ a.danger-button:hover {
   display: flex;
   flex-direction: row;
   width: 100%;
+  max-width: 100%;
+  min-width: 0;
   border-radius: 0;
   border: 1px solid #cbd5e1;
   border-bottom: none;
