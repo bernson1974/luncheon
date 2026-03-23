@@ -25,10 +25,16 @@ export default async function HomePage() {
   const oneSpotLeftByYmd: OneSpotLeftByYmd = {};
   const restaurantMap = new Map<string, HomeRestaurantPinBase>();
 
+  const allDates = await listDates();
+  const datesByYmd = new Map<string, typeof allDates>();
   for (const ymd of ymds) {
+    datesByYmd.set(ymd, allDates.filter((d) => d.date === ymd));
+  }
+
+  for (const ymd of ymds) {
+    const datesForDay = datesByYmd.get(ymd) ?? [];
     countsByYmd[ymd] = {};
     oneSpotLeftByYmd[ymd] = {};
-    const datesForDay = await listDates({ date: ymd });
     for (const d of Array.isArray(datesForDay) ? datesForDay : []) {
       if (d.spotsLeft === 0) continue;
       const rid = d.restaurant.id;

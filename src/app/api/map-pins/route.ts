@@ -11,10 +11,14 @@ export async function GET() {
   const oneSpotLeftByYmd: Record<string, Record<string, boolean>> = {};
   const restaurantMap = new Map<string, { id: string; name: string; latitude: number; longitude: number }>();
 
+  const allDates = await listDates();
+  const datesByYmd = new Map(ymds.map((ymd) => [ymd, allDates.filter((d) => d.date === ymd)]));
+
   for (const ymd of ymds) {
+    const dates = datesByYmd.get(ymd) ?? [];
     countsByYmd[ymd] = {};
     oneSpotLeftByYmd[ymd] = {};
-    for (const d of await listDates({ date: ymd })) {
+    for (const d of Array.isArray(dates) ? dates : []) {
       if (d.spotsLeft === 0) continue;
       const rid = d.restaurant.id;
       countsByYmd[ymd][rid] = (countsByYmd[ymd][rid] ?? 0) + 1;

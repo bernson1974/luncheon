@@ -9,7 +9,7 @@ import { clearAppData } from "@/lib/clearAppData";
 
 export default function SettingsPage() {
   const router = useRouter();
-  const [alias, setAlias] = useState("");
+  const [alias, setAlias] = useState(() => getStoredAlias() ?? "");
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState("");
   const [aliasLocked, setAliasLocked] = useState(false);
@@ -72,7 +72,7 @@ export default function SettingsPage() {
 
   return (
     <div>
-      <h1 className="page-title" style={{ color: "#064e3b" }}>Name</h1>
+      <h1 className="page-title" style={{ color: "#064e3b" }}>Name{alias ? ` (${alias})` : ""}</h1>
       <p className="page-subtitle" style={{ color: "#064e3b" }}>
         This is how others see you when you create or join a date. It’s stored only
         in this browser — no account.
