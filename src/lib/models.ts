@@ -18,12 +18,12 @@ export interface RestaurantOpeningHours {
 }
 
 export interface Restaurant {
-  id: string;
+  id: string; // Foursquare fsq_id
   name: string;
   latitude: number;
   longitude: number;
   cuisine: Cuisine;
-  openingHours: RestaurantOpeningHours;
+  openingHours?: RestaurantOpeningHours;
 }
 
 export type LunchDateStatus = "open" | "full" | "cancelled";
@@ -42,7 +42,8 @@ export interface LunchDate {
   area: "Lindholmen";
   timeStart: string;    // "HH:MM"
   timeEnd?: string;     // "HH:MM", optional
-  restaurantId: string;
+  restaurantId: string; // Foursquare fsq_id
+  restaurant: Restaurant; // Embedded for display
   topic: string;
   maxParticipants: number; // total, including creator
   status: LunchDateStatus;

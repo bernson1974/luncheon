@@ -25,10 +25,13 @@ export async function POST(request: NextRequest) {
     timeStart,
     timeEnd,
     restaurantId,
+    restaurant,
     topic,
     maxParticipants,
     meetingPoint,
   } = body;
+
+  const rest = restaurant ?? (restaurantId ? { id: restaurantId, name: "", latitude: 0, longitude: 0, cuisine: "" } : null);
 
   if (
     !creatorAlias ||
@@ -36,7 +39,8 @@ export async function POST(request: NextRequest) {
     !dateYmd ||
     typeof dateYmd !== "string" ||
     !timeStart ||
-    !restaurantId ||
+    !rest?.id ||
+    !rest?.name ||
     !topic ||
     !maxParticipants
   ) {
@@ -57,7 +61,8 @@ export async function POST(request: NextRequest) {
     date: dateYmd,
     timeStart,
     timeEnd,
-    restaurantId,
+    restaurantId: rest.id,
+    restaurant: { id: rest.id, name: rest.name, latitude: rest.latitude ?? 0, longitude: rest.longitude ?? 0, cuisine: rest.cuisine ?? "restaurant" },
     topic,
     maxParticipants,
     meetingPoint,

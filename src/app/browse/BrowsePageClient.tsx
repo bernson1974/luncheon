@@ -11,7 +11,6 @@ import {
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import type { LunchDatePublic } from "@/lib/models";
-import { restaurants } from "@/lib/restaurants";
 import TimeQuarterSelect from "@/components/TimeQuarterSelect";
 import { cuisineLabel } from "@/lib/cuisineLabels";
 import { lunchDateLabel } from "@/lib/lunchDateWindow";
@@ -32,9 +31,23 @@ const FILTER_TABS: { id: BrowseFilterTabId; label: string }[] = [
   { id: "restaurant", label: "Place" },
 ];
 
-const CUISINE_KEYS = [...new Set(restaurants.map((r) => r.cuisine))].sort((a, b) =>
-  cuisineLabel(a).localeCompare(cuisineLabel(b), "en")
-);
+function getCuisineKeysFromDates(dates: LunchDatePublic[]): string[] {
+  const set = new Set<string>();
+  for (const d of dates) {
+    if (d.restaurant?.cuisine) set.add(d.restaurant.cuisine);
+  }
+  return [...set].sort((a, b) => cuisineLabel(a).localeCompare(cuisineLabel(b), "en"));
+}
+
+function getRestaurantsFromDates(dates: LunchDatePublic[]): Array<{ id: string; name: string }> {
+  const map = new Map<string, string>();
+  for (const d of dates) {
+    if (d.restaurant && !map.has(d.restaurant.id)) {
+      map.set(d.restaurant.id, d.restaurant.name);
+    }
+  }
+  return [...map.entries()].map(([id, name]) => ({ id, name })).sort((a, b) => a.name.localeCompare(b.name));
+}
 
 function filterDates(
   dates: LunchDatePublic[],
@@ -293,7 +306,7 @@ export default function BrowsePageClient({ initialDates }: { initialDates: Lunch
                       onChange={(e) => setFilterRestaurant(e.target.value)}
                     >
                       <option value="">All restaurants</option>
-                      {restaurants.map((r) => (
+                      {getRestaurantsFromDates(initialDates).map((r) => (
                         <option key={r.id} value={r.id}>
                           {r.name}
                         </option>
@@ -311,7 +324,7 @@ export default function BrowsePageClient({ initialDates }: { initialDates: Lunch
                       onChange={(e) => setFilterCuisine(e.target.value)}
                     >
                       <option value="">All cuisines</option>
-                      {CUISINE_KEYS.map((key) => (
+                      {getCuisineKeysFromDates(initialDates).map((key) => (
                         <option key={key} value={key}>
                           {cuisineLabel(key)}
                         </option>

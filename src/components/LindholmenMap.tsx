@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { Map as LeafletMap, LayerGroup as LeafletLayerGroup } from "leaflet";
 import { lunchDateLabel } from "@/lib/lunchDateWindow";
+import MapSearchInput from "./MapSearchInput";
 
 type LeafletNs = typeof import("leaflet");
 
@@ -69,20 +70,7 @@ function makeBadgeIcon(L: LeafletNs, count: number, greyedOut?: boolean, oneSpot
   });
 }
 
-const DEFAULT_PINS: RestaurantPin[] = [
-  { id: "krishna-das", name: "Krishna Das", lat: 57.7074, lng: 11.9381, dateCount: 0 },
-  { id: "thai-orchid", name: "Thai Orchid Lindholmen", lat: 57.7071, lng: 11.9375, dateCount: 0 },
-  { id: "smaka", name: "Smaka", lat: 57.7069, lng: 11.939, dateCount: 0 },
-  { id: "sushirullen", name: "Sushirullen", lat: 57.7072, lng: 11.9385, dateCount: 0 },
-  { id: "leos-lunchbar", name: "Leos Lunchbar", lat: 57.7068, lng: 11.9378, dateCount: 0 },
-  { id: "lindholmen-pizza", name: "Lindholmen Pizza & Grill", lat: 57.7075, lng: 11.937, dateCount: 0 },
-  { id: "burgery", name: "Burgery", lat: 57.7066, lng: 11.9382, dateCount: 0 },
-  { id: "wok-of-fame", name: "Wok of Fame", lat: 57.7073, lng: 11.9368, dateCount: 0 },
-  { id: "paj-och-mer", name: "Paj & Mer", lat: 57.707, lng: 11.9393, dateCount: 0 },
-  { id: "chalmers-karen", name: "Chalmers Kåren", lat: 57.7076, lng: 11.9377, dateCount: 0 },
-];
-
-export default function LindholmenMap({ pins, selectedYmd, greyedOut }: Props) {
+export default function LindholmenMap({ pins = [], selectedYmd, greyedOut }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<LeafletMap | null>(null);
   const markersLayerRef = useRef<LeafletLayerGroup | null>(null);
@@ -90,7 +78,7 @@ export default function LindholmenMap({ pins, selectedYmd, greyedOut }: Props) {
   const [mapReady, setMapReady] = useState(false);
   const [error, setError] = useState(false);
 
-  const activePins = pins ?? DEFAULT_PINS;
+  const activePins = pins;
   const dayLabel = selectedYmd ? lunchDateLabel(selectedYmd) : "";
 
   useEffect(() => {
@@ -108,7 +96,10 @@ export default function LindholmenMap({ pins, selectedYmd, greyedOut }: Props) {
 
         const map = L.map(containerRef.current, {
           scrollWheelZoom: false,
+          zoomControl: false,
         }).setView([LINDHOLMEN_LAT, LINDHOLMEN_LNG], 16);
+
+        L.control.zoom({ position: "bottomleft" }).addTo(map);
 
         L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
           attribution:
@@ -191,10 +182,21 @@ export default function LindholmenMap({ pins, selectedYmd, greyedOut }: Props) {
     );
   }
 
+  const handleSearchFound = useCallback((lat: number, lng: number) => {
+    mapRef.current?.setView([lat, lng], 16);
+  }, []);
+
   return (
-    <div
-      ref={containerRef}
-      style={{ borderRadius: "0.75rem", overflow: "hidden", height: "442px" }}
-    />
+    <div style={{ position: "relative", borderRadius: "0.75rem", overflow: "hidden", height: "442px" }}>
+      <MapSearchInput
+        onFound={handleSearchFound}
+        disabled={!mapReady}
+        placeholder="Sök plats eller adress…"
+      />
+      <div
+        ref={containerRef}
+        style={{ width: "100%", height: "100%", minHeight: "442px" }}
+      />
+    </div>
   );
 }

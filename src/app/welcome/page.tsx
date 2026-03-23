@@ -8,6 +8,7 @@ export default function WelcomePage() {
   const router = useRouter();
   const [alias, setAlias] = useState("");
   const [error, setError] = useState("");
+  const [showDisclaimer, setShowDisclaimer] = useState(false);
 
   useEffect(() => {
     if (getStoredAlias()) {
@@ -27,7 +28,7 @@ export default function WelcomePage() {
       return;
     }
     setStoredAlias(trimmed);
-    router.replace("/");
+    setShowDisclaimer(true);
   }
 
   return (
@@ -67,11 +68,59 @@ export default function WelcomePage() {
             />
             {error && <p className="welcome-landing__error">{error}</p>}
             <button type="submit" className="primary-button">
-              Join the BITE CLUB!
+              Start
             </button>
           </form>
         </div>
       </div>
+
+      {showDisclaimer && (
+        <div
+          role="alertdialog"
+          aria-modal="true"
+          aria-labelledby="disclaimer-title"
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 50,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            backgroundColor: "rgba(0,0,0,0.5)",
+            padding: "1rem",
+          }}
+          onClick={(e) => e.target === e.currentTarget && setShowDisclaimer(false)}
+        >
+          <div
+            style={{
+              background: "#fff",
+              borderRadius: "var(--radius-field)",
+              padding: "1.5rem",
+              maxWidth: "20rem",
+              boxShadow: "0 4px 20px rgba(0,0,0,0.2)",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 id="disclaimer-title" style={{ fontSize: "1.1rem", fontWeight: 600, marginBottom: "0.75rem", color: "#064e3b", textAlign: "center" }}>
+              Disclaimer
+            </h3>
+            <p style={{ fontSize: "0.9rem", color: "#334155", marginBottom: "1.25rem", lineHeight: 1.4, textAlign: "center" }}>
+              This app can not guarantee that all restaurants are still active nor their opening hours.
+            </p>
+            <button
+              type="button"
+              className="primary-button"
+              style={{ marginTop: 0, width: "100%" }}
+              onClick={() => {
+                setShowDisclaimer(false);
+                router.replace("/");
+              }}
+            >
+              Join the BITE CLUB!
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

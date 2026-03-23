@@ -63,10 +63,12 @@ export default function MeetingPointPicker({
 
       if (mapRef.current) return;
 
-      const map = L.map(containerRef.current, { scrollWheelZoom: false }).setView(
-        [center.lat, center.lng],
-        17
-      );
+      const map = L.map(containerRef.current, {
+        scrollWheelZoom: false,
+        zoomControl: false,
+      }).setView([center.lat, center.lng], 17);
+
+      L.control.zoom({ position: "bottomleft" }).addTo(map);
 
       L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'

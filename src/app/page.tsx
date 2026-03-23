@@ -6,7 +6,6 @@ import HomeMapSection, {
   type OneSpotLeftByYmd,
 } from "@/components/HomeMapSection";
 import { getCommittedDateYmdsForUser, listDates } from "@/lib/store";
-import { restaurants } from "@/lib/restaurants";
 import { selectableLunchDateYmds } from "@/lib/lunchDateWindow";
 
 /** Avoid stale static prerender without manually clearing .next */
@@ -24,6 +23,8 @@ export default async function HomePage() {
 
   const countsByYmd: CountsByYmd = {};
   const oneSpotLeftByYmd: OneSpotLeftByYmd = {};
+  const restaurantMap = new Map<string, HomeRestaurantPinBase>();
+
   for (const ymd of ymds) {
     countsByYmd[ymd] = {};
     oneSpotLeftByYmd[ymd] = {};
@@ -34,15 +35,18 @@ export default async function HomePage() {
       if (d.spotsLeft === 1) {
         oneSpotLeftByYmd[ymd][rid] = true;
       }
+      if (!restaurantMap.has(rid)) {
+        restaurantMap.set(rid, {
+          id: d.restaurant.id,
+          name: d.restaurant.name,
+          latitude: d.restaurant.latitude,
+          longitude: d.restaurant.longitude,
+        });
+      }
     }
   }
 
-  const restaurantPins: HomeRestaurantPinBase[] = restaurants.map((r) => ({
-    id: r.id,
-    name: r.name,
-    latitude: r.latitude,
-    longitude: r.longitude,
-  }));
+  const restaurantPins = Array.from(restaurantMap.values());
 
   return (
     <div className="home-page-stack" style={{ display: "flex", flexDirection: "column", flex: 1 }}>

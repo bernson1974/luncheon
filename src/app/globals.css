@@ -1404,9 +1404,7 @@ a.danger-button:hover {
 }
 
 .date-detail-meeting-block {
-  margin-top: 1rem;
-  padding-top: 1rem;
-  border-top: 1px solid rgba(15, 23, 42, 0.08);
+  margin-top: 0.5rem;
 }
 
 /* Maxbredd som välkomstformuläret (primär CTA) */
