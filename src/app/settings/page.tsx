@@ -13,6 +13,7 @@ export default function SettingsPage() {
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState("");
   const [aliasLocked, setAliasLocked] = useState(false);
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
 
   const refreshBookingLock = useCallback(() => {
     setAliasLocked(hasBookedLunchDate());
@@ -127,22 +128,79 @@ export default function SettingsPage() {
         </form>
       )}
 
-      <div style={{ marginTop: "2rem", paddingTop: "1.5rem", borderTop: "1px solid #e2e8f0" }}>
-        <p className="secondary-text" style={{ marginBottom: "0.5rem" }}>
-          Having trouble with cached data? Reset clears name, token and bookings from this browser.
+      <div style={{ marginTop: "2rem" }}>
+        <h2 className="page-title" style={{ color: "#064e3b" }}>Reset data</h2>
+        <p className="page-subtitle" style={{ color: "#064e3b" }}>
+          Having trouble with cached data? Reset data clears your name, token and bookings from this app.
         </p>
-        <button
-          type="button"
-          className="secondary-button"
-          onClick={() => {
-            if (confirm("Clear all data and start over? You'll need to enter your name again.")) {
-              clearAppData();
-              router.replace("/welcome");
-            }
-          }}
-        >
-          Reset app data
-        </button>
+        <div style={{ maxWidth: "17.5rem", marginLeft: "auto", marginRight: "auto" }}>
+          <button
+            type="button"
+            className="danger-button"
+            onClick={() => setShowResetConfirm(true)}
+          >
+            Reset data
+          </button>
+        </div>
+
+        {showResetConfirm && (
+          <div
+            role="alertdialog"
+            aria-modal="true"
+            aria-labelledby="reset-confirm-title"
+            style={{
+              position: "fixed",
+              inset: 0,
+              zIndex: 50,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              backgroundColor: "rgba(0,0,0,0.5)",
+              padding: "1rem",
+            }}
+            onClick={(e) => e.target === e.currentTarget && setShowResetConfirm(false)}
+          >
+            <div
+              style={{
+                background: "#fff",
+                borderRadius: "var(--radius-field)",
+                padding: "1.5rem",
+                maxWidth: "20rem",
+                boxShadow: "0 4px 20px rgba(0,0,0,0.2)",
+              }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h3 id="reset-confirm-title" style={{ fontSize: "1.1rem", fontWeight: 600, marginBottom: "0.75rem", color: "#064e3b" }}>
+                Reset data?
+              </h3>
+              <p style={{ fontSize: "0.9rem", color: "#334155", marginBottom: "1.25rem", lineHeight: 1.4 }}>
+                If you proceed, <strong>all your bookings will disappear</strong>. Your name and all stored data will be cleared from this app.
+              </p>
+              <div style={{ display: "flex", gap: "0.5rem" }}>
+                <button
+                  type="button"
+                  className="secondary-button"
+                  style={{ flex: 1, marginTop: 0 }}
+                  onClick={() => setShowResetConfirm(false)}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  className="danger-button"
+                  style={{ flex: 1, marginTop: 0 }}
+                  onClick={() => {
+                    setShowResetConfirm(false);
+                    clearAppData();
+                    router.replace("/welcome");
+                  }}
+                >
+                  Yes, reset
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

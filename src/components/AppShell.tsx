@@ -22,7 +22,7 @@ const MAIN_TABS: {
     icon: "/hands.svg",
     isActive: (p) => p.startsWith("/browse") || p.startsWith("/date/"),
   },
-  { href: "/settings", label: "Name", icon: "/face.svg", isActive: (p) => p === "/settings" },
+  { href: "/settings", label: "Settings", icon: "/face.svg", isActive: (p) => p === "/settings" },
 ];
 
 export default function AppShell({ children }: { children: ReactNode }) {

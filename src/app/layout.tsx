@@ -21,7 +21,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       <body className="min-h-screen text-slate-900">
         <SyncUserTokenCookie />
         <main
-          className="flex min-h-screen w-full max-w-full flex-col overflow-x-hidden px-5 py-6"
+          className="flex min-h-screen w-full max-w-full flex-col overflow-x-hidden px-4 py-6 sm:px-5"
           style={{ maxWidth: "1280px", marginInline: "auto" }}
         >
           <AppShell>{children}</AppShell>

@@ -194,8 +194,8 @@ button {
   padding: 0.35rem 0.2rem;
   border-radius: 0.6rem;
   border: 2px solid var(--tab-active-bg);
-  background: var(--tab-active-bg);
-  color: #ffffff;
+  background: transparent;
+  color: var(--tab-active-bg);
   font-size: clamp(0.95rem, 4vw, 1.05rem);
   font-weight: 700;
   cursor: pointer;
@@ -208,10 +208,10 @@ button {
   touch-action: manipulation;
 }
 
-.participant-segment:hover {
+.participant-segment:hover:not(.participant-segment--active) {
   border-color: #245d59;
-  background: #245d59;
-  color: #ffffff;
+  background: #ecfdf5;
+  color: var(--tab-active-bg);
 }
 
 .participant-segment:focus-visible {
@@ -219,12 +219,12 @@ button {
   outline-offset: 2px;
 }
 
+/* Vald: mörkgrön bakgrund, vit siffra, ingen border (samma storlek via transparent border) */
 .participant-segment--active,
 .participant-segment[aria-checked="true"] {
-  border-color: var(--tab-active-bg);
+  border: 2px solid transparent;
   background: var(--tab-active-bg);
-  color: #ecfdf5;
-  box-shadow: 0 0 0 2px rgba(30, 82, 78, 0.4);
+  color: #ffffff;
 }
 
 .participant-size-foot {
@@ -520,7 +520,7 @@ a.danger-button:hover {
   align-items: stretch;
   justify-content: flex-end;
   min-height: var(--app-tab-bar-min-height);
-  padding: 0.35rem 0.12rem 0.45rem;
+  padding: 0.35rem 0.08rem 0.45rem;
   font-weight: 700;
   text-decoration: none;
   border: none;
@@ -570,8 +570,8 @@ a.danger-button:hover {
 
 .app-tab-bar__tab__icon {
   display: block;
-  width: 3.25rem;
-  height: 3.25rem;
+  width: clamp(2.5rem, 8vw, 3.25rem);
+  height: clamp(2.5rem, 8vw, 3.25rem);
   -webkit-mask-size: contain;
   mask-size: contain;
   -webkit-mask-repeat: no-repeat;
@@ -588,21 +588,23 @@ a.danger-button:hover {
   background-color: #ffffff;
 }
 
-/* Join (hands) icon sits higher in SVG – nudge down to align with others */
+/* Join (hands) icon – större, centrerad, liten nudge ned */
 .app-tab-bar__tab__icon--hands {
-  transform: translateY(6px);
+  width: clamp(3rem, 10vw, 4.25rem);
+  height: clamp(3rem, 10vw, 4.25rem);
+  transform: translateY(2px);
 }
 
-/* Name (face) icon – larger, slightly higher than Join */
+/* Name (face) icon – större, centrerad, nudge ned */
 .app-tab-bar__tab__icon--face {
-  width: 4rem;
-  height: 4rem;
+  width: clamp(3rem, 10vw, 4.25rem);
+  height: clamp(3rem, 10vw, 4.25rem);
   transform: translateY(2px);
 }
 
 .app-tab-bar__tab__label {
   flex: 0 0 auto;
-  font-size: clamp(0.6rem, 2.75vw, 0.78rem);
+  font-size: clamp(0.55rem, 2.5vw, 0.78rem);
   line-height: 1.1;
   text-align: center;
   overflow: hidden;
@@ -963,16 +965,30 @@ a.danger-button:hover {
   overflow: visible;
 }
 
-/* Map + My Bites: day row uses full width (no Clear column). */
+/* Map + My Bites: day row – flex-shrink 0 on mobile so it can scroll if needed */
 .browse-subtab-row--days-only .browse-subtab-bar {
   flex: 1 1 100%;
   min-width: 0;
 }
 
+@media (max-width: 420px) {
+  .browse-subtab-row--days-only .browse-subtab-bar {
+    flex: 0 0 auto;
+    min-width: max-content;
+  }
+
+  .browse-subtab-row--days-only .browse-subtab-bar .browse-subtab {
+    flex: 0 0 auto;
+    min-width: 3.75rem;
+  }
+}
+
 .browse-subtab-row--days-only {
   border-left: none;
   border-right: none;
-  overflow: visible;
+  overflow-x: auto;
+  overflow-y: visible;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* Grön gränslinje ENDAST mellan två närliggande inaktiva dagar; 80% höjd, flytande i mitten */
