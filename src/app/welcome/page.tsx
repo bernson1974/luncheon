@@ -1,25 +1,24 @@
 "use client";
 
 import { useEffect, useState, type FormEvent } from "react";
-import { useRouter } from "next/navigation";
 import { login, signup, fetchMe } from "@/lib/authClient";
 
 type Mode = "login" | "signup";
 
 export default function WelcomePage() {
-  const router = useRouter();
   const [mode, setMode] = useState<Mode>("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [alias, setAlias] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showDisclaimer, setShowDisclaimer] = useState(false);
 
   useEffect(() => {
     fetchMe().then((user) => {
-      if (user) router.replace("/");
+      if (user) window.location.replace("/");
     });
-  }, [router]);
+  }, []);
 
   async function handleLogin(e: FormEvent) {
     e.preventDefault();
@@ -27,7 +26,7 @@ export default function WelcomePage() {
     setLoading(true);
     try {
       const result = await login(email.trim(), password);
-      if (result.ok) router.replace("/");
+      if (result.ok) window.location.replace("/");
       else setError(result.error);
     } catch {
       setError("Could not log in. Try again.");
@@ -54,7 +53,7 @@ export default function WelcomePage() {
     setLoading(true);
     try {
       const result = await signup(email.trim(), password, alias.trim());
-      if (result.ok) router.replace("/");
+      if (result.ok) setShowDisclaimer(true);
       else setError(result.error);
     } catch {
       setError("Could not create account. Try again.");
@@ -179,6 +178,54 @@ export default function WelcomePage() {
           )}
         </div>
       </div>
+
+      {showDisclaimer && (
+        <div
+          role="alertdialog"
+          aria-modal="true"
+          aria-labelledby="disclaimer-title"
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 50,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            backgroundColor: "rgba(0,0,0,0.5)",
+            padding: "1rem",
+          }}
+          onClick={(e) => e.target === e.currentTarget && setShowDisclaimer(false)}
+        >
+          <div
+            style={{
+              background: "#fff",
+              borderRadius: "var(--radius-field)",
+              padding: "1.5rem",
+              maxWidth: "20rem",
+              boxShadow: "0 4px 20px rgba(0,0,0,0.2)",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 id="disclaimer-title" style={{ fontSize: "1.1rem", fontWeight: 600, marginBottom: "0.75rem", color: "#064e3b", textAlign: "center" }}>
+              Disclaimer
+            </h3>
+            <p style={{ fontSize: "0.9rem", color: "#334155", marginBottom: "1.25rem", lineHeight: 1.4, textAlign: "center" }}>
+              This app can not guarantee that all restaurants are still active nor their opening hours.
+            </p>
+            <button
+              type="button"
+              className="primary-button"
+              style={{ marginTop: 0, width: "100%" }}
+              onClick={() => {
+                setShowDisclaimer(false);
+                window.location.replace("/");
+              }}
+            >
+              Join the BITE CLUB!
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

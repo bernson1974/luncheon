@@ -112,6 +112,19 @@ export async function updateUserAlias(userId: string, newAlias: string): Promise
   return Array.isArray(result) && result.length > 0;
 }
 
+export async function deleteUser(userId: string): Promise<{ ok: true } | { ok: false; error: string }> {
+  if (!sql) return { ok: false, error: "Database not configured" };
+  try {
+    await sql`UPDATE dates SET status = 'cancelled' WHERE creator_token = ${userId}`;
+    await sql`DELETE FROM participants WHERE user_token = ${userId}`;
+    await sql`DELETE FROM users WHERE id = ${userId}`;
+    return { ok: true };
+  } catch (e) {
+    console.error("Delete user error:", e);
+    return { ok: false, error: "Could not delete account" };
+  }
+}
+
 export async function loginUser(
   email: string,
   password: string

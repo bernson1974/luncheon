@@ -39,3 +39,10 @@ export async function signup(
 export async function logout(): Promise<void> {
   await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
 }
+
+export async function deleteAccount(): Promise<{ ok: true } | { ok: false; error: string }> {
+  const res = await fetch("/api/auth/delete", { method: "POST", credentials: "include" });
+  const data = (await res.json()) as { ok?: boolean; error?: string };
+  if (res.ok && data.ok) return { ok: true };
+  return { ok: false, error: data.error ?? "Could not delete account" };
+}

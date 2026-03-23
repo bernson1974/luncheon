@@ -548,15 +548,18 @@ a.danger-button:hover {
   color: #ecfdf5;
 }
 
-.app-tab-bar__tab--active:hover,
-.app-tab-bar__tab[aria-current="page"]:hover {
-  background: #245d59;
-  color: #f8fafc;
-}
+/* Hover/active bara på enheter med ordentlig hover (desktop) – på touch kvarstår annars den mörkare färgen */
+@media (hover: hover) {
+  .app-tab-bar__tab--active:hover,
+  .app-tab-bar__tab[aria-current="page"]:hover {
+    background: #245d59;
+    color: #f8fafc;
+  }
 
-.app-tab-bar__tab--active:active,
-.app-tab-bar__tab[aria-current="page"]:active {
-  background: #183d3a;
+  .app-tab-bar__tab--active:active,
+  .app-tab-bar__tab[aria-current="page"]:active {
+    background: #183d3a;
+  }
 }
 
 /* Room for future icons above the label */

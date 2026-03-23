@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/components/AuthProvider";
-import { logout } from "@/lib/authClient";
+import { logout, deleteAccount } from "@/lib/authClient";
 
 export default function SettingsPage() {
   const router = useRouter();
@@ -14,6 +14,8 @@ export default function SettingsPage() {
   const [error, setError] = useState("");
   const [aliasLocked, setAliasLocked] = useState(false);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   const refreshBookingLock = useCallback(async () => {
     try {
@@ -87,6 +89,24 @@ export default function SettingsPage() {
     router.replace("/welcome");
   }
 
+  async function handleDeleteAccount() {
+    setDeleting(true);
+    try {
+      const result = await deleteAccount();
+      if (result.ok) {
+        window.location.replace("/welcome");
+      } else {
+        setError(result.error);
+        setShowDeleteConfirm(false);
+      }
+    } catch {
+      setError("Could not delete account.");
+      setShowDeleteConfirm(false);
+    } finally {
+      setDeleting(false);
+    }
+  }
+
   if (!user) return null;
 
   return (
@@ -151,13 +171,21 @@ export default function SettingsPage() {
         <p className="page-subtitle" style={{ color: "#064e3b" }}>
           Log out to sign in with a different account.
         </p>
-        <div style={{ maxWidth: "17.5rem", marginLeft: "auto", marginRight: "auto" }}>
+        <div style={{ maxWidth: "17.5rem", marginLeft: "auto", marginRight: "auto", display: "flex", flexDirection: "column", gap: "0.5rem" }}>
           <button
             type="button"
             className="danger-button"
             onClick={() => setShowResetConfirm(true)}
           >
             Log out
+          </button>
+          <button
+            type="button"
+            className="secondary-button"
+            style={{ color: "#64748b", fontWeight: 400 }}
+            onClick={() => { setShowDeleteConfirm(true); setError(""); }}
+          >
+            Ta bort mitt konto
           </button>
         </div>
 
@@ -210,6 +238,63 @@ export default function SettingsPage() {
                   onClick={handleLogout}
                 >
                   Log out
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {showDeleteConfirm && (
+          <div
+            role="alertdialog"
+            aria-modal="true"
+            aria-labelledby="delete-confirm-title"
+            style={{
+              position: "fixed",
+              inset: 0,
+              zIndex: 50,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              backgroundColor: "rgba(0,0,0,0.5)",
+              padding: "1rem",
+            }}
+            onClick={(e) => !deleting && e.target === e.currentTarget && setShowDeleteConfirm(false)}
+          >
+            <div
+              style={{
+                background: "#fff",
+                borderRadius: "var(--radius-field)",
+                padding: "1.5rem",
+                maxWidth: "20rem",
+                boxShadow: "0 4px 20px rgba(0,0,0,0.2)",
+              }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h3 id="delete-confirm-title" style={{ fontSize: "1.1rem", fontWeight: 600, marginBottom: "0.75rem", color: "#064e3b" }}>
+                Ta bort mitt konto?
+              </h3>
+              <p style={{ fontSize: "0.9rem", color: "#334155", marginBottom: "1.25rem", lineHeight: 1.4 }}>
+                Din användardata, inklusive bokade lunchdejtar, raderas permanent. Det går inte att ångra.
+              </p>
+              <div style={{ display: "flex", gap: "0.5rem" }}>
+                <button
+                  type="button"
+                  className="secondary-button"
+                  style={{ flex: 1, marginTop: 0 }}
+                  onClick={() => setShowDeleteConfirm(false)}
+                  disabled={deleting}
+                >
+                  Avbryt
+                </button>
+                <button
+                  type="button"
+                  className="danger-button"
+                  style={{ flex: 1, marginTop: 0 }}
+                  onClick={handleDeleteAccount}
+                  disabled={deleting}
+                >
+                  {deleting ? "Tar bort…" : "Ta bort konto"}
                 </button>
               </div>
             </div>
