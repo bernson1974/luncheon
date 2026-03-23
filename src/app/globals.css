@@ -981,8 +981,9 @@ a.danger-button:hover {
   }
 
   .browse-subtab-row--days-only .browse-subtab-bar .browse-subtab {
-    flex: 0 0 auto;
+    flex: 1 1 0;
     min-width: 3.75rem;
+    max-width: none;
   }
 }
 
@@ -1046,6 +1047,8 @@ a.danger-button:hover {
 
 /* Day cell: today = single “TODAY” line; others = weekday + date */
 .browse-subtab.day-subtab {
+  flex: 1 1 0;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1246,6 +1249,7 @@ a.danger-button:hover {
 .browse-date-bg-card--full .badge-full,
 .browse-date-bg-card--full .detail-row span.badge-full,
 .browse-dates-list .browse-date-bg-card.date-card--full .badge-full,
+.browse-dates-list .browse-date-bg-card.date-card--full .date-card-header .badge-full,
 .browse-dates-list .browse-date-bg-card.date-card--full .date-card-footer .badge-full {
   background: #b91c1c !important;
   color: #ffffff !important;
@@ -1340,6 +1344,13 @@ a.danger-button:hover {
 .date-card-header {
   display: block;
   margin-bottom: 0.35rem;
+}
+
+.date-card-header--with-status {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.5rem;
 }
 
 .date-card-title {

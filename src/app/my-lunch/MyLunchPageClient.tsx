@@ -119,12 +119,20 @@ function MyLunchDayPanel({
       <div className={`browse-date-bg-card browse-date-bg-card--${statusClass}`}>
         <div className="my-lunch-main-card__inner">
           <div className="my-lunch-details-section">
-            <div className="detail-row">
+            <div className="detail-row detail-row--with-status">
               <span className="detail-label">Time</span>
               <span>
                 {date.timeStart}
                 {date.timeEnd ? `–${date.timeEnd}` : ""}
               </span>
+              {!isCancelled && (
+                <span
+                  className={`badge ${date.spotsLeft > 0 ? "badge-open" : "badge-full"}`}
+                  style={{ marginLeft: "auto" }}
+                >
+                  {date.spotsLeft > 0 ? "Open" : "Full"}
+                </span>
+              )}
             </div>
             <div className="detail-row">
               <span className="detail-label">Restaurant</span>
@@ -150,19 +158,6 @@ function MyLunchDayPanel({
                       {", "}
                       {date.participants.map((p) => p.alias).join(", ")}
                     </>
-                  )}
-                </span>
-                <span className="secondary-text detail-row__participant-spots">
-                  {isCancelled ? (
-                    "—"
-                  ) : (
-                    <span
-                      className={`badge ${
-                        date.spotsLeft > 0 ? "badge-open" : "badge-full"
-                      }`}
-                    >
-                      {date.spotsLeft > 0 ? "Open" : "Full"}
-                    </span>
                   )}
                 </span>
               </span>

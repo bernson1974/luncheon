@@ -365,23 +365,13 @@ export default function BrowsePageClient({ initialDates }: { initialDates: Lunch
                 className={`browse-date-bg-card ${dateCardStatusClass(date.status)}`}
               >
                 <Link href={`/date/${date.id}`} className="date-card date-card--in-bg">
-                  <div className="date-card-header">
+                  <div className="date-card-header date-card-header--with-status">
                     <div>
                       <div className="date-card-title">{date.topic}</div>
                       <div className="date-card-restaurant">
                         {date.restaurant.name} · {cuisineLabel(date.restaurant.cuisine)}
                       </div>
                     </div>
-                  </div>
-                  <div className="date-card-footer">
-                    <span>{lunchDateLabel(date.date)}</span>
-                    <span>
-                      {date.timeStart}
-                      {date.timeEnd ? `–${date.timeEnd}` : ""}
-                    </span>
-                    <span>
-                      Host: <strong>{date.creatorAlias}</strong>
-                    </span>
                     <span
                       className={`badge ${
                         date.status === "open"
@@ -396,6 +386,16 @@ export default function BrowsePageClient({ initialDates }: { initialDates: Lunch
                         : date.status === "full"
                           ? "Full"
                           : "Cancelled"}
+                    </span>
+                  </div>
+                  <div className="date-card-footer">
+                    <span>{lunchDateLabel(date.date)}</span>
+                    <span>
+                      {date.timeStart}
+                      {date.timeEnd ? `–${date.timeEnd}` : ""}
+                    </span>
+                    <span>
+                      Host: <strong>{date.creatorAlias}</strong>
                     </span>
                   </div>
                 </Link>

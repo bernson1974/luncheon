@@ -173,9 +173,17 @@ export default function DateDetailClient() {
       <div className="date-detail-card-area">
         <div className={`browse-date-bg-card browse-date-bg-card--${date.status}`}>
           <div className="date-detail-main-card__inner">
-          <div className="detail-row">
+          <div className="detail-row detail-row--with-status">
             <span className="detail-label">Day</span>
             <span>{lunchDateLabel(date.date)}</span>
+            {!isCancelled && (
+              <span
+                className={`badge ${date.spotsLeft > 0 ? "badge-open" : "badge-full"}`}
+                style={{ marginLeft: "auto" }}
+              >
+                {date.spotsLeft > 0 ? "Open" : "Full"}
+              </span>
+            )}
           </div>
           <div className="detail-row">
             <span className="detail-label">Time</span>
@@ -204,19 +212,6 @@ export default function DateDetailClient() {
                     {", "}
                     {date.participants.map((p) => p.alias).join(", ")}
                   </>
-                )}
-              </span>
-              <span className="secondary-text detail-row__participant-spots">
-                {isCancelled ? (
-                  "—"
-                ) : (
-                  <span
-                    className={`badge ${
-                      date.spotsLeft > 0 ? "badge-open" : "badge-full"
-                    }`}
-                  >
-                    {date.spotsLeft > 0 ? "Open" : "Full"}
-                  </span>
                 )}
               </span>
             </span>
