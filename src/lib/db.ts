@@ -192,7 +192,7 @@ export async function listDates(filters?: {
       ).length;
       const spotsLeft = Math.max(0, row.max_participants - 1 - joinedExcludingCreator);
       byId.set(dateId, {
-        ...rowToDate(row as Parameters<typeof rowToDate>[0]),
+        ...rowToDate(row as unknown as Parameters<typeof rowToDate>[0]),
         participants,
         spotsLeft,
       });
@@ -245,7 +245,7 @@ export async function getDate(id: string): Promise<LunchDatePublic | null> {
   ).length;
   const spotsLeft = Math.max(0, row.max_participants - 1 - joinedExcludingCreator);
   return {
-    ...rowToDate(row as Parameters<typeof rowToDate>[0]),
+    ...rowToDate(row as unknown as Parameters<typeof rowToDate>[0]),
     participants,
     spotsLeft,
   };
