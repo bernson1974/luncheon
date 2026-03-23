@@ -2,12 +2,11 @@
 
 import { useState, useEffect, type FormEvent } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { getStoredAlias } from "@/lib/userAlias";
+import { useAuth } from "@/components/AuthProvider";
 import dynamic from "next/dynamic";
 import TimeQuarterSelect from "@/components/TimeQuarterSelect";
 import type { LatLng } from "@/components/MeetingPointPicker";
 import { rememberCreatedDate } from "@/lib/creatorStorage";
-import { setUserTokenCookie } from "@/lib/userTokenCookie";
 import type { FoursquarePlace } from "@/components/CreateMapPicker";
 import { cuisineLabel } from "@/lib/cuisineLabels";
 
@@ -25,14 +24,6 @@ const MeetingPointPicker = dynamic(() => import("@/components/MeetingPointPicker
   loading: () => <div style={{ height: "220px", borderRadius: "0.75rem", background: "#e2e8f0" }} />,
 });
 
-function getUserToken(): string {
-  let token = localStorage.getItem("userToken");
-  if (!token) {
-    token = crypto.randomUUID();
-    localStorage.setItem("userToken", token);
-  }
-  return token;
-}
 
 type WindowDate = { ymd: string; label: string };
 
@@ -79,9 +70,8 @@ export default function CreatePageClient() {
 
   useEffect(() => {
     async function loadCommitments() {
-      const userToken = getUserToken();
       try {
-        const res = await fetch(`/api/user/commitments?userToken=${encodeURIComponent(userToken)}`);
+        const res = await fetch("/api/user/commitments", { credentials: "include" });
         if (!res.ok) return;
         const data = (await res.json()) as { committedYmds: string[] };
         setCommittedYmds(data.committedYmds ?? []);
@@ -114,7 +104,8 @@ export default function CreatePageClient() {
     : undefined;
 
   const isDateBlocked = lunchDateYmd.length > 0 && committedYmds.includes(lunchDateYmd);
-  const storedAlias = (getStoredAlias()?.trim() ?? "");
+  const { user } = useAuth();
+  const storedAlias = user?.alias ?? "";
   const isValid =
     selectedRestaurant != null &&
     storedAlias.length > 0 &&
@@ -131,13 +122,11 @@ export default function CreatePageClient() {
     setError("");
 
     try {
-      const userToken = getUserToken();
       const res = await fetch("/api/dates", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({
-          creatorAlias: storedAlias,
-          creatorToken: userToken,
           date: lunchDateYmd,
           timeStart,
           timeEnd: timeEnd || undefined,
@@ -175,9 +164,7 @@ export default function CreatePageClient() {
       if (!res.ok) throw new Error("Could not create lunch date");
 
       const date = await res.json();
-
-      rememberCreatedDate(date.id, userToken);
-      setUserTokenCookie(userToken);
+      rememberCreatedDate(date.id, user?.id ?? "");
 
       router.push(`/date/${date.id}`);
     } catch {

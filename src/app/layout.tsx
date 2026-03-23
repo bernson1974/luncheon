@@ -2,7 +2,7 @@ import "./globals.css";
 import type { ReactNode } from "react";
 import type { Viewport } from "next";
 import AppShell from "@/components/AppShell";
-import SyncUserTokenCookie from "@/components/SyncUserTokenCookie";
+import { AuthProvider } from "@/components/AuthProvider";
 
 export const metadata = {
   title: "Luncheon · Lindholmen",
@@ -19,13 +19,14 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
       <body className="min-h-screen text-slate-900">
-        <SyncUserTokenCookie />
+        <AuthProvider>
         <main
           className="flex min-h-screen w-full max-w-full flex-col overflow-x-hidden px-4 py-6 sm:px-5"
           style={{ maxWidth: "1280px", marginInline: "auto" }}
         >
           <AppShell>{children}</AppShell>
         </main>
+        </AuthProvider>
       </body>
     </html>
   );

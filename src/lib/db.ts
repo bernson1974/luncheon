@@ -199,6 +199,22 @@ export async function listDates(filters?: {
   }
 }
 
+export async function getDateRole(
+  dateId: string,
+  userToken: string
+): Promise<"creator" | "participant" | null> {
+  if (!sql) return null;
+  const creatorRow = await sql`
+    SELECT 1 FROM dates WHERE id = ${dateId} AND creator_token = ${userToken} LIMIT 1
+  `;
+  if (creatorRow.length > 0) return "creator";
+  const participantRow = await sql`
+    SELECT 1 FROM participants WHERE lunch_date_id = ${dateId} AND user_token = ${userToken} LIMIT 1
+  `;
+  if (participantRow.length > 0) return "participant";
+  return null;
+}
+
 export async function getDate(id: string): Promise<LunchDatePublic | null> {
   if (!sql) return null;
   const rows = await sql`

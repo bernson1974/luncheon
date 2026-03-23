@@ -22,15 +22,6 @@ export type CountsByYmd = Record<string, Record<string, number>>;
 /** ymd → restaurantId → true if any date at that restaurant that day has 1 spot left */
 export type OneSpotLeftByYmd = Record<string, Record<string, boolean>>;
 
-function getUserToken(): string {
-  if (typeof localStorage === "undefined") return "";
-  let token = localStorage.getItem("userToken");
-  if (!token) {
-    token = crypto.randomUUID();
-    localStorage.setItem("userToken", token);
-  }
-  return token;
-}
 
 function dayHasAnyBookings(ymd: string, countsByYmd: CountsByYmd): boolean {
   const c = countsByYmd[ymd];
@@ -81,8 +72,7 @@ export default function HomeMapSection({
 
   useEffect(() => {
     if (serverCommittedYmds.length > 0) return;
-    const token = getUserToken();
-    fetch(`/api/user/commitments?userToken=${encodeURIComponent(token)}`, { credentials: "include" })
+    fetch("/api/user/commitments", { credentials: "include" })
       .then((res) => (res.ok ? res.json() : { committedYmds: [] }))
       .then((data: { committedYmds?: string[] }) =>
         setClientCommittedYmds(data.committedYmds ?? [])

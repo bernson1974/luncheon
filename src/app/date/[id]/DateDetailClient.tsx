@@ -5,8 +5,8 @@ import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import type { LunchDatePublic } from "@/lib/models";
-import { getStoredAlias } from "@/lib/userAlias";
-import { forgetCreatedDate, isCreatorOfDateInStorage } from "@/lib/creatorStorage";
+import { useAuth } from "@/components/AuthProvider";
+import { forgetCreatedDate } from "@/lib/creatorStorage";
 import { lunchDateLabel } from "@/lib/lunchDateWindow";
 import { cuisineLabel } from "@/lib/cuisineLabels";
 
@@ -15,25 +15,7 @@ const MeetingPointPicker = dynamic(
   { ssr: false, loading: () => <div style={{ height: "200px", borderRadius: "0.75rem", background: "#e2e8f0" }} /> }
 );
 
-function getUserToken(): string {
-  let token = localStorage.getItem("userToken");
-  if (!token) {
-    token = crypto.randomUUID();
-    localStorage.setItem("userToken", token);
-  }
-  return token;
-}
-
 type Role = "creator" | "participant" | "visitor";
-
-function deriveRole(dateId: string, userToken: string): Role {
-  if (isCreatorOfDateInStorage(dateId, userToken)) return "creator";
-
-  const joinedTokenKey = `joined:${dateId}`;
-  if (localStorage.getItem(joinedTokenKey) === userToken) return "participant";
-
-  return "visitor";
-}
 
 export default function DateDetailClient() {
   const params = useParams();
@@ -49,8 +31,8 @@ export default function DateDetailClient() {
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const [role, setRole] = useState<Role>("visitor");
-  const [userToken, setUserToken] = useState("");
 
+  const { user } = useAuth();
   const [joining, setJoining] = useState(false);
   const [joinError, setJoinError] = useState("");
   const [alreadyHasLunch, setAlreadyHasLunch] = useState(false);
@@ -69,23 +51,19 @@ export default function DateDetailClient() {
       setLoading(false);
       return;
     }
-    const data: LunchDatePublic = await res.json();
+    const data = await res.json() as LunchDatePublic & { myRole?: "creator" | "participant" | null };
     setDate(data);
-
-    const token = getUserToken();
-    setUserToken(token);
-    setRole(deriveRole(dateId, token));
+    setRole(data.myRole === "creator" ? "creator" : data.myRole === "participant" ? "participant" : "visitor");
 
     let busySameDay = false;
     try {
-      const cRes = await fetch(
-        `/api/user/commitments?userToken=${encodeURIComponent(token)}`
-      );
+      const cRes = await fetch("/api/user/commitments", { credentials: "include" });
       if (cRes.ok) {
         const { committedYmds } = (await cRes.json()) as { committedYmds: string[] };
         busySameDay =
           committedYmds.includes(data.date) &&
-          deriveRole(dateId, token) === "visitor";
+          data.myRole !== "creator" &&
+          data.myRole !== "participant";
       }
     } catch {
       busySameDay = false;
@@ -99,8 +77,7 @@ export default function DateDetailClient() {
   }, [load]);
 
   async function handleJoin() {
-    const alias = getStoredAlias()?.trim() ?? "";
-    if (!alias || joining) return;
+    if (joining) return;
 
     setJoining(true);
     setJoinError("");
@@ -109,7 +86,8 @@ export default function DateDetailClient() {
       const res = await fetch(`/api/dates/${dateId}/join`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ alias, userToken }),
+        credentials: "include",
+        body: JSON.stringify({}),
       });
 
       if (res.status === 409) {
@@ -126,7 +104,6 @@ export default function DateDetailClient() {
 
       if (!res.ok) throw new Error();
 
-      localStorage.setItem(`joined:${dateId}`, userToken);
       setRole("participant");
       await load();
       setJoining(false);
@@ -143,10 +120,9 @@ export default function DateDetailClient() {
     await fetch(`/api/dates/${dateId}/join`, {
       method: "DELETE",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ userToken }),
+      credentials: "include",
+      body: JSON.stringify({}),
     });
-
-    localStorage.removeItem(`joined:${dateId}`);
     router.push("/browse");
   }
 
@@ -158,7 +134,8 @@ export default function DateDetailClient() {
     await fetch(`/api/dates/${dateId}`, {
       method: "DELETE",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ creatorToken: userToken }),
+      credentials: "include",
+      body: JSON.stringify({}),
     });
 
     forgetCreatedDate(dateId);
@@ -282,7 +259,7 @@ export default function DateDetailClient() {
               type="button"
               className="primary-button"
               onClick={() => void handleJoin()}
-              disabled={!getStoredAlias()?.trim() || joining}
+              disabled={!user?.alias?.trim() || joining}
             >
               {joining ? "Joining…" : "Join lunch date"}
             </button>

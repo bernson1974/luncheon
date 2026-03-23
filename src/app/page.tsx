@@ -7,6 +7,7 @@ import HomeMapSection, {
 } from "@/components/HomeMapSection";
 import { getCommittedDateYmdsForUser, listDates } from "@/lib/store";
 import { selectableLunchDateYmds } from "@/lib/lunchDateWindow";
+import { getSessionUser } from "@/lib/auth";
 
 /** Avoid stale static prerender without manually clearing .next */
 export const dynamic = "force-dynamic";
@@ -17,8 +18,8 @@ export default async function HomePage() {
   const days: HomeMapDay[] = ymds.map((ymd) => ({ ymd }));
 
   const cookieStore = await cookies();
-  const tokenCookie = cookieStore.get("luncheon_user_token");
-  const userToken = tokenCookie?.value ? decodeURIComponent(tokenCookie.value) : null;
+  const sessionUser = await getSessionUser(cookieStore);
+  const userToken = sessionUser?.id ?? null;
   const committedYmds = userToken ? await getCommittedDateYmdsForUser(userToken) : [];
 
   const countsByYmd: CountsByYmd = {};

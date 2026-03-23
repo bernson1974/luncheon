@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, type ReactNode } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
-import { getStoredAlias } from "@/lib/userAlias";
+import { useAuth } from "@/components/AuthProvider";
 
 const PUBLIC_PATHS = new Set(["/welcome"]);
 
@@ -28,22 +28,15 @@ const MAIN_TABS: {
 export default function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-  const [ready, setReady] = useState(false);
+  const { user, loading } = useAuth();
 
   useEffect(() => {
-    const alias = getStoredAlias();
     const isPublic = PUBLIC_PATHS.has(pathname ?? "");
+    if (loading) return;
+    if (!user && !isPublic) router.replace("/welcome");
+  }, [user, loading, pathname, router]);
 
-    if (!alias && !isPublic) {
-      router.replace("/welcome");
-      setReady(true);
-      return;
-    }
-
-    setReady(true);
-  }, [pathname, router]);
-
-  if (!ready) {
+  if (loading) {
     return (
       <div className="app-shell-loading" style={{ padding: "2rem", textAlign: "center", color: "#64748b" }}>
         Loading…
@@ -55,8 +48,12 @@ export default function AppShell({ children }: { children: ReactNode }) {
     return <>{children}</>;
   }
 
-  if (!getStoredAlias()) {
-    return null;
+  if (!user) {
+    return (
+      <div className="app-shell-loading" style={{ padding: "2rem", textAlign: "center", color: "#64748b" }}>
+        Redirecting…
+      </div>
+    );
   }
 
   const path = pathname ?? "";

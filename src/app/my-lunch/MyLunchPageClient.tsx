@@ -6,7 +6,7 @@ import Link from "next/link";
 import dynamic from "next/dynamic";
 import type { LunchDatePublic } from "@/lib/models";
 import { syncLocalBookingStateWithServer } from "@/lib/bookingState";
-import { forgetCreatedDate, isCreatorOfDateInStorage, listCreatorDateIdsFromStorage, rememberCreatedDate } from "@/lib/creatorStorage";
+import { forgetCreatedDate } from "@/lib/creatorStorage";
 import { lunchDateLabel, selectableLunchDateYmds } from "@/lib/lunchDateWindow";
 import { cuisineLabel } from "@/lib/cuisineLabels";
 import DayPickerSubtabs from "@/components/DayPickerSubtabs";
@@ -23,32 +23,17 @@ const MeetingPointPicker = dynamic(
 
 type WindowDate = { ymd: string; label: string };
 
-function getUserToken(): string {
-  if (typeof window === "undefined") return "";
-  let token = localStorage.getItem("userToken");
-  if (!token) {
-    token = crypto.randomUUID();
-    localStorage.setItem("userToken", token);
-  }
-  return token;
-}
-
 function MyLunchDayPanel({
   date,
   ariaLabelledBy,
   onBookingChanged,
 }: {
-  date: LunchDatePublic;
+  date: LunchDatePublic & { role?: string };
   ariaLabelledBy?: string;
   onBookingChanged?: () => void;
 }) {
-  const [userToken, setUserToken] = useState("");
   const [acting, setActing] = useState(false);
   const [actionErr, setActionErr] = useState("");
-
-  useEffect(() => {
-    setUserToken(getUserToken());
-  }, []);
 
   useEffect(() => {
     setActionErr("");
@@ -58,18 +43,12 @@ function MyLunchDayPanel({
     date.meetingPoint?.latitude != null && date.meetingPoint?.longitude != null;
 
   const isCancelled = date.status === "cancelled";
-  const isCreator = Boolean(
-    userToken && isCreatorOfDateInStorage(date.id, userToken)
-  );
-  const isParticipant = Boolean(
-    userToken &&
-      typeof window !== "undefined" &&
-      localStorage.getItem(`joined:${date.id}`) === userToken
-  );
+  const isCreator = date.role === "creator";
+  const isParticipant = date.role === "participant";
   const showBookingAction = !isCancelled && (isCreator || isParticipant);
 
   async function handleCancelDejt() {
-    if (acting || !userToken) return;
+    if (acting) return;
     if (!confirm("Cancel this date? It will be removed from the list.")) return;
     setActing(true);
     setActionErr("");
@@ -77,7 +56,8 @@ function MyLunchDayPanel({
       const res = await fetch(`/api/dates/${date.id}`, {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ creatorToken: userToken }),
+        credentials: "include",
+        body: JSON.stringify({}),
       });
       if (!res.ok) throw new Error();
       forgetCreatedDate(date.id);
@@ -90,7 +70,7 @@ function MyLunchDayPanel({
   }
 
   async function handleLeaveDejt() {
-    if (acting || !userToken) return;
+    if (acting) return;
     if (!confirm("Leave this lunch?")) return;
     setActing(true);
     setActionErr("");
@@ -98,10 +78,10 @@ function MyLunchDayPanel({
       const res = await fetch(`/api/dates/${date.id}/join`, {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userToken }),
+        credentials: "include",
+        body: JSON.stringify({}),
       });
       if (!res.ok) throw new Error();
-      localStorage.removeItem(`joined:${date.id}`);
       onBookingChanged?.();
     } catch {
       setActionErr("Couldn't leave. Try again.");
@@ -263,58 +243,17 @@ export default function MyLunchPageClient({
     }
     setWindowDates(windowList);
 
-    await syncLocalBookingStateWithServer();
-
-    const userToken = getUserToken();
-
-    /* Primary: API knows creator/participant by userToken (works even if localStorage cleared) */
     let valid: LunchDatePublic[] = [];
     try {
-      const userRes = await fetch(`/api/user/dates?userToken=${encodeURIComponent(userToken)}`);
+      const userRes = await fetch("/api/user/dates", { credentials: "include" });
       if (userRes.ok) {
         const data = (await userRes.json()) as { dates: (LunchDatePublic & { role: string })[] };
         const fromApi = data.dates ?? [];
         valid = fromApi.filter((d) => d.status !== "cancelled");
-        /* Backfill localStorage so cancel/leave actions work */
-        for (const d of fromApi) {
-          if (d.role === "creator") {
-            rememberCreatedDate(d.id, userToken);
-          } else if (d.role === "participant") {
-            localStorage.setItem(`joined:${d.id}`, userToken);
-          }
-        }
       }
     } catch {
-      /* Fall through to localStorage fallback */
+      /* fall through */
     }
-
-    /* Fallback 1: localStorage ids */
-    if (valid.length === 0) {
-      const ids: string[] = [];
-      for (const id of listCreatorDateIdsFromStorage()) {
-        if (!ids.includes(id)) ids.push(id);
-      }
-      for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        if (key?.startsWith("joined:")) {
-          const id = key.replace("joined:", "");
-          if (!ids.includes(id)) ids.push(id);
-        }
-      }
-      if (ids.length > 0) {
-        const results = await Promise.all(
-          ids.map((id) =>
-            fetch(`/api/dates/${id}`)
-              .then((r) => (r.ok ? r.json() : null))
-              .catch(() => null)
-          )
-        );
-        valid = results.filter(Boolean).filter((d: LunchDatePublic) => d.status !== "cancelled");
-      }
-    }
-
-    /* Alias match removed: multiple users can share the same name (e.g. seed has 3 "Erik"s) –
-       showing those as "yours" causes confusion. Only show dates where userToken matches. */
 
     setDates(valid);
 
@@ -341,14 +280,8 @@ export default function MyLunchPageClient({
           windowList = selectableLunchDateYmds().map((ymd) => ({ ymd, label: lunchDateLabel(ymd) }));
         }
         setWindowDates(windowList);
-        const userToken = getUserToken();
         const valid = initialDates.filter((d) => d.status !== "cancelled");
         setDates(valid);
-        for (const d of initialDates) {
-          if (d.status === "cancelled") continue;
-          if (d.role === "creator") rememberCreatedDate(d.id, userToken);
-          else if (d.role === "participant") localStorage.setItem(`joined:${d.id}`, userToken);
-        }
         const byYmd: Record<string, LunchDatePublic> = {};
         for (const d of valid) {
           if (!byYmd[d.date]) byYmd[d.date] = d;

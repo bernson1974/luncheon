@@ -1,19 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import { joinDate, leaveDate } from "@/lib/store";
+import { getSessionUserFromRequest } from "@/lib/auth";
 
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id } = await params;
-  const body = await request.json();
-  const { alias, userToken } = body;
-
-  if (!alias || !userToken) {
-    return NextResponse.json({ error: "missing_fields" }, { status: 400 });
+  const user = await getSessionUserFromRequest(request);
+  if (!user) {
+    return NextResponse.json({ error: "login_required" }, { status: 401 });
   }
 
-  const result = await joinDate(id, alias, userToken);
+  const { id } = await params;
+  const result = await joinDate(id, user.alias, user.id);
   if (!result.ok) {
     const status = result.error === "not_found" ? 404 : 409;
     return NextResponse.json({ error: result.error }, { status });
@@ -26,15 +25,13 @@ export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id } = await params;
-  const body = await request.json();
-  const { userToken } = body;
-
-  if (!userToken) {
-    return NextResponse.json({ error: "missing_token" }, { status: 400 });
+  const user = await getSessionUserFromRequest(request);
+  if (!user) {
+    return NextResponse.json({ error: "login_required" }, { status: 401 });
   }
 
-  const ok = await leaveDate(id, userToken);
+  const { id } = await params;
+  const ok = await leaveDate(id, user.id);
   if (!ok) return NextResponse.json({ error: "not_found" }, { status: 404 });
 
   return NextResponse.json({ success: true });

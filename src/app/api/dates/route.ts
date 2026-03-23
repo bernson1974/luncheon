@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { listDates, createDate, userHasCommitmentOnDate } from "@/lib/store";
 import { isYmdInSelectableLunchWindow } from "@/lib/lunchDateWindow";
+import { getSessionUserFromRequest } from "@/lib/auth";
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -17,10 +18,13 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  const user = await getSessionUserFromRequest(request);
+  if (!user) {
+    return NextResponse.json({ error: "login_required" }, { status: 401 });
+  }
+
   const body = await request.json();
   const {
-    creatorAlias,
-    creatorToken,
     date: dateYmd,
     timeStart,
     timeEnd,
@@ -34,8 +38,6 @@ export async function POST(request: NextRequest) {
   const rest = restaurant ?? (restaurantId ? { id: restaurantId, name: "", latitude: 0, longitude: 0, cuisine: "" } : null);
 
   if (
-    !creatorAlias ||
-    !creatorToken ||
     !dateYmd ||
     typeof dateYmd !== "string" ||
     !timeStart ||
@@ -51,13 +53,13 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "invalid_date" }, { status: 400 });
   }
 
-  if (await userHasCommitmentOnDate(creatorToken, dateYmd)) {
+  if (await userHasCommitmentOnDate(user.id, dateYmd)) {
     return NextResponse.json({ error: "busy_that_day" }, { status: 409 });
   }
 
   const date = await createDate({
-    creatorAlias,
-    creatorToken,
+    creatorAlias: user.alias,
+    creatorToken: user.id,
     date: dateYmd,
     timeStart,
     timeEnd,

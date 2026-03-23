@@ -5,6 +5,7 @@ export {
   listDatesForUser,
   listDates,
   getDate,
+  getDateRole,
   createDate,
   cancelDate,
   joinDate,

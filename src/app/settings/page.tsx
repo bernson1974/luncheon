@@ -3,79 +3,97 @@
 import { useEffect, useState, useCallback, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { getStoredAlias, setStoredAlias } from "@/lib/userAlias";
-import { hasBookedLunchDate, syncLocalBookingStateWithServer } from "@/lib/bookingState";
-import { clearAppData } from "@/lib/clearAppData";
+import { useAuth } from "@/components/AuthProvider";
+import { logout } from "@/lib/authClient";
 
 export default function SettingsPage() {
   const router = useRouter();
-  const [alias, setAlias] = useState(() => getStoredAlias() ?? "");
+  const { user, refresh } = useAuth();
+  const [alias, setAlias] = useState("");
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState("");
   const [aliasLocked, setAliasLocked] = useState(false);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
 
-  const refreshBookingLock = useCallback(() => {
-    setAliasLocked(hasBookedLunchDate());
+  const refreshBookingLock = useCallback(async () => {
+    try {
+      const res = await fetch("/api/user/dates", { credentials: "include" });
+      if (!res.ok) return;
+      const data = (await res.json()) as { dates?: Array<{ status?: string }> };
+      const hasBooking = (data.dates ?? []).some(
+        (d) => d.status !== "cancelled"
+      );
+      setAliasLocked(hasBooking);
+    } catch {
+      setAliasLocked(false);
+    }
   }, []);
 
   useEffect(() => {
-    let cancelled = false;
-
-    async function init() {
-      await syncLocalBookingStateWithServer();
-      if (cancelled) return;
-      const current = getStoredAlias();
-      if (!current) {
-        router.replace("/welcome");
-        return;
-      }
-      setAlias(current);
-      refreshBookingLock();
+    if (user) {
+      setAlias(user.alias);
+      void refreshBookingLock();
     }
-
-    void init();
-    return () => {
-      cancelled = true;
-    };
-  }, [router, refreshBookingLock]);
+  }, [user, refreshBookingLock]);
 
   useEffect(() => {
     function onFocus() {
-      void syncLocalBookingStateWithServer().then(() => refreshBookingLock());
+      void refreshBookingLock();
     }
     window.addEventListener("focus", onFocus);
     return () => window.removeEventListener("focus", onFocus);
   }, [refreshBookingLock]);
 
-  function handleSubmit(e: FormEvent) {
+  async function handleSubmit(e: FormEvent) {
     e.preventDefault();
-    if (hasBookedLunchDate()) {
-      setError("You can’t change your display name while you have an active lunch booking.");
+    if (aliasLocked) {
+      setError("You can't change your display name while you have an active lunch booking.");
       setAliasLocked(true);
       return;
     }
     const trimmed = alias.trim();
     if (trimmed.length < 1) {
-      setError("Display name can’t be empty.");
+      setError("Display name can't be empty.");
       return;
     }
     if (trimmed.length > 40) {
       setError("Max 40 characters.");
       return;
     }
-    setStoredAlias(trimmed);
-    setSaved(true);
-    setError("");
-    setTimeout(() => setSaved(false), 2500);
+    try {
+      const res = await fetch("/api/auth/me", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ alias: trimmed }),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        setError(err.error ?? "Could not update.");
+        return;
+      }
+      await refresh();
+      setSaved(true);
+      setError("");
+      setTimeout(() => setSaved(false), 2500);
+    } catch {
+      setError("Could not update. Try again.");
+    }
   }
+
+  async function handleLogout() {
+    setShowResetConfirm(false);
+    await logout();
+    router.replace("/welcome");
+  }
+
+  if (!user) return null;
 
   return (
     <div>
-      <h1 className="page-title" style={{ color: "#064e3b" }}>Name{alias ? ` (${alias})` : ""}</h1>
+      <h1 className="page-title" style={{ color: "#064e3b" }}>Name{user.alias ? ` (${user.alias})` : ""}</h1>
       <p className="page-subtitle" style={{ color: "#064e3b" }}>
-        This is how others see you when you create or join a date. It’s stored only
-        in this browser — no account.
+        This is how others see you when you create or join a date.
       </p>
 
       {aliasLocked && (
@@ -88,7 +106,7 @@ export default function SettingsPage() {
               textAlign: "center"
             }}
           >
-            You can’t change your display name while you have an active lunch booking. Leave or cancel first if you want to change it.
+            You can&apos;t change your display name while you have an active lunch booking. Leave or cancel first.
           </p>
           <Link href="/my-lunch" className="secondary-button btn-dark-green">
             Go to My Bites
@@ -129,9 +147,9 @@ export default function SettingsPage() {
       )}
 
       <div style={{ marginTop: "2rem" }}>
-        <h2 className="page-title" style={{ color: "#064e3b" }}>Reset data</h2>
+        <h2 className="page-title" style={{ color: "#064e3b" }}>Account</h2>
         <p className="page-subtitle" style={{ color: "#064e3b" }}>
-          Having trouble with cached data? Reset data clears your name, token and bookings from this app.
+          Log out to sign in with a different account.
         </p>
         <div style={{ maxWidth: "17.5rem", marginLeft: "auto", marginRight: "auto" }}>
           <button
@@ -139,7 +157,7 @@ export default function SettingsPage() {
             className="danger-button"
             onClick={() => setShowResetConfirm(true)}
           >
-            Reset data
+            Log out
           </button>
         </div>
 
@@ -171,10 +189,10 @@ export default function SettingsPage() {
               onClick={(e) => e.stopPropagation()}
             >
               <h3 id="reset-confirm-title" style={{ fontSize: "1.1rem", fontWeight: 600, marginBottom: "0.75rem", color: "#064e3b" }}>
-                Reset data?
+                Log out?
               </h3>
               <p style={{ fontSize: "0.9rem", color: "#334155", marginBottom: "1.25rem", lineHeight: 1.4 }}>
-                If you proceed, <strong>all your bookings will disappear</strong>. Your name and all stored data will be cleared from this app.
+                You will need to log in again to access your lunches.
               </p>
               <div style={{ display: "flex", gap: "0.5rem" }}>
                 <button
@@ -189,13 +207,9 @@ export default function SettingsPage() {
                   type="button"
                   className="danger-button"
                   style={{ flex: 1, marginTop: 0 }}
-                  onClick={() => {
-                    setShowResetConfirm(false);
-                    clearAppData();
-                    router.replace("/welcome");
-                  }}
+                  onClick={handleLogout}
                 >
-                  Yes, reset
+                  Log out
                 </button>
               </div>
             </div>
