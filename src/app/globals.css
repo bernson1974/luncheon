@@ -1,3 +1,22 @@
+/* ─── Färgvariabel: alla inmatningsfält (input, select, textarea) ─────────────────
+ * Sök "input-field-bg" eller "Inmatningsfält" för att snabbt hitta och ändra.
+ * Används av: .field-input, .field-select, .filter-input, .filter-select,
+ *             .welcome-landing__field (Welcome namn, Settings display name)
+ */
+:root {
+  --input-field-bg: #dcf3ee;
+  --input-field-border: rgba(6, 78, 59, 0.22);
+  --input-field-text: #064e3b;
+  --input-field-focus: var(--tab-active-bg);
+  /* Sidbakgrund: ljusgrön – ljusare än huvudtabbar (#6eb8aa) */
+  --page-content-bg: #a8c9c2;
+  /* Huvudtabbar: inaktiv = ljusgrön, aktiv = mörkgrön (matchar loggans cirkel) */
+  --tab-inactive-bg: #6eb8aa;
+  --tab-active-bg: #1e524e;
+  /* Samma rundning på fält, kort, rutor, boxar */
+  --radius-field: 0.5rem;
+}
+
 *,
 *::before,
 *::after {
@@ -11,11 +30,11 @@ body {
 }
 
 html {
-  background: #6eb8aa;
+  background: var(--page-content-bg);
 }
 
 body {
-  background: #6eb8aa;
+  background: var(--page-content-bg);
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
@@ -27,36 +46,90 @@ button {
   font-size: 1.5rem;
   font-weight: 600;
   margin-bottom: 0.75rem;
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
 }
 
 .page-subtitle {
   font-size: 0.95rem;
   color: #64748b;
   margin-bottom: 1.5rem;
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
 }
 
 .card {
-  border-radius: 0.75rem;
+  border-radius: var(--radius-field);
   background: #ffffff;
   box-shadow: 0 8px 16px rgba(15, 23, 42, 0.06);
   padding: 1.25rem 1.5rem;
   margin-bottom: 1rem;
 }
 
+.card--warning .secondary-button,
+.card--warning .secondary-button:hover {
+  color: #ffffff;
+  border-color: #ffffff;
+  background: rgba(255, 255, 255, 0.15);
+}
+.card--warning .secondary-button:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+/* Samma gröna som aktiv tabb i huvudmenyn */
+.btn-dark-green {
+  background: var(--tab-active-bg) !important;
+  color: #ecfdf5 !important;
+  border: none !important;
+}
+.btn-dark-green:hover {
+  background: #245d59 !important;
+  color: #f8fafc !important;
+}
+
 .field-label {
   font-size: 0.85rem;
   font-weight: 500;
   color: #0f172a;
-  margin-bottom: 0.25rem;
+  margin-bottom: 0;
+  padding-bottom: 0.3rem;
+  padding-left: 0.25rem;
+  display: block;
 }
 
+/* Fältrubrik med hjälptext under: 0.1rem till hjälptexten */
+.field-label--above-helper {
+  padding-bottom: 0.1rem;
+}
+
+/* Hjälptexter (Starts, Ends, You're included, Click the map…) – supernära fält, samma storlek/format som participant-size-lead */
+.field-helper {
+  font-size: 0.8rem;
+  font-weight: 400;
+  margin: 0;
+  padding-bottom: 0.15rem;
+  padding-left: 0.25rem;
+  display: block;
+  line-height: 1.35;
+}
+
+/* Inmatningsfält: Create (topic, meeting point), Settings via welcome-landing__field */
 .field-input,
 .field-select {
   width: 100%;
-  padding: 0.5rem 0.75rem;
-  border-radius: 0.5rem;
-  border: 1px solid #cbd5f5;
+  border-radius: var(--radius-field);
+  border: 1px solid var(--input-field-border);
   font-size: 0.95rem;
+  background: var(--input-field-bg);
+  color: var(--input-field-text);
+}
+
+.field-select {
+  padding: 0.5rem 0.75rem;
+}
+
+.field-input {
+  padding: 0.58rem 0.75rem;
 }
 
 .field-row {
@@ -68,9 +141,9 @@ button {
 .primary-button {
   width: 100%;
   padding: 0.55rem 0.75rem;
-  border-radius: 0;
+  border-radius: var(--radius-field);
   border: none;
-  background: #0f766e;
+  background: var(--tab-active-bg);
   color: #ecfdf5;
   font-weight: 600;
   font-size: 0.82rem;
@@ -82,12 +155,12 @@ button {
 }
 
 .primary-button:hover:not(:disabled) {
-  background: #0d9488;
+  background: #245d59;
   color: #f8fafc;
 }
 
 .primary-button:active:not(:disabled) {
-  background: #0b7c73;
+  background: #183d3a;
 }
 
 .primary-button:focus-visible {
@@ -110,12 +183,6 @@ button {
   margin-bottom: 1rem;
 }
 
-.participant-size-lead {
-  margin: 0.2rem 0 0.55rem;
-  font-size: 0.8rem;
-  line-height: 1.35;
-}
-
 .participant-segments {
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
@@ -126,9 +193,9 @@ button {
   min-height: 48px;
   padding: 0.35rem 0.2rem;
   border-radius: 0.6rem;
-  border: 2px solid #e2e8f0;
-  background: #f8fafc;
-  color: #475569;
+  border: 2px solid var(--tab-active-bg);
+  background: var(--tab-active-bg);
+  color: #ffffff;
   font-size: clamp(0.95rem, 4vw, 1.05rem);
   font-weight: 700;
   cursor: pointer;
@@ -142,26 +209,26 @@ button {
 }
 
 .participant-segment:hover {
-  border-color: #cbd5e1;
-  background: #f1f5f9;
-  color: #0f172a;
+  border-color: #245d59;
+  background: #245d59;
+  color: #ffffff;
 }
 
 .participant-segment:focus-visible {
-  outline: 2px solid #0f766e;
+  outline: 2px solid var(--tab-active-bg);
   outline-offset: 2px;
 }
 
 .participant-segment--active,
 .participant-segment[aria-checked="true"] {
-  border-color: #0f766e;
-  background: #ecfdf5;
-  color: #0f766e;
-  box-shadow: 0 0 0 1px rgba(15, 118, 110, 0.2);
+  border-color: var(--tab-active-bg);
+  background: var(--tab-active-bg);
+  color: #ecfdf5;
+  box-shadow: 0 0 0 2px rgba(30, 82, 78, 0.4);
 }
 
 .participant-size-foot {
-  margin: 0.55rem 0 0;
+  margin: 0.35rem 0 0;
   font-size: 0.8rem;
   line-height: 1.4;
 }
@@ -201,8 +268,8 @@ button {
 }
 
 .chip-toggle:checked {
-  background: #0f766e;
-  border-color: #0f766e;
+  background: var(--tab-active-bg);
+  border-color: var(--tab-active-bg);
 }
 
 .chip-toggle:checked::after {
@@ -215,10 +282,10 @@ button {
   width: 100%;
   box-sizing: border-box;
   padding: 0.55rem 0.75rem;
-  border-radius: 0;
-  border: 1.5px solid #0f766e;
+  border-radius: var(--radius-field);
+  border: 1.5px solid var(--tab-active-bg);
   background: transparent;
-  color: #0f766e;
+  color: var(--tab-active-bg);
   font-weight: 600;
   font-size: 0.82rem;
   font-family: inherit;
@@ -233,8 +300,8 @@ button {
 
 .secondary-button:hover:not(:disabled) {
   background: #ecfdf5;
-  color: #0f766e;
-  border-color: #0f766e;
+  color: var(--tab-active-bg);
+  border-color: var(--tab-active-bg);
 }
 
 .secondary-button:active:not(:disabled) {
@@ -242,14 +309,14 @@ button {
 }
 
 .secondary-button:focus-visible {
-  outline: 2px solid #0f766e;
+  outline: 2px solid var(--tab-active-bg);
   outline-offset: 2px;
 }
 
 .danger-button {
   width: 100%;
   padding: 0.55rem 0.75rem;
-  border-radius: 0;
+  border-radius: var(--radius-field);
   border: none;
   background: #b91c1c;
   color: #fef2f2;
@@ -313,13 +380,13 @@ a.danger-button:hover {
 }
 
 .badge-open {
-  background: #dcfce7;
-  color: #15803d;
+  background: #86efac;
+  color: #14532d;
 }
 
 .badge-full {
-  background: #fee2e2;
-  color: #dc2626;
+  background: #fecaca;
+  color: #b91c1c;
 }
 
 .badge-cancelled {
@@ -330,25 +397,25 @@ a.danger-button:hover {
 /* ─── App shell: responsive tab bar (5 equal tabs) ─────────────────────────── */
 
 :root {
-  /* Mobile-first: kompakt bar så innehåll syns utan scroll (~56px ≈ Apple 44pt min) */
-  --app-tab-bar-min-height: 52px;
+  /* Mobile-first: kompakt bar så innehåll syns utan scroll */
+  --app-tab-bar-min-height: 78px;
 }
 
 @media (min-width: 420px) {
   :root {
-    --app-tab-bar-min-height: 62px;
+    --app-tab-bar-min-height: 93px;
   }
 }
 
 @media (min-width: 640px) {
   :root {
-    --app-tab-bar-min-height: 72px;
+    --app-tab-bar-min-height: 108px;
   }
 }
 
 @media (min-width: 1024px) {
   :root {
-    --app-tab-bar-min-height: 83px;
+    --app-tab-bar-min-height: 125px;
   }
 }
 
@@ -365,6 +432,63 @@ a.danger-button:hover {
   /* Safe area + half a “tab button” height of breathing room above the bar */
   padding-top: calc(
     env(safe-area-inset-top, 0px) + (var(--app-tab-bar-min-height) * 0.5)
+  );
+  background: var(--tab-inactive-bg);
+}
+
+.app-shell-header[data-active-tab-index="0"] {
+  background: linear-gradient(
+    to right,
+    var(--tab-active-bg) 0%,
+    var(--tab-active-bg) 20%,
+    var(--tab-inactive-bg) 20%,
+    var(--tab-inactive-bg) 100%
+  );
+}
+
+.app-shell-header[data-active-tab-index="1"] {
+  background: linear-gradient(
+    to right,
+    var(--tab-inactive-bg) 0%,
+    var(--tab-inactive-bg) 20%,
+    var(--tab-active-bg) 20%,
+    var(--tab-active-bg) 40%,
+    var(--tab-inactive-bg) 40%,
+    var(--tab-inactive-bg) 100%
+  );
+}
+
+.app-shell-header[data-active-tab-index="2"] {
+  background: linear-gradient(
+    to right,
+    var(--tab-inactive-bg) 0%,
+    var(--tab-inactive-bg) 40%,
+    var(--tab-active-bg) 40%,
+    var(--tab-active-bg) 60%,
+    var(--tab-inactive-bg) 60%,
+    var(--tab-inactive-bg) 100%
+  );
+}
+
+.app-shell-header[data-active-tab-index="3"] {
+  background: linear-gradient(
+    to right,
+    var(--tab-inactive-bg) 0%,
+    var(--tab-inactive-bg) 60%,
+    var(--tab-active-bg) 60%,
+    var(--tab-active-bg) 80%,
+    var(--tab-inactive-bg) 80%,
+    var(--tab-inactive-bg) 100%
+  );
+}
+
+.app-shell-header[data-active-tab-index="4"] {
+  background: linear-gradient(
+    to right,
+    var(--tab-inactive-bg) 0%,
+    var(--tab-inactive-bg) 80%,
+    var(--tab-active-bg) 80%,
+    var(--tab-active-bg) 100%
   );
 }
 
@@ -383,8 +507,8 @@ a.danger-button:hover {
   align-items: stretch;
   width: 100%;
   min-width: 0;
-  background: #6eb8aa;
-  border-bottom: 1px solid #0f766e;
+  background: transparent;
+  border-bottom: none;
   box-shadow: none;
 }
 
@@ -400,18 +524,13 @@ a.danger-button:hover {
   font-weight: 700;
   text-decoration: none;
   border: none;
-  border-right: 1px solid #0f766e;
-  background: #6eb8aa;
+  background: var(--tab-inactive-bg);
   color: #064e3b;
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
   transition:
     color 0.12s ease,
     background 0.12s ease;
-}
-
-.app-tab-bar__tab:last-child {
-  border-right: none;
 }
 
 .app-tab-bar__tab:not([aria-current="page"]):hover {
@@ -425,25 +544,60 @@ a.danger-button:hover {
 
 .app-tab-bar__tab--active,
 .app-tab-bar__tab[aria-current="page"] {
-  background: #0f766e;
+  background: var(--tab-active-bg);
   color: #ecfdf5;
 }
 
 .app-tab-bar__tab--active:hover,
 .app-tab-bar__tab[aria-current="page"]:hover {
-  background: #0d9488;
+  background: #245d59;
   color: #f8fafc;
 }
 
 .app-tab-bar__tab--active:active,
 .app-tab-bar__tab[aria-current="page"]:active {
-  background: #0b7c73;
+  background: #183d3a;
 }
 
 /* Room for future icons above the label */
 .app-tab-bar__tab__icon-slot {
   flex: 1 1 0;
   min-height: 1.125rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.app-tab-bar__tab__icon {
+  display: block;
+  width: 3.25rem;
+  height: 3.25rem;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+  /* Inaktiv: mörkgrön */
+  background-color: var(--tab-active-bg);
+}
+
+.app-tab-bar__tab--active .app-tab-bar__tab__icon,
+.app-tab-bar__tab[aria-current="page"] .app-tab-bar__tab__icon {
+  /* Aktiv: vit */
+  background-color: #ffffff;
+}
+
+/* Join (hands) icon sits higher in SVG – nudge down to align with others */
+.app-tab-bar__tab__icon--hands {
+  transform: translateY(6px);
+}
+
+/* Name (face) icon – larger, slightly higher than Join */
+.app-tab-bar__tab__icon--face {
+  width: 4rem;
+  height: 4rem;
+  transform: translateY(2px);
 }
 
 .app-tab-bar__tab__label {
@@ -479,16 +633,25 @@ a.danger-button:hover {
   margin-bottom: 1rem;
 }
 
+/* Inmatningsfält: Join/Browse filter (Topic-sök, Day/Restaurant/Cuisine-select) */
 .filter-select,
 .filter-input {
-  padding: 0.45rem 0.65rem;
-  border-radius: 0.5rem;
-  border: 1px solid #cbd5e1;
+  border-radius: var(--radius-field);
+  border: 1px solid var(--input-field-border);
   font-size: 0.85rem;
-  background: #fff;
+  background: var(--input-field-bg);
+  color: var(--input-field-text);
   flex: 1;
   min-width: 130px;
   font: inherit;
+}
+
+.filter-select {
+  padding: 0.45rem 0.65rem;
+}
+
+.filter-input {
+  padding: 0.52rem 0.65rem;
 }
 
 /* Two selects: hour + quarter minutes only */
@@ -533,29 +696,51 @@ a.danger-button:hover {
   align-items: center;
   gap: 0.5rem;
   padding: 0.5rem 1rem;
-  border: 1px solid #cbd5e1;
-  border-bottom: none;
-  background: #f1f5f9;
+  margin-top: 1rem;
+  border: none;
+  background: var(--page-content-bg);
 }
 
 .browse-hide-full-checkbox {
-  width: 1.05rem;
-  height: 1.05rem;
-  accent-color: #0f766e;
+  width: 1.31rem;
+  height: 1.31rem;
   cursor: pointer;
   flex-shrink: 0;
+  -webkit-appearance: none;
+  appearance: none;
+  background: var(--input-field-bg);
+  border: 1px solid var(--input-field-border);
+  border-radius: var(--radius-field);
+  position: relative;
+}
+
+.browse-hide-full-checkbox:checked {
+  background: var(--input-field-bg);
+  border-color: var(--input-field-focus);
+}
+
+.browse-hide-full-checkbox:checked::after {
+  content: "";
+  position: absolute;
+  left: 0.45rem;
+  top: 0.12rem;
+  width: 0.38rem;
+  height: 0.7rem;
+  border: solid var(--input-field-focus);
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
 }
 
 .browse-hide-full-label {
   font-size: 0.875rem;
   font-weight: 600;
-  color: #334155;
+  color: #064e3b;
   cursor: pointer;
   user-select: none;
   line-height: 1.3;
 }
 
-/* Row: 3 filter tabs (tablist) + clear action (same visual weight) */
+/* Row: 3 filter tabs (tablist) + clear action – beige som Bite Club-vimpeln */
 .browse-subtab-row {
   display: flex;
   flex-direction: row;
@@ -563,10 +748,8 @@ a.danger-button:hover {
   max-width: 100%;
   min-width: 0;
   border-radius: 0;
-  border: 1px solid #cbd5e1;
-  border-bottom: none;
-  border-top: none;
-  background: #e2e8f0;
+  border: none;
+  background: #efe2b7;
   overflow: hidden;
 }
 
@@ -600,8 +783,7 @@ a.danger-button:hover {
   width: 100%;
   min-width: 6.85rem;
   min-height: 44px;
-  border-right: none;
-  border-left: 1px solid #cbd5e1;
+  border: none;
   box-sizing: border-box;
 }
 
@@ -646,11 +828,10 @@ a.danger-button:hover {
   min-height: 44px;
   padding: 0.35rem 0.2rem;
   border: none;
-  border-right: 1px solid #cbd5e1;
-  background: transparent;
-  font-size: clamp(0.62rem, 2.4vw, 0.78rem);
+  background: #efe2b7;
+  font-size: clamp(0.68rem, 2.6vw, 0.82rem);
   font-weight: 700;
-  color: #475569;
+  color: #14532d;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
@@ -661,47 +842,125 @@ a.danger-button:hover {
 }
 
 .browse-subtab:hover:not(:disabled) {
-  color: #0f172a;
-  background: #f1f5f9;
+  color: #14532d;
+  background: #e6d9a8;
 }
 
 .browse-subtab:focus-visible {
-  outline: 2px solid #0f766e;
+  outline: 2px solid #a42d1e;
   outline-offset: -2px;
   z-index: 1;
 }
 
 .browse-subtab--active {
-  color: #f8fafc;
-  background: #64748b;
+  color: #a42d1e;
+  background: #c9a566;
 }
 
 .browse-subtab--active:hover:not(:disabled) {
-  color: #ffffff;
-  background: #475569;
+  color: #a42d1e;
+  background: #cead6f;
 }
 
-/* Tydlig röd ton när Clear syns (Join), inte neon */
+/* Samma röd som aktiv undertabbtext (korvfärg från loggan) */
 .browse-subtab--clear-filter--active {
-  background: #f0a0a0;
-  color: #7f1d1d;
+  background: #a42d1e;
+  color: #ffffff;
 }
 
 /* Högre specificitet än .browse-subtab:hover:not(:disabled) så inte ljusgrå vinner */
 .browse-subtab.browse-subtab--clear-filter--active:hover:not(:disabled) {
-  background: #fbcaca;
-  color: #7f1d1d;
+  background: #b83828;
+  color: #ffffff;
 }
 
 .browse-subtab.browse-subtab--clear-filter--active:active:not(:disabled) {
-  background: #f5a8a8;
-  color: #6b1818;
+  background: #8d291b;
+  color: #ffffff;
 }
 
 .browse-subtab--clear-filter:focus-visible {
-  outline: 2px solid #0f766e;
+  outline: 2px solid var(--tab-active-bg);
   outline-offset: -2px;
   z-index: 1;
+}
+
+/* Join: grön gränslinje endast mellan två närliggande inaktiva (Topic/Date/Place) */
+.browse-subtab-row--join-filters {
+  border-left: none;
+  border-right: none;
+  overflow: visible;
+}
+
+.browse-subtab-row--join-filters .browse-subtab-bar > .browse-subtab {
+  border-left: none;
+  border-right: none;
+}
+
+/* Gränslinje 80% höjd, 10% marginal top/bottom (flytande i mitten) */
+.browse-subtab-row--join-filters .browse-subtab-bar > .browse-subtab:not(.browse-subtab--active) + .browse-subtab:not(.browse-subtab--active) {
+  position: relative;
+}
+
+.browse-subtab-row--join-filters .browse-subtab-bar > .browse-subtab:not(.browse-subtab--active) + .browse-subtab:not(.browse-subtab--active)::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 10%;
+  height: 80%;
+  width: 1px;
+  background: #c9a566;
+}
+
+.browse-subtab-row--join-filters .browse-subtab-bar > .browse-subtab:first-child.browse-subtab--active {
+  position: relative;
+}
+
+.browse-subtab-row--join-filters .browse-subtab-bar > .browse-subtab:first-child.browse-subtab--active::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: #c9a566;
+  transform: translateX(-100%);
+}
+
+.browse-subtab-row--join-filters .browse-subtab-bar > .browse-subtab:last-child.browse-subtab--active {
+  position: relative;
+}
+
+.browse-subtab-row--join-filters .browse-subtab-bar > .browse-subtab:last-child.browse-subtab--active::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: #c9a566;
+  transform: translateX(100%);
+}
+
+/* Clear filter till höger: täck vit linje när den är synlig */
+.browse-subtab-row--clear-open .browse-subtab-clear-wrap .browse-subtab--clear-filter {
+  position: relative;
+  border-right: 1px solid #a42d1e;
+}
+
+.browse-subtab-row--clear-open .browse-subtab-clear-wrap .browse-subtab--clear-filter::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: #a42d1e;
+  transform: translateX(100%);
+}
+
+.browse-subtab-row--clear-open .browse-subtab-clear-wrap {
+  overflow: visible;
 }
 
 /* Map + My Bites: day row uses full width (no Clear column). */
@@ -710,8 +969,55 @@ a.danger-button:hover {
   min-width: 0;
 }
 
-.browse-subtab-row--days-only .browse-subtab-bar > .browse-subtab:last-child {
+.browse-subtab-row--days-only {
+  border-left: none;
   border-right: none;
+  overflow: visible;
+}
+
+/* Grön gränslinje ENDAST mellan två närliggande inaktiva dagar; 80% höjd, flytande i mitten */
+.browse-subtab-row--days-only .browse-subtab-bar > .browse-subtab:not(.browse-subtab--active) + .browse-subtab:not(.browse-subtab--active) {
+  position: relative;
+}
+
+.browse-subtab-row--days-only .browse-subtab-bar > .browse-subtab:not(.browse-subtab--active) + .browse-subtab:not(.browse-subtab--active)::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 10%;
+  height: 80%;
+  width: 1px;
+  background: #c9a566;
+}
+
+.browse-subtab-row--days-only .browse-subtab-bar > .browse-subtab:first-child.browse-subtab--active {
+  position: relative;
+}
+
+.browse-subtab-row--days-only .browse-subtab-bar > .browse-subtab:first-child.browse-subtab--active::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: #c9a566;
+  transform: translateX(-100%);
+}
+
+.browse-subtab-row--days-only .browse-subtab-bar > .browse-subtab:last-child.browse-subtab--active {
+  position: relative;
+}
+
+.browse-subtab-row--days-only .browse-subtab-bar > .browse-subtab:last-child.browse-subtab--active::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: #c9a566;
+  transform: translateX(100%);
 }
 
 .day-picker-subtabs {
@@ -741,63 +1047,67 @@ a.danger-button:hover {
 .day-subtab__top--weekday {
   font-size: clamp(0.62rem, 2.4vw, 0.72rem);
   font-weight: 700;
-  color: #475569;
+  color: #14532d;
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
 
 .browse-subtab--active .day-subtab__top--weekday {
-  color: #f8fafc;
+  color: #a42d1e;
 }
 
 .day-subtab__date {
   display: block;
   font-size: clamp(0.68rem, 2.6vw, 0.82rem);
   font-weight: 700;
-  color: #334155;
+  color: #14532d;
   text-align: center;
 }
 
 .browse-subtab--active .day-subtab__date {
-  color: #f8fafc;
+  color: #a42d1e;
 }
 
 .browse-subtab:disabled {
   cursor: not-allowed;
-  opacity: 0.48;
+  opacity: 0.85;
 }
 
 .browse-subtab:disabled:hover {
-  background: transparent;
+  background: inherit;
   color: inherit;
 }
 
-/* Dag-rad (Map + My Bites): dag utan bokning = ljusgrå cell + blekare text, inte hela knappen urblekt */
+/* Dag-rad (Map + My Bites): dag utan bokning = ljusbeige med ljusbrun text */
 .browse-subtab-row--days-only .browse-subtab.day-subtab:disabled {
   opacity: 1;
-  background: #e2e8f0;
-  color: #94a3b8;
+  background: #efe2b7;
+  color: #9a8b73;
 }
 
 .browse-subtab-row--days-only .browse-subtab.day-subtab:disabled .day-subtab__top--weekday {
-  color: #cbd5e1;
+  color: #9a8b73;
 }
 
 .browse-subtab-row--days-only .browse-subtab.day-subtab:disabled .day-subtab__date {
-  color: #cbd5e1;
+  color: #9a8b73;
 }
 
 .browse-subtab-row--days-only .browse-subtab.day-subtab:disabled:hover {
-  background: #e2e8f0;
-  color: #94a3b8;
+  background: #efe2b7;
+  color: #9a8b73;
 }
 
 .browse-subtab-panels {
-  border: 1px solid #cbd5e1;
+  border: none;
   border-radius: 0;
-  background: #ffffff;
+  background: var(--page-content-bg);
   padding: 1rem 1.1rem 1.15rem;
-  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05);
+  box-shadow: none;
+}
+
+.browse-subtab-panels .field-label {
+  color: #064e3b;
 }
 
 .browse-subtab-panel[hidden] {
@@ -816,8 +1126,8 @@ a.danger-button:hover {
 
 .browse-subtab-panel__stack-gap {
   margin-top: 1rem;
-  padding-top: 1rem;
-  border-top: 1px solid #e2e8f0;
+  padding-top: 0.5rem;
+  border-top: none;
 }
 
 .browse-subtab-panel__control {
@@ -836,8 +1146,118 @@ a.danger-button:hover {
   max-width: none;
 }
 
+/* Join: lista med dejter – samma avstånd mot kanterna som inmatningsfälten */
 .browse-dates-list {
   margin-top: 0.25rem;
+  padding: 0 1.1rem;
+}
+
+/* Kortlista: bakgrundskort per dejt */
+.browse-dates-list__cards {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+/* Bakgrundskort: alla ljusgröna oavsett status */
+.browse-date-bg-card {
+  border-radius: var(--radius-field);
+  border: none;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
+  background: #ecfdf5;
+  color: #14532d;
+  transition:
+    box-shadow 0.15s ease,
+    transform 0.1s ease,
+    background-color 0.15s ease;
+}
+
+.browse-date-bg-card .detail-label,
+.browse-date-bg-card .detail-row span,
+.browse-date-bg-card .secondary-text,
+.browse-date-bg-card .field-label,
+.browse-date-bg-card .date-card-title,
+.browse-date-bg-card .date-card-restaurant,
+.browse-date-bg-card .date-card-footer {
+  color: #14532d !important;
+}
+
+.browse-date-bg-card .topic-tag,
+.browse-date-bg-card .detail-row span.topic-tag {
+  color: #ffffff !important;
+  background: #14532d;
+}
+
+
+/* Fullbokade dejter: grå text (samma nyans som dagar utan bokning i My Bites) */
+.browse-dates-list .browse-date-bg-card.date-card--full .date-card-title,
+.browse-dates-list .browse-date-bg-card.date-card--full .date-card-restaurant,
+.browse-dates-list .browse-date-bg-card.date-card--full .date-card-footer,
+.browse-dates-list .browse-date-bg-card.date-card--full .date-card-footer span,
+.browse-date-bg-card.date-card--full .detail-label,
+.browse-date-bg-card.date-card--full .detail-row span,
+.browse-date-bg-card.date-card--full .secondary-text,
+.browse-date-bg-card.date-card--full .field-label,
+.browse-date-bg-card.date-card--full .date-card-title,
+.browse-date-bg-card.date-card--full .date-card-restaurant,
+.browse-date-bg-card.date-card--full .date-card-footer,
+.browse-date-bg-card.date-card--full .date-card-footer span,
+.browse-date-bg-card--full .detail-label,
+.browse-date-bg-card--full .detail-row span,
+.browse-date-bg-card--full .secondary-text,
+.browse-date-bg-card--full .field-label,
+.browse-date-bg-card--full .date-card-title,
+.browse-date-bg-card--full .date-card-restaurant,
+.browse-date-bg-card--full .date-card-footer,
+.browse-date-bg-card--full .date-card-footer span {
+  color: #a8dfd0 !important;
+}
+
+.browse-date-bg-card.date-card--full .topic-tag,
+.browse-date-bg-card.date-card--full .detail-row span.topic-tag,
+.browse-date-bg-card--full .topic-tag,
+.browse-date-bg-card--full .detail-row span.topic-tag {
+  color: #ffffff !important;
+  background: #14532d;
+}
+
+/* Full-badge: röd bakgrund, vit text */
+.browse-date-bg-card.date-card--full .badge-full,
+.browse-date-bg-card.date-card--full .detail-row span.badge-full,
+.browse-date-bg-card--full .badge-full,
+.browse-date-bg-card--full .detail-row span.badge-full,
+.browse-dates-list .browse-date-bg-card.date-card--full .badge-full,
+.browse-dates-list .browse-date-bg-card.date-card--full .date-card-footer .badge-full {
+  background: #b91c1c !important;
+  color: #ffffff !important;
+}
+
+/* My Bites: undantag – fullbokade dejter visar mörkgrön text (som öppna) */
+.my-lunch-content-wrap .browse-date-bg-card--full .detail-label,
+.my-lunch-content-wrap .browse-date-bg-card--full .detail-row span:not(.badge-full):not(.topic-tag),
+.my-lunch-content-wrap .browse-date-bg-card--full .secondary-text,
+.my-lunch-content-wrap .browse-date-bg-card--full .field-label {
+  color: #14532d !important;
+}
+
+.my-lunch-content-wrap .browse-date-bg-card--full .topic-tag,
+.my-lunch-content-wrap .browse-date-bg-card--full .detail-row span.topic-tag {
+  color: #ffffff !important;
+  background: #14532d;
+}
+
+.browse-date-bg-card:hover {
+  background: #d1fae5;
+  box-shadow: 0 4px 14px rgba(21, 128, 61, 0.12);
+}
+
+.browse-date-bg-card:hover .date-card--in-bg {
+  transform: translateY(-1px);
+}
+
+.browse-date-bg-card.date-card--cancelled,
+.browse-date-bg-card--cancelled {
+  opacity: 0.92;
 }
 
 /* ─── Date cards (browse list) ────────────────────────────────────────────── */
@@ -846,51 +1266,54 @@ a.danger-button:hover {
   display: block;
   text-decoration: none;
   color: inherit;
-  border-radius: 0.75rem;
-  border: 1px solid transparent;
-  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
+  border-radius: 0;
+  border: none;
   padding: 1rem 1.25rem;
-  margin-bottom: 0.75rem;
   transition:
-    box-shadow 0.15s ease,
-    transform 0.1s ease,
-    background-color 0.15s ease,
-    border-color 0.15s ease;
+    transform 0.1s ease;
 }
 
-/* Join-lista: hela kortet färgas efter platsläge (inga små badges) */
-.date-card--open {
+.date-card--in-bg {
+  background: transparent;
+  box-shadow: none;
+  margin-bottom: 0;
+}
+
+/* Join utan bakgrundskort (t.ex. andra vyer) – behåller gamla stilar */
+.date-card:not(.date-card--in-bg) {
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
+  margin-bottom: 0.75rem;
+}
+
+.date-card--open:not(.date-card--in-bg),
+.date-card--full:not(.date-card--in-bg) {
   background: #ecfdf5;
-  border-color: #bbf7d0;
+  color: #14532d;
 }
 
-.date-card--open:hover {
+.date-card--open:not(.date-card--in-bg) .date-card-title,
+.date-card--open:not(.date-card--in-bg) .date-card-restaurant,
+.date-card--open:not(.date-card--in-bg) .date-card-footer,
+.date-card--full:not(.date-card--in-bg) .date-card-title,
+.date-card--full:not(.date-card--in-bg) .date-card-restaurant,
+.date-card--full:not(.date-card--in-bg) .date-card-footer {
+  color: #14532d !important;
+}
+
+.date-card--open:not(.date-card--in-bg):hover,
+.date-card--full:not(.date-card--in-bg):hover {
   background: #d1fae5;
-  border-color: #86efac;
   box-shadow: 0 4px 14px rgba(21, 128, 61, 0.12);
   transform: translateY(-1px);
 }
 
-.date-card--full {
-  background: #fef2f2;
-  border-color: #fecaca;
-}
-
-.date-card--full:hover {
-  background: #fee2e2;
-  border-color: #fca5a5;
-  box-shadow: 0 4px 14px rgba(185, 28, 28, 0.1);
-  transform: translateY(-1px);
-}
-
-.date-card--cancelled {
-  background: #f1f5f9;
-  border-color: #e2e8f0;
+.date-card--cancelled:not(.date-card--in-bg) {
+  background: #ecfdf5;
   opacity: 0.92;
 }
 
-.date-card--cancelled:hover {
-  background: #e2e8f0;
+.date-card--cancelled:not(.date-card--in-bg):hover {
+  background: #d1fae5;
   box-shadow: 0 4px 14px rgba(15, 23, 42, 0.08);
   transform: translateY(-1px);
 }
@@ -923,32 +1346,51 @@ a.danger-button:hover {
   color: #64748b;
 }
 
+/* My Bites: samma bakgrundskort som Join */
+.my-lunch-content-wrap {
+  padding: 0 1.1rem;
+}
+
+.my-lunch-main-card__inner {
+  padding: 1rem 1.25rem;
+}
+
+.my-lunch-meeting-block {
+  margin-top: 1rem;
+}
+
 /* ─── Date detail: huvudkort som Join-listan (ljusgrön / ljusröd / grå) ───── */
 
-.card.date-detail-main-card {
-  border: 1px solid transparent;
+/* Date detail (Join): samma layout som Invite (create-page), rubrik på samma ställe */
+.date-detail-wrap {
+  padding: 0 1.1rem;
 }
 
-.card.date-detail-main-card--open {
-  background: #ecfdf5;
-  border-color: #bbf7d0;
+/* Kortet samma insättning som Join-listan och My Bites */
+.date-detail-card-area {
+  padding: 0 1.1rem;
 }
 
-.card.date-detail-main-card--full {
-  background: #fef2f2;
-  border-color: #fecaca;
+.date-detail-page {
+  background: var(--page-content-bg);
+  margin: -1.5rem -1.25rem 0;
+  padding: 1.5rem 1.25rem 2rem;
+  min-height: calc(100dvh - var(--app-tab-bar-min-height, 78px));
+  flex: 1;
 }
 
-.card.date-detail-main-card--cancelled {
-  background: #f1f5f9;
-  border-color: #e2e8f0;
-  opacity: 0.96;
+.date-detail-main-card__inner {
+  padding: 1rem 1.25rem;
 }
 
-.date-detail-main-card__join-block {
-  margin-top: 0.65rem;
-  padding-top: 0.75rem;
-  border-top: 1px solid rgba(15, 23, 42, 0.1);
+.date-detail-main-card__inner .detail-row {
+  margin-bottom: 0.35rem;
+}
+
+.date-detail-meeting-block {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(15, 23, 42, 0.08);
 }
 
 /* Maxbredd som välkomstformuläret (primär CTA) */
@@ -957,6 +1399,7 @@ a.danger-button:hover {
   margin-left: auto;
   margin-right: auto;
   margin-top: 0.55rem;
+  padding-bottom: 2.5rem;
 }
 
 .narrow-cta-wrap > .narrow-cta-wrap__submit.primary-button:first-child {
@@ -973,10 +1416,27 @@ a.danger-button:hover {
   margin-left: auto;
   margin-right: auto;
   margin-top: 1rem;
+  margin-bottom: 2rem;
 }
 
 .date-detail-actions > .danger-button:first-child {
   margin-top: 0;
+}
+
+.date-detail-actions__split {
+  display: flex;
+  gap: 0.35rem;
+  width: 100%;
+}
+
+.date-detail-actions__split .primary-button,
+.date-detail-actions__split .danger-button,
+.date-detail-actions__split .secondary-button,
+.date-detail-actions__split a.primary-button,
+.date-detail-actions__split a.secondary-button {
+  flex: 1;
+  margin-top: 0;
+  min-width: 0;
 }
 
 /* ─── Detail view ─────────────────────────────────────────────────────────── */
@@ -1018,10 +1478,10 @@ a.danger-button:hover {
 
 .topic-tag {
   display: inline-block;
-  background: #f0fdfa;
-  color: #0f766e;
-  border: 1px solid #ccfbf1;
-  border-radius: 999px;
+  background: var(--tab-active-bg);
+  color: #ffffff;
+  border: none;
+  border-radius: var(--radius-field);
   padding: 0.2rem 0.75rem;
   font-size: 0.85rem;
   font-weight: 500;
@@ -1087,14 +1547,14 @@ a.danger-button:hover {
   padding: 0.38rem 0.65rem;
   font-size: 0.78rem;
   white-space: nowrap;
-  border-radius: 0;
+  border-radius: var(--radius-field);
 }
 
 .participant-role-pill {
   display: inline-block;
   font-size: 0.72rem;
   font-weight: 600;
-  color: #0f766e;
+  color: var(--tab-active-bg);
   background: #f0fdfa;
   border: 1px solid #ccfbf1;
   border-radius: 999px;
@@ -1120,7 +1580,7 @@ a.danger-button:hover {
 /* ─── Home page cards (other pages may still use) ─────────────────────────── */
 
 .home-cta-card {
-  border-radius: 0.75rem;
+  border-radius: var(--radius-field);
   background: #ffffff;
   box-shadow: 0 4px 12px rgba(15, 23, 42, 0.07);
   padding: 1.5rem;
@@ -1132,8 +1592,8 @@ a.danger-button:hover {
 }
 
 .home-cta-card:hover {
-  border-color: #0f766e;
-  box-shadow: 0 6px 18px rgba(15, 118, 110, 0.12);
+  border-color: var(--tab-active-bg);
+  box-shadow: 0 6px 18px rgba(30, 82, 78, 0.2);
 }
 
 .home-cta-title {
@@ -1149,21 +1609,47 @@ a.danger-button:hover {
   line-height: 1.5;
 }
 
+/* ─── Create / Invite: grön bakgrund som andra sidor ───────────────────────── */
+
+.create-page {
+  background: var(--page-content-bg);
+  margin: -1.5rem -1.25rem 0;
+  padding: 1.5rem 1.25rem 2rem;
+  min-height: calc(100dvh - var(--app-tab-bar-min-height, 78px));
+  flex: 1;
+}
+
+.create-page .card {
+  background: var(--page-content-bg);
+  box-shadow: none;
+  border: none;
+  padding-top: 0.75rem;
+}
+
+
+/* Hjälptexter till inmatningsfält: mörkgrön */
+.create-page .secondary-text,
+.create-page .participant-size-lead,
+.create-page .participant-size-foot,
+.create-page .field-helper {
+  color: #064e3b;
+}
+
 /* ─── Welcome (first visit / no alias) ─────────────────────────────────────── */
 
 .welcome-landing {
-  /* Full-bleed mellangrön mot <main> px-4 py-6; fyll hela höjden så inget grått syns under */
-  margin: -1.5rem -1rem;
+  /* Full-bleed mellangrön mot <main> px-5 py-6; fyll hela höjden så inget grått syns under */
+  margin: -1.5rem -1.25rem;
   padding:
     calc(3rem + env(safe-area-inset-top, 0px))
     1rem
     max(2.25rem, calc(1.5rem + env(safe-area-inset-bottom, 0px)));
   /* +3rem kompenserar mains py-6 så ytan täcker ända ner */
   min-height: calc(100dvh + 3rem);
-  width: calc(100% + 2rem);
+  width: calc(100% + 2.5rem);
   max-width: none;
   box-sizing: border-box;
-  background: #6eb8aa;
+  background: var(--page-content-bg);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1206,7 +1692,7 @@ a.danger-button:hover {
 
 .welcome-landing__logo {
   display: block;
-  width: clamp(100px, 28vw, 140px);
+  width: clamp(200px, 56vw, 280px);
   height: auto;
   aspect-ratio: 1;
   filter: drop-shadow(0 6px 20px rgba(6, 78, 59, 0.18));
@@ -1217,7 +1703,8 @@ a.danger-button:hover {
 }
 
 /* Ingen vit kortbakgrund — bara fält + knapp på sidans grön */
-.welcome-landing__form--bare {
+.welcome-landing__form--bare,
+.settings-form-bare {
   max-width: 17.5rem;
   margin-left: auto;
   margin-right: auto;
@@ -1225,6 +1712,10 @@ a.danger-button:hover {
   background: transparent;
   border: none;
   box-shadow: none;
+}
+
+.settings-form-bare {
+  margin-bottom: 1rem;
 }
 
 .welcome-landing__name-label {
@@ -1236,27 +1727,32 @@ a.danger-button:hover {
   text-align: center;
 }
 
-/* Ljusare grönt än sidbakgrund #6eb8aa */
+/* Ljusare grönt än sidbakgrund (var(--page-content-bg)) */
+/* Inmatningsfält: Welcome (namn), Settings (display name) */
 .welcome-landing__field {
   display: block;
   width: 100%;
   box-sizing: border-box;
-  padding: 0.42rem 0.6rem;
+  padding: 0.5rem 0.6rem;
   font-size: 0.85rem;
-  border-radius: 0.35rem;
-  border: 1px solid rgba(6, 78, 59, 0.22);
-  background: #c5ebe0;
-  color: #064e3b;
+  border-radius: var(--radius-field);
+  border: 1px solid var(--input-field-border);
+  background: var(--input-field-bg);
+  color: var(--input-field-text);
 }
 
 .welcome-landing__field::placeholder {
   color: rgba(6, 78, 59, 0.45);
 }
 
-.welcome-landing__field:focus {
-  outline: 2px solid #0f766e;
+.welcome-landing__field:focus,
+.field-input:focus,
+.field-select:focus,
+.filter-input:focus,
+.filter-select:focus {
+  outline: 2px solid var(--input-field-focus);
   outline-offset: 2px;
-  border-color: #0f766e;
+  border-color: var(--input-field-focus);
 }
 
 .welcome-landing__error {

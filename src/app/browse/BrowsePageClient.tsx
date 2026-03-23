@@ -265,9 +265,9 @@ export default function BrowsePageClient({ initialDates }: { initialDates: Lunch
                     </select>
                   </div>
                   <div className="browse-subtab-panel__stack-gap">
-                    <p className="field-label" style={{ marginBottom: "0.35rem" }}>
+                    <label className="field-label" style={{ display: "block" }}>
                       Start time
-                    </p>
+                    </label>
                     <TimeQuarterSelect
                       className="time-quarter-selects--filter browse-subtab-panel__time"
                       value={filterTime}
@@ -345,39 +345,48 @@ export default function BrowsePageClient({ initialDates }: { initialDates: Lunch
             </p>
           </div>
         ) : (
-          <div>
+          <div className="browse-dates-list__cards">
             {visibleDates.map((date) => (
-              <Link
+              <div
                 key={date.id}
-                href={`/date/${date.id}`}
-                className={`date-card ${dateCardStatusClass(date.status)}`}
+                className={`browse-date-bg-card ${dateCardStatusClass(date.status)}`}
               >
-                <div className="date-card-header">
-                  <div>
-                    <div className="date-card-title">{date.topic}</div>
-                    <div className="date-card-restaurant">
-                      {date.restaurant.name} · {cuisineLabel(date.restaurant.cuisine)}
+                <Link href={`/date/${date.id}`} className="date-card date-card--in-bg">
+                  <div className="date-card-header">
+                    <div>
+                      <div className="date-card-title">{date.topic}</div>
+                      <div className="date-card-restaurant">
+                        {date.restaurant.name} · {cuisineLabel(date.restaurant.cuisine)}
+                      </div>
                     </div>
                   </div>
-                </div>
-                <div className="date-card-footer">
-                  <span>{lunchDateLabel(date.date)}</span>
-                  <span>
-                    {date.timeStart}
-                    {date.timeEnd ? `–${date.timeEnd}` : ""}
-                  </span>
-                  <span>
-                    Host: <strong>{date.creatorAlias}</strong>
-                  </span>
-                  <span>
-                    {date.status === "open"
-                      ? `${date.spotsLeft} spot${date.spotsLeft !== 1 ? "s" : ""} left`
-                      : date.status === "full"
-                        ? "Fully booked"
-                        : "Cancelled"}
-                  </span>
-                </div>
-              </Link>
+                  <div className="date-card-footer">
+                    <span>{lunchDateLabel(date.date)}</span>
+                    <span>
+                      {date.timeStart}
+                      {date.timeEnd ? `–${date.timeEnd}` : ""}
+                    </span>
+                    <span>
+                      Host: <strong>{date.creatorAlias}</strong>
+                    </span>
+                    <span
+                      className={`badge ${
+                        date.status === "open"
+                          ? "badge-open"
+                          : date.status === "full"
+                            ? "badge-full"
+                            : "badge-cancelled"
+                      }`}
+                    >
+                      {date.status === "open"
+                        ? "Open"
+                        : date.status === "full"
+                          ? "Full"
+                          : "Cancelled"}
+                    </span>
+                  </div>
+                </Link>
+              </div>
             ))}
           </div>
         )}

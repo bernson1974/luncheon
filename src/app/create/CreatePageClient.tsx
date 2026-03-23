@@ -2,7 +2,6 @@
 
 import { useState, useEffect, type FormEvent } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import Link from "next/link";
 import { getStoredAlias } from "@/lib/userAlias";
 import dynamic from "next/dynamic";
 import TimeQuarterSelect from "@/components/TimeQuarterSelect";
@@ -179,12 +178,8 @@ export default function CreatePageClient() {
   }
 
   return (
-    <div>
-      <h1 className="page-title">Create new lunch invitation</h1>
-      <p className="page-subtitle">
-        Pick a day (today and up to five days ahead). Your date is visible to everyone
-        on Lindholmen right away.
-      </p>
+    <div className="create-page">
+      <h1 className="page-title" style={{ color: "#064e3b" }}>Add a new lunch invitation</h1>
 
       <form onSubmit={handleSubmit}>
         <div className="card">
@@ -213,22 +208,13 @@ export default function CreatePageClient() {
                 </option>
               ))}
             </select>
-            {isDateBlocked && (
-              <p className="secondary-text" style={{ marginTop: "0.35rem", color: "#b45309" }}>
-                You already have a date that day. Pick another day or go to{" "}
-                <Link href="/my-lunch" style={{ color: "#0f766e", fontWeight: 500 }}>
-                  My Bites
-                </Link>
-                .
-              </p>
-            )}
           </div>
 
           <div style={{ marginBottom: "1rem" }}>
-            <label className="field-label">Time (quarters: :00, :15, :30, :45)</label>
+            <label className="field-label field-label--above-helper">Time (quarters: :00, :15, :30, :45)</label>
             <div className="field-row">
               <div style={{ flex: 1, minWidth: 0 }}>
-                <label className="field-label" style={{ fontSize: "0.78rem", color: "#64748b" }}>
+                <label className="field-helper">
                   Starts
                 </label>
                 <TimeQuarterSelect
@@ -240,7 +226,7 @@ export default function CreatePageClient() {
                 />
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <label className="field-label" style={{ fontSize: "0.78rem", color: "#64748b" }}>
+                <label className="field-helper">
                   Ends (optional)
                 </label>
                 <TimeQuarterSelect
@@ -290,10 +276,10 @@ export default function CreatePageClient() {
           </div>
 
           <div className="participant-size-block">
-            <p id="max-participants-label" className="field-label" style={{ marginBottom: 0 }}>
+            <p id="max-participants-label" className="field-label field-label--above-helper">
               How many in total?
             </p>
-            <p className="secondary-text participant-size-lead">You’re included in this number.</p>
+            <p className="field-helper participant-size-lead">You’re included in this number.</p>
             <div
               className="participant-segments"
               role="radiogroup"
@@ -320,17 +306,19 @@ export default function CreatePageClient() {
           </div>
 
           <div style={{ marginBottom: "0" }}>
-            <label className="field-label">
+            <label className="field-label field-label--above-helper">
               Meeting point
             </label>
-            <p className="secondary-text" style={{ marginBottom: "0.5rem" }}>
+            <p className="field-helper">
               Click the map or drag the pin to where you’ll meet.
             </p>
+            <div className="create-page__map-wrap">
             <MeetingPointPicker
               center={mapCenter}
               value={meetingPoint}
               onChange={setMeetingPoint}
             />
+            </div>
             <input
               className="field-input"
               type="text"
@@ -344,6 +332,11 @@ export default function CreatePageClient() {
         </div>
 
         <div className="narrow-cta-wrap">
+          {isDateBlocked && (
+            <p style={{ color: "#b45309", fontSize: "0.875rem", marginBottom: "0.5rem" }}>
+              You already have a bite this day.
+            </p>
+          )}
           {error && (
             <p style={{ color: "#dc2626", fontSize: "0.875rem", marginBottom: "0.5rem" }}>
               {error}
@@ -354,7 +347,7 @@ export default function CreatePageClient() {
             type="submit"
             disabled={!isValid || submitting}
           >
-            {submitting ? "Publishing…" : "Publish lunch date"}
+            {submitting ? "Publishing…" : "Join me for a Bite!"}
           </button>
         </div>
       </form>

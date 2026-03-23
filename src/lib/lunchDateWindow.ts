@@ -35,8 +35,9 @@ export function isYmdInSelectableLunchWindow(
   return selectableLunchDateYmds(now).includes(ymd);
 }
 
-/** Long label for a YMD, e.g. "Wednesday, Mar 19". */
+/** Long label for a YMD, e.g. "Wednesday, Mar 19". Today shows as "Today". */
 export function lunchDateLabel(ymd: string): string {
+  if (ymd === stockholmTodayYmd()) return "Today";
   const noon = fromZonedTime(`${ymd}T12:00:00`, LUNCH_TIMEZONE);
   return formatInTimeZone(noon, LUNCH_TIMEZONE, "EEEE, MMM d", { locale: enUS });
 }

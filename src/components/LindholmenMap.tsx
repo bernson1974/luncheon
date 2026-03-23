@@ -15,16 +15,26 @@ export interface RestaurantPin {
   lat: number;
   lng: number;
   dateCount: number;
+  /** True if any date at this restaurant that day has only 1 spot left */
+  oneSpotLeft?: boolean;
 }
 
 interface Props {
   pins?: RestaurantPin[];
   /** Selected day for popup and Find link. */
   selectedYmd: string;
+  /** Grey out pins (e.g. when user already has a date that day). */
+  greyedOut?: boolean;
 }
 
-function makeBadgeIcon(L: LeafletNs, count: number) {
-  const color = count > 0 ? "#0f766e" : "#94a3b8";
+function makeBadgeIcon(L: LeafletNs, count: number, greyedOut?: boolean, oneSpotLeft?: boolean) {
+  const color = greyedOut
+    ? "#94a3b8"
+    : oneSpotLeft
+      ? "#c96a3a"
+      : count > 0
+        ? "#0f766e"
+        : "#94a3b8";
   const textColor = "#ffffff";
   const html = `
     <div style="
@@ -72,7 +82,7 @@ const DEFAULT_PINS: RestaurantPin[] = [
   { id: "chalmers-karen", name: "Chalmers Kåren", lat: 57.7076, lng: 11.9377, dateCount: 0 },
 ];
 
-export default function LindholmenMap({ pins, selectedYmd }: Props) {
+export default function LindholmenMap({ pins, selectedYmd, greyedOut }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<LeafletMap | null>(null);
   const markersLayerRef = useRef<LeafletLayerGroup | null>(null);
@@ -140,7 +150,7 @@ export default function LindholmenMap({ pins, selectedYmd }: Props) {
     const ymdQ = encodeURIComponent(selectedYmd);
 
     for (const pin of activePins) {
-      const icon = makeBadgeIcon(L, pin.dateCount);
+      const icon = makeBadgeIcon(L, pin.dateCount, greyedOut, pin.oneSpotLeft);
       const countText =
         pin.dateCount > 0
           ? `${pin.dateCount} lunch date${pin.dateCount > 1 ? "s" : ""} · ${dayLabel}`
@@ -152,7 +162,7 @@ export default function LindholmenMap({ pins, selectedYmd }: Props) {
               <span style="color: #64748b;">${countText}</span><br>
               <a
                 href="${linkHref}"
-                style="color: #0f766e; font-weight: 600; text-decoration: none; margin-top: 4px; display: inline-block;"
+                style="display: block; margin-top: 0.55rem; padding: 0.55rem 0.75rem; border-radius: 0.5rem; background: #1e524e; color: #ecfdf5; font-weight: 600; font-size: 0.82rem; text-decoration: none; text-align: center; box-sizing: border-box;"
               >View dates →</a>
             </div>
           `;
@@ -160,13 +170,13 @@ export default function LindholmenMap({ pins, selectedYmd }: Props) {
         .bindPopup(popupHtml)
         .addTo(layer);
     }
-  }, [mapReady, activePins, selectedYmd, dayLabel]);
+  }, [mapReady, activePins, selectedYmd, dayLabel, greyedOut]);
 
   if (error) {
     return (
       <div
         style={{
-          height: "340px",
+          height: "442px",
           borderRadius: "0.75rem",
           background: "#e2e8f0",
           display: "flex",
@@ -184,7 +194,7 @@ export default function LindholmenMap({ pins, selectedYmd }: Props) {
   return (
     <div
       ref={containerRef}
-      style={{ borderRadius: "0.75rem", overflow: "hidden", height: "340px" }}
+      style={{ borderRadius: "0.75rem", overflow: "hidden", height: "442px" }}
     />
   );
 }

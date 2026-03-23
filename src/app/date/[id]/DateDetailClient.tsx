@@ -188,89 +188,105 @@ export default function DateDetailClient() {
   const isFull = date.status === "full";
 
   return (
-    <div>
-      <h1 className="page-title" style={{ marginBottom: "1.25rem" }}>
+    <div className="date-detail-wrap date-detail-page">
+      <h1 className="page-title" style={{ marginBottom: "1.25rem", color: "#064e3b" }}>
         {date.topic}
       </h1>
 
-      <div
-        className={`card date-detail-main-card date-detail-main-card--${date.status}`}
-      >
-        <div className="detail-row">
-          <span className="detail-label">Day</span>
-          <span>{lunchDateLabel(date.date)}</span>
-        </div>
-        <div className="detail-row">
-          <span className="detail-label">Time</span>
-          <span>
-            {date.timeStart}
-            {date.timeEnd ? `–${date.timeEnd}` : ""}
-          </span>
-        </div>
-        <div className="detail-row">
-          <span className="detail-label">Restaurant</span>
-          <span>
-            {date.restaurant.name}
-            <span className="secondary-text" style={{ marginLeft: "0.4rem" }}>
-              ({cuisineLabel(date.restaurant.cuisine)})
+      <div className="date-detail-card-area">
+        <div className={`browse-date-bg-card browse-date-bg-card--${date.status}`}>
+          <div className="date-detail-main-card__inner">
+          <div className="detail-row">
+            <span className="detail-label">Day</span>
+            <span>{lunchDateLabel(date.date)}</span>
+          </div>
+          <div className="detail-row">
+            <span className="detail-label">Time</span>
+            <span>
+              {date.timeStart}
+              {date.timeEnd ? `–${date.timeEnd}` : ""}
             </span>
-          </span>
-        </div>
-        <div className="detail-row detail-row--participants">
-          <span className="detail-label">Participants</span>
-          <span className="detail-row__participants-body">
-            <span className="detail-row__participant-names">
-              <strong>{date.creatorAlias}</strong>
-              <span className="secondary-text"> (host)</span>
-              {date.participants.length > 0 && (
-                <>
-                  {", "}
-                  {date.participants.map((p) => p.alias).join(", ")}
-                </>
-              )}
+          </div>
+          <div className="detail-row">
+            <span className="detail-label">Restaurant</span>
+            <span>
+              {date.restaurant.name}
+              <span className="secondary-text" style={{ marginLeft: "0.4rem" }}>
+                ({cuisineLabel(date.restaurant.cuisine)})
+              </span>
             </span>
-            <span className="secondary-text detail-row__participant-spots">
-              {isCancelled
-                ? "—"
-                : date.spotsLeft > 0
-                  ? `${date.spotsLeft} empty spot${date.spotsLeft !== 1 ? "s" : ""} left`
-                  : "No spots left."}
+          </div>
+          <div className="detail-row detail-row--participants">
+            <span className="detail-label">Participants</span>
+            <span className="detail-row__participants-body">
+              <span className="detail-row__participant-names">
+                <strong>{date.creatorAlias}</strong>
+                <span className="secondary-text"> (host)</span>
+                {date.participants.length > 0 && (
+                  <>
+                    {", "}
+                    {date.participants.map((p) => p.alias).join(", ")}
+                  </>
+                )}
+              </span>
+              <span className="secondary-text detail-row__participant-spots">
+                {isCancelled ? (
+                  "—"
+                ) : (
+                  <span
+                    className={`badge ${
+                      date.spotsLeft > 0 ? "badge-open" : "badge-full"
+                    }`}
+                  >
+                    {date.spotsLeft > 0 ? "Open" : "Full"}
+                  </span>
+                )}
+              </span>
             </span>
-          </span>
-        </div>
+          </div>
 
-        {!isCancelled && role === "visitor" && !isFull && !alreadyHasLunch && (
-          <div className="date-detail-main-card__join-block">
-            {joinError && (
-              <p style={{ color: "#dc2626", fontSize: "0.875rem", marginBottom: "0.5rem" }}>
-                {joinError}
-              </p>
-            )}
+          {(role === "creator" || role === "participant") &&
+            date.meetingPoint?.latitude != null &&
+            date.meetingPoint?.longitude != null && (
+            <div className="date-detail-meeting-block">
+              <p className="field-label" style={{ marginBottom: "0.5rem" }}>Meeting point</p>
+              <MeetingPointPicker
+                center={{ lat: date.meetingPoint.latitude, lng: date.meetingPoint.longitude }}
+                value={{ lat: date.meetingPoint.latitude, lng: date.meetingPoint.longitude }}
+                onChange={() => {}}
+                readonly
+                description={date.meetingPoint.description}
+              />
+            </div>
+          )}
+        </div>
+        </div>
+      </div>
+
+      {!isCancelled && role === "visitor" && !isFull && !alreadyHasLunch && (
+        <div className="date-detail-actions">
+          {joinError && (
+            <p style={{ color: "#dc2626", fontSize: "0.875rem", marginBottom: "0.5rem" }}>
+              {joinError}
+            </p>
+          )}
+          <div className="date-detail-actions__split">
+            <button
+              type="button"
+              className="primary-button date-detail-actions__back"
+              onClick={() => router.back()}
+            >
+              Go back
+            </button>
             <button
               type="button"
               className="primary-button"
-              style={{ width: "100%", maxWidth: "100%" }}
               onClick={() => void handleJoin()}
               disabled={!getStoredAlias()?.trim() || joining}
             >
               {joining ? "Joining…" : "Join lunch date"}
             </button>
           </div>
-        )}
-      </div>
-
-      {(role === "creator" || role === "participant") &&
-        date.meetingPoint?.latitude != null &&
-        date.meetingPoint?.longitude != null && (
-        <div className="card">
-          <p className="field-label" style={{ marginBottom: "0.5rem" }}>Meeting point</p>
-          <MeetingPointPicker
-            center={{ lat: date.meetingPoint.latitude, lng: date.meetingPoint.longitude }}
-            value={{ lat: date.meetingPoint.latitude, lng: date.meetingPoint.longitude }}
-            onChange={() => {}}
-            readonly
-            description={date.meetingPoint.description}
-          />
         </div>
       )}
 
@@ -281,69 +297,95 @@ export default function DateDetailClient() {
               <p className="secondary-text" style={{ marginBottom: "0.5rem" }}>
                 This is your date. You can cancel it below.
               </p>
-              <button
-                className="danger-button"
-                type="button"
-                onClick={handleCancel}
-                disabled={acting}
-              >
-                {acting ? "Cancelling…" : "Cancel date"}
-              </button>
+              <div className="date-detail-actions__split">
+                <button
+                  type="button"
+                  className="primary-button date-detail-actions__back"
+                  onClick={() => router.back()}
+                >
+                  Go back
+                </button>
+                <button
+                  className="danger-button"
+                  type="button"
+                  onClick={handleCancel}
+                  disabled={acting}
+                >
+                  {acting ? "Cancelling…" : "Cancel date"}
+                </button>
+              </div>
             </div>
           )}
 
           {role === "participant" && (
             <div className="date-detail-actions">
-              <button
-                className="danger-button"
-                type="button"
-                onClick={handleLeave}
-                disabled={acting}
-              >
-                {acting ? "Cancelling…" : "Cancel lunch"}
-              </button>
+              <div className="date-detail-actions__split">
+                <button
+                  type="button"
+                  className="primary-button date-detail-actions__back"
+                  onClick={() => router.back()}
+                >
+                  Go back
+                </button>
+                <button
+                  className="danger-button"
+                  type="button"
+                  onClick={handleLeave}
+                  disabled={acting}
+                >
+                  {acting ? "Cancelling…" : "Cancel lunch"}
+                </button>
+              </div>
             </div>
           )}
 
           {role === "visitor" && !isFull && alreadyHasLunch && (
-            <div className="card" style={{ background: "#fffbeb", border: "1px solid #fde68a" }}>
-              <p style={{ margin: 0, fontSize: "0.9rem", color: "#92400e", fontWeight: 500 }}>
-                You already have a lunch date booked that day.
+            <div className="date-detail-actions">
+              <p style={{ color: "#b45309", fontSize: "0.875rem", marginBottom: "0.5rem" }}>
+                You already have a bite this day.
               </p>
-              <p className="secondary-text" style={{ marginTop: "0.4rem", marginBottom: "0.75rem" }}>
-                You can only have one lunch per day. Leave or cancel your other date to join this one.
-              </p>
-              <Link href="/my-lunch" className="secondary-button">
-                See my existing date
-              </Link>
+              <button
+                type="button"
+                className="primary-button"
+                style={{ width: "100%" }}
+                onClick={() => router.back()}
+              >
+                Go back
+              </button>
             </div>
           )}
 
           {role === "visitor" && isFull && (
-            <div className="empty-state" style={{ padding: "1.5rem 0" }}>
-              <p>This date is fully booked.</p>
-              <Link
-                href="/browse"
-                className="secondary-button"
-                style={{ maxWidth: "240px", marginInline: "auto" }}
+            <div className="date-detail-actions">
+              <button
+                type="button"
+                className="primary-button"
+                onClick={() => router.back()}
               >
-                Browse other dates
-              </Link>
+                Go back
+              </button>
             </div>
           )}
         </>
       )}
 
       {isCancelled && (
-        <div className="empty-state" style={{ padding: "1.5rem 0" }}>
-          <p>This date has been cancelled.</p>
-          <Link
-            href="/browse"
-            className="secondary-button"
-            style={{ maxWidth: "240px", marginInline: "auto" }}
-          >
-            Browse other dates
-          </Link>
+        <div className="date-detail-actions">
+          <div className="empty-state" style={{ padding: "1.5rem 0" }}>
+            <p>This date has been cancelled.</p>
+          </div>
+          <div className="date-detail-actions__split">
+            <button
+              type="button"
+              className="primary-button date-detail-actions__back"
+              onClick={() => router.back()}
+            >
+              Go back
+            </button>
+            <Link href="/browse" className="secondary-button">
+              Browse other dates
+            </Link>
+          </div>
         </div>
       )}
     </div>

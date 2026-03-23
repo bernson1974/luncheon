@@ -10,17 +10,19 @@ const PUBLIC_PATHS = new Set(["/welcome"]);
 const MAIN_TABS: {
   href: string;
   label: string;
+  icon?: string;
   isActive: (path: string) => boolean;
 }[] = [
-  { href: "/", label: "Map", isActive: (p) => p === "/" },
-  { href: "/my-lunch", label: "My Bites", isActive: (p) => p === "/my-lunch" },
-  { href: "/create", label: "Invite", isActive: (p) => p === "/create" },
+  { href: "/", label: "Find", icon: "/map.svg", isActive: (p) => p === "/" },
+  { href: "/my-lunch", label: "My Bites", icon: "/burger.svg", isActive: (p) => p === "/my-lunch" },
+  { href: "/create", label: "Invite", icon: "/invite.svg", isActive: (p) => p === "/create" },
   {
     href: "/browse",
     label: "Join",
+    icon: "/hands.svg",
     isActive: (p) => p.startsWith("/browse") || p.startsWith("/date/"),
   },
-  { href: "/settings", label: "Name", isActive: (p) => p === "/settings" },
+  { href: "/settings", label: "Name", icon: "/face.svg", isActive: (p) => p === "/settings" },
 ];
 
 export default function AppShell({ children }: { children: ReactNode }) {
@@ -62,10 +64,14 @@ export default function AppShell({ children }: { children: ReactNode }) {
   const flushSubtabsUnderMain =
     path === "/" || path === "/my-lunch" || path === "/browse";
 
+  const activeTabIndex = MAIN_TABS.findIndex((t) => t.isActive(path));
+  const safeIndex = activeTabIndex >= 0 ? activeTabIndex : 0;
+
   return (
     <>
       <header
         className={`app-shell-header${flushSubtabsUnderMain ? " app-shell-header--flush-subtabs" : ""}`}
+        data-active-tab-index={safeIndex}
       >
         <nav className="app-tab-bar" aria-label="Main navigation">
           {MAIN_TABS.map((tab) => {
@@ -77,7 +83,17 @@ export default function AppShell({ children }: { children: ReactNode }) {
                 className={`app-tab-bar__tab${active ? " app-tab-bar__tab--active" : ""}`}
                 aria-current={active ? "page" : undefined}
               >
-                <span className="app-tab-bar__tab__icon-slot" aria-hidden />
+                <span className="app-tab-bar__tab__icon-slot" aria-hidden>
+                  {tab.icon && (
+                    <span
+                      className={`app-tab-bar__tab__icon${tab.icon === "/hands.svg" ? " app-tab-bar__tab__icon--hands" : ""}${tab.icon === "/face.svg" ? " app-tab-bar__tab__icon--face" : ""}`}
+                      style={{
+                        WebkitMaskImage: `url(${tab.icon})`,
+                        maskImage: `url(${tab.icon})`,
+                      }}
+                    />
+                  )}
+                </span>
                 <span className="app-tab-bar__tab__label">{tab.label}</span>
               </Link>
             );

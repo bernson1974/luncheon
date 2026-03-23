@@ -8,6 +8,7 @@ interface RestaurantPin {
   lat: number;
   lng: number;
   dateCount: number;
+  oneSpotLeft?: boolean;
 }
 
 const LindholmenMap = dynamic(() => import("./LindholmenMap"), {
@@ -15,7 +16,7 @@ const LindholmenMap = dynamic(() => import("./LindholmenMap"), {
   loading: () => (
     <div
       style={{
-        height: "340px",
+        height: "442px",
         borderRadius: "0.75rem",
         background: "#e2e8f0",
         display: "flex",
@@ -33,9 +34,11 @@ const LindholmenMap = dynamic(() => import("./LindholmenMap"), {
 export default function MapWrapper({
   pins,
   selectedYmd,
+  greyedOut,
 }: {
   pins: RestaurantPin[];
   selectedYmd: string;
+  greyedOut?: boolean;
 }) {
-  return <LindholmenMap pins={pins} selectedYmd={selectedYmd} />;
+  return <LindholmenMap pins={pins} selectedYmd={selectedYmd} greyedOut={greyedOut} />;
 }

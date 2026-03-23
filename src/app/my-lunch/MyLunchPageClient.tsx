@@ -1,13 +1,13 @@
 "use client";
 
 import { useState, useEffect, useCallback, useMemo } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import type { LunchDatePublic } from "@/lib/models";
 import { syncLocalBookingStateWithServer } from "@/lib/bookingState";
 import { forgetCreatedDate, isCreatorOfDateInStorage, listCreatorDateIdsFromStorage, rememberCreatedDate } from "@/lib/creatorStorage";
 import { lunchDateLabel, selectableLunchDateYmds } from "@/lib/lunchDateWindow";
-import { getStoredAlias } from "@/lib/userAlias";
 import { cuisineLabel } from "@/lib/cuisineLabels";
 import DayPickerSubtabs from "@/components/DayPickerSubtabs";
 
@@ -56,17 +56,6 @@ function MyLunchDayPanel({
 
   const hasMeetingPoint =
     date.meetingPoint?.latitude != null && date.meetingPoint?.longitude != null;
-
-  const bookedCount = date.participants.length + 1;
-  const maxP = date.maxParticipants;
-
-  function statusDetail(): string {
-    if (date.status === "cancelled") return "Cancelled";
-    if (bookedCount === 1) {
-      return `${bookedCount}/${maxP} spot booked.`;
-    }
-    return `${bookedCount}/${maxP} spots booked.`;
-  }
 
   const isCancelled = date.status === "cancelled";
   const isCreator = Boolean(
@@ -138,49 +127,74 @@ function MyLunchDayPanel({
     </div>
   );
 
+  const statusClass = isCancelled ? "cancelled" : date.spotsLeft > 0 ? "open" : "full";
+
   return (
     <div
       role="tabpanel"
       aria-labelledby={ariaLabelledBy}
       aria-label={ariaLabelledBy ? undefined : `Date ${lunchDateLabel(date.date)}`}
+      className="my-lunch-content-wrap"
     >
-      <div className="card my-lunch-main-card">
-        <div className="my-lunch-details-section">
-          <div className="detail-row">
-            <span className="detail-label">Place</span>
-            <span>
-              {date.restaurant.name}
-              <span className="secondary-text" style={{ marginLeft: "0.4rem" }}>
-                ({cuisineLabel(date.restaurant.cuisine)})
+      <div className={`browse-date-bg-card browse-date-bg-card--${statusClass}`}>
+        <div className="my-lunch-main-card__inner">
+          <div className="my-lunch-details-section">
+            <div className="detail-row">
+              <span className="detail-label">Time</span>
+              <span>
+                {date.timeStart}
+                {date.timeEnd ? `–${date.timeEnd}` : ""}
               </span>
-            </span>
-          </div>
-          <div className="detail-row">
-            <span className="detail-label">Time</span>
-            <span>
-              {date.timeStart}
-              {date.timeEnd ? `–${date.timeEnd}` : ""}
-            </span>
-          </div>
-          <div className="detail-row">
-            <span className="detail-label">Topic</span>
-            <span className="topic-tag">{date.topic}</span>
-          </div>
-          <div className="detail-row">
-            <span className="detail-label">Status</span>
-            <span>{statusDetail()}</span>
-          </div>
-          <div className="detail-row">
-            <span className="detail-label">Host</span>
-            <span>{date.creatorAlias}</span>
+            </div>
+            <div className="detail-row">
+              <span className="detail-label">Restaurant</span>
+              <span>
+                {date.restaurant.name}
+                <span className="secondary-text" style={{ marginLeft: "0.4rem" }}>
+                  ({cuisineLabel(date.restaurant.cuisine)})
+                </span>
+              </span>
+            </div>
+            <div className="detail-row">
+              <span className="detail-label">Topic</span>
+              <span className="topic-tag">{date.topic}</span>
+            </div>
+            <div className="detail-row detail-row--participants">
+              <span className="detail-label">Participants</span>
+              <span className="detail-row__participants-body">
+                <span className="detail-row__participant-names">
+                  <strong>{date.creatorAlias}</strong>
+                  <span className="secondary-text"> (host)</span>
+                  {date.participants.length > 0 && (
+                    <>
+                      {", "}
+                      {date.participants.map((p) => p.alias).join(", ")}
+                    </>
+                  )}
+                </span>
+                <span className="secondary-text detail-row__participant-spots">
+                  {isCancelled ? (
+                    "—"
+                  ) : (
+                    <span
+                      className={`badge ${
+                        date.spotsLeft > 0 ? "badge-open" : "badge-full"
+                      }`}
+                    >
+                      {date.spotsLeft > 0 ? "Open" : "Full"}
+                    </span>
+                  )}
+                </span>
+              </span>
+            </div>
           </div>
         </div>
       </div>
 
       {hasMeetingPoint && (
-        <div className="card">
+        <div className="my-lunch-meeting-block">
           <div className="my-lunch-meeting-header">
-            <p className="field-label">Meeting point</p>
+            <p className="field-label" style={{ color: "#064e3b" }}>Meeting point</p>
           </div>
           {actionErr && (
             <p style={{ color: "#dc2626", fontSize: "0.82rem", marginBottom: "0.5rem" }}>{actionErr}</p>
@@ -199,24 +213,22 @@ function MyLunchDayPanel({
             readonly
             description={date.meetingPoint?.description}
           />
-          {cancelButton}
         </div>
       )}
 
       {!hasMeetingPoint && (
-        <div className="card" style={{ background: "#fffbeb", border: "1px solid #fde68a" }}>
-          <div className="my-lunch-meeting-header">
-            <p className="field-label">Meeting point</p>
-          </div>
+        <div className="my-lunch-meeting-block" style={{ maxWidth: "17.5rem", marginInline: "auto", textAlign: "center" }}>
+          <p className="field-label" style={{ color: "#7f1d1d" }}>Meeting point</p>
+          <p style={{ margin: 0, fontSize: "0.85rem", color: "#7f1d1d" }}>
+            No meeting point has been set for this date.
+          </p>
           {actionErr && (
             <p style={{ color: "#dc2626", fontSize: "0.82rem", marginBottom: "0.5rem" }}>{actionErr}</p>
           )}
-          <p style={{ margin: 0, fontSize: "0.85rem", color: "#92400e" }}>
-            No meeting point has been set for this date.
-          </p>
-          {cancelButton}
         </div>
       )}
+
+      {cancelButton}
     </div>
   );
 }
@@ -228,6 +240,7 @@ export default function MyLunchPageClient({
 }: {
   initialDates: ServerDate[];
 }) {
+  const searchParams = useSearchParams();
   const [windowDates, setWindowDates] = useState<WindowDate[]>([]);
   const [dates, setDates] = useState<LunchDatePublic[]>([]);
   const [loading, setLoading] = useState(true);
@@ -300,36 +313,8 @@ export default function MyLunchPageClient({
       }
     }
 
-    /* Fallback 2: alias match (all dates from server – same instance as Map/Browse) */
-    if (valid.length === 0) {
-      const alias = (getStoredAlias() ?? "").trim().toLowerCase();
-      if (alias) {
-        try {
-          const allRes = await fetch("/api/dates");
-          if (allRes.ok) {
-            const all = (await allRes.json()) as LunchDatePublic[];
-            const mine = all.filter(
-              (d) =>
-                d.status !== "cancelled" &&
-                (d.creatorAlias.toLowerCase() === alias ||
-                  d.participants.some((p) => p.alias.toLowerCase() === alias))
-            );
-            if (mine.length > 0) {
-              valid = mine;
-              for (const d of mine) {
-                if (d.creatorAlias.toLowerCase() === alias) {
-                  rememberCreatedDate(d.id, userToken);
-                } else {
-                  localStorage.setItem(`joined:${d.id}`, userToken);
-                }
-              }
-            }
-          }
-        } catch {
-          /* ignore */
-        }
-      }
-    }
+    /* Alias match removed: multiple users can share the same name (e.g. seed has 3 "Erik"s) –
+       showing those as "yours" causes confusion. Only show dates where userToken matches. */
 
     setDates(valid);
 
@@ -385,14 +370,18 @@ export default function MyLunchPageClient({
     return m;
   }, [dates]);
 
+  /* Prefer ?date=ymd from URL (e.g. from Find "already have a bite" link) */
+  const dateFromUrl = searchParams.get("date");
+
   useEffect(() => {
     if (loading) return;
     setSelectedYmd((prev) => {
+      if (dateFromUrl && bookedByYmd[dateFromUrl]) return dateFromUrl;
       if (prev && bookedByYmd[prev]) return prev;
       const first = windowDates.find((w) => bookedByYmd[w.ymd]);
       return first?.ymd ?? null;
     });
-  }, [loading, windowDates, bookedByYmd]);
+  }, [loading, windowDates, bookedByYmd, dateFromUrl]);
 
   const activeDate = selectedYmd ? bookedByYmd[selectedYmd] : null;
   const hasAnyBooking = dates.length > 0;
@@ -420,7 +409,7 @@ export default function MyLunchPageClient({
       />
 
       {!hasAnyBooking && (
-        <div className="empty-state" style={{ paddingTop: "0.5rem" }}>
+        <div className="empty-state" style={{ paddingTop: "0.5rem", color: "#064e3b" }}>
           <p>You don't have a planned lunch date in this window (today + five days).</p>
           <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem", marginTop: "1rem" }}>
             <Link
@@ -428,14 +417,14 @@ export default function MyLunchPageClient({
               className="primary-button"
               style={{ maxWidth: "260px", marginInline: "auto" }}
             >
-              Create a date
+              Create an invite
             </Link>
             <Link
               href="/browse"
               className="secondary-button"
               style={{ maxWidth: "260px", marginInline: "auto" }}
             >
-              Find a date to join
+              Join a Bite
             </Link>
           </div>
         </div>
