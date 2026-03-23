@@ -19,7 +19,7 @@ export default async function HomePage() {
   const cookieStore = await cookies();
   const tokenCookie = cookieStore.get("luncheon_user_token");
   const userToken = tokenCookie?.value ? decodeURIComponent(tokenCookie.value) : null;
-  const committedYmds = userToken ? getCommittedDateYmdsForUser(userToken) : [];
+  const committedYmds = userToken ? await getCommittedDateYmdsForUser(userToken) : [];
 
   const countsByYmd: CountsByYmd = {};
   const oneSpotLeftByYmd: OneSpotLeftByYmd = {};
@@ -28,7 +28,8 @@ export default async function HomePage() {
   for (const ymd of ymds) {
     countsByYmd[ymd] = {};
     oneSpotLeftByYmd[ymd] = {};
-    for (const d of listDates({ date: ymd })) {
+    const datesForDay = await listDates({ date: ymd });
+    for (const d of Array.isArray(datesForDay) ? datesForDay : []) {
       if (d.spotsLeft === 0) continue;
       const rid = d.restaurant.id;
       countsByYmd[ymd][rid] = (countsByYmd[ymd][rid] ?? 0) + 1;

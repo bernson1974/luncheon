@@ -96,7 +96,7 @@ export async function POST() {
     const creatorAlias = FAKE_CREATOR_ALIASES[creatorIndex % FAKE_CREATOR_ALIASES.length];
     const topic = TOPICS[Math.floor(Math.random() * TOPICS.length)];
 
-    const date = createDate({
+    const date = await createDate({
       creatorAlias,
       creatorToken: nextCreatorToken(),
       date: ymd,
@@ -127,7 +127,7 @@ export async function POST() {
     for (let j = 0; j < numJoins; j++) {
       const alias = FAKE_PARTICIPANT_ALIASES[(participantIndex + j) % FAKE_PARTICIPANT_ALIASES.length];
       const token = nextParticipantToken();
-      joinDate(date.id, alias, token);
+      await joinDate(date.id, alias, token);
     }
   }
 

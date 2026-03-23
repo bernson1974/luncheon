@@ -10,7 +10,7 @@ export default async function MyLunchPage() {
 
   const initialDates =
     userToken
-      ? listDatesForUser(userToken)
+      ? await listDatesForUser(userToken)
       : [];
 
   return <MyLunchPageClient initialDates={initialDates} />;

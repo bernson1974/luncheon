@@ -6,7 +6,7 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
-  const date = getDate(id);
+  const date = await getDate(id);
   if (!date) return NextResponse.json({ error: "not_found" }, { status: 404 });
   return NextResponse.json(date);
 }
@@ -23,7 +23,7 @@ export async function DELETE(
     return NextResponse.json({ error: "missing_token" }, { status: 400 });
   }
 
-  const ok = cancelDate(id, creatorToken);
+  const ok = await cancelDate(id, creatorToken);
   if (!ok) return NextResponse.json({ error: "forbidden" }, { status: 403 });
 
   return NextResponse.json({ success: true });

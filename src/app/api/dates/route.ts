@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
     cuisine: searchParams.get("cuisine") ?? undefined,
   };
 
-  const dates = listDates(filters);
+  const dates = await listDates(filters);
   return NextResponse.json(dates);
 }
 
@@ -51,11 +51,11 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "invalid_date" }, { status: 400 });
   }
 
-  if (userHasCommitmentOnDate(creatorToken, dateYmd)) {
+  if (await userHasCommitmentOnDate(creatorToken, dateYmd)) {
     return NextResponse.json({ error: "busy_that_day" }, { status: 409 });
   }
 
-  const date = createDate({
+  const date = await createDate({
     creatorAlias,
     creatorToken,
     date: dateYmd,

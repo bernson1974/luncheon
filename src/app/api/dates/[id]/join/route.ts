@@ -13,7 +13,7 @@ export async function POST(
     return NextResponse.json({ error: "missing_fields" }, { status: 400 });
   }
 
-  const result = joinDate(id, alias, userToken);
+  const result = await joinDate(id, alias, userToken);
   if (!result.ok) {
     const status = result.error === "not_found" ? 404 : 409;
     return NextResponse.json({ error: result.error }, { status });
@@ -34,7 +34,7 @@ export async function DELETE(
     return NextResponse.json({ error: "missing_token" }, { status: 400 });
   }
 
-  const ok = leaveDate(id, userToken);
+  const ok = await leaveDate(id, userToken);
   if (!ok) return NextResponse.json({ error: "not_found" }, { status: 404 });
 
   return NextResponse.json({ success: true });

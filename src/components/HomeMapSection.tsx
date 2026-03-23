@@ -42,7 +42,7 @@ export default function HomeMapSection({
   days: serverDays,
   countsByYmd: serverCounts,
   oneSpotLeftByYmd: serverOneSpot = {},
-  restaurants,
+  restaurants: serverRestaurants,
   committedYmds: serverCommittedYmds = [],
 }: {
   days: HomeMapDay[];
@@ -55,6 +55,7 @@ export default function HomeMapSection({
   const [days, setDays] = useState(serverDays);
   const [countsByYmd, setCountsByYmd] = useState(serverCounts);
   const [oneSpotLeftByYmd, setOneSpotLeftByYmd] = useState(serverOneSpot);
+  const [restaurants, setRestaurants] = useState<HomeRestaurantPinBase[]>(serverRestaurants);
   const [selectedYmd, setSelectedYmd] = useState(serverDays[0]?.ymd ?? "");
   const [clientCommittedYmds, setClientCommittedYmds] = useState<string[] | null>(null);
 
@@ -66,6 +67,7 @@ export default function HomeMapSection({
           setDays(data.days);
           setCountsByYmd(data.countsByYmd ?? {});
           setOneSpotLeftByYmd(data.oneSpotLeftByYmd ?? {});
+          if (data.restaurants?.length) setRestaurants(data.restaurants);
         }
       })
       .catch(() => {});

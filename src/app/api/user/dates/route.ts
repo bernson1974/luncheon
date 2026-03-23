@@ -8,6 +8,6 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "missing_token" }, { status: 400 });
   }
 
-  const dates = listDatesForUser(userToken);
+  const dates = await listDatesForUser(userToken);
   return NextResponse.json({ dates });
 }

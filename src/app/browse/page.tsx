@@ -11,8 +11,8 @@ function BrowseFallback() {
 }
 
 /** Same data source as Map – server-rendered, avoids API route hitting wrong instance */
-export default function BrowsePage() {
-  const allDates = listDates();
+export default async function BrowsePage() {
+  const allDates = await listDates();
   return (
     <Suspense fallback={<BrowseFallback />}>
       <BrowsePageClient initialDates={allDates} />

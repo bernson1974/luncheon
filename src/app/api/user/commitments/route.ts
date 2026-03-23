@@ -11,6 +11,6 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "missing_token" }, { status: 400 });
   }
 
-  const committedYmds = getCommittedDateYmdsForUser(userToken);
+  const committedYmds = await getCommittedDateYmdsForUser(userToken);
   return NextResponse.json({ committedYmds });
 }
