@@ -97,18 +97,22 @@ export async function listDatesForUser(
   if (!sql) return [];
   const ymds = selectableLunchDateYmds();
   const allRows = await sql`
-    SELECT d.*, p.id as p_id, p.alias as p_alias, p.joined_at as p_joined_at
+    SELECT d.*, p.id as p_id, p.alias as p_alias, p.joined_at as p_joined_at, p.user_token as p_user_token
     FROM dates d
     LEFT JOIN participants p ON p.lunch_date_id = d.id
     WHERE d.status != 'cancelled'
       AND d.date IN (${ymds[0]}, ${ymds[1]}, ${ymds[2]}, ${ymds[3]}, ${ymds[4]}, ${ymds[5] ?? ymds[0]})
-      AND (d.creator_token = ${userToken} OR p.user_token = ${userToken})
+      AND (
+        d.creator_token = ${userToken}
+        OR EXISTS (SELECT 1 FROM participants p2 WHERE p2.lunch_date_id = d.id AND p2.user_token = ${userToken})
+      )
   `;
   const byId = new Map<string, (LunchDatePublic & { role: UserDateRole })>();
   for (const row of allRows as unknown[]) {
     const r = row as Record<string, unknown>;
     const dateId = r.id as string;
     if (!byId.has(dateId)) {
+      const creatorToken = r.creator_token as string;
       const participantRows = (allRows as unknown[]).filter(
         (x: unknown) => (x as Record<string, unknown>).id === dateId && (x as Record<string, unknown>).p_alias != null
       );
@@ -116,9 +120,12 @@ export async function listDatesForUser(
         const px = x as Record<string, unknown>;
         return { id: String(px.p_id), alias: String(px.p_alias), joinedAt: String(px.p_joined_at) };
       });
+      const joinedExcludingCreator = participantRows.filter(
+        (x: unknown) => (x as Record<string, unknown>).p_user_token !== creatorToken
+      ).length;
       const dr = r as { creator_token: string; max_participants: number };
       const role: UserDateRole = dr.creator_token === userToken ? "creator" : "participant";
-      const spotsLeft = Math.max(0, dr.max_participants - 1 - participants.length);
+      const spotsLeft = Math.max(0, dr.max_participants - 1 - joinedExcludingCreator);
       byId.set(dateId, {
         ...rowToDate(r as Parameters<typeof rowToDate>[0]),
         participants,
@@ -144,13 +151,13 @@ export async function listDates(filters?: {
     if (!sql) return [];
     const ymds = selectableLunchDateYmds();
     let dateRows = await sql`
-    SELECT d.*, p.id as p_id, p.alias as p_alias, p.joined_at as p_joined_at
+    SELECT d.*, p.id as p_id, p.alias as p_alias, p.joined_at as p_joined_at, p.user_token as p_user_token
     FROM dates d
     LEFT JOIN participants p ON p.lunch_date_id = d.id
     WHERE d.status != 'cancelled'
       AND d.date IN (${ymds[0]}, ${ymds[1]}, ${ymds[2]}, ${ymds[3]}, ${ymds[4]}, ${ymds[5] ?? ymds[0]})
   `;
-  type DateRow = Record<string, unknown> & { id: string; date: string; restaurant_id: string; restaurant_cuisine: string; topic: string; time_start: string; max_participants: number; p_id?: string; p_alias?: string; p_joined_at?: string };
+  type DateRow = Record<string, unknown> & { id: string; date: string; creator_token: string; restaurant_id: string; restaurant_cuisine: string; topic: string; time_start: string; max_participants: number; p_id?: string; p_alias?: string; p_joined_at?: string; p_user_token?: string };
   let rows = dateRows as DateRow[];
   if (filters?.date) {
     rows = rows.filter((r) => r.date === filters!.date);
@@ -172,16 +179,18 @@ export async function listDates(filters?: {
   for (const row of rows) {
     const dateId = row.id;
     if (!byId.has(dateId)) {
-      const participants: ParticipantPublic[] = (rows as Array<Record<string, unknown>>)
+      const participantRows = (rows as Array<Record<string, unknown>>)
         .filter((r) => r.id === dateId)
-        .filter((r) => r.p_alias != null)
-        .map((r) => ({
-          id: String(r.p_id),
-          alias: String(r.p_alias),
-          joinedAt: String(r.p_joined_at),
-        }));
-      const joined = participants.length;
-      const spotsLeft = Math.max(0, row.max_participants - 1 - joined);
+        .filter((r) => r.p_alias != null);
+      const participants: ParticipantPublic[] = participantRows.map((r) => ({
+        id: String(r.p_id),
+        alias: String(r.p_alias),
+        joinedAt: String(r.p_joined_at),
+      }));
+      const joinedExcludingCreator = participantRows.filter(
+        (r) => r.p_user_token !== row.creator_token
+      ).length;
+      const spotsLeft = Math.max(0, row.max_participants - 1 - joinedExcludingCreator);
       byId.set(dateId, {
         ...rowToDate(row as Parameters<typeof rowToDate>[0]),
         participants,
@@ -218,21 +227,23 @@ export async function getDateRole(
 export async function getDate(id: string): Promise<LunchDatePublic | null> {
   if (!sql) return null;
   const rows = await sql`
-    SELECT d.*, p.id as p_id, p.alias as p_alias, p.joined_at as p_joined_at
+    SELECT d.*, p.id as p_id, p.alias as p_alias, p.joined_at as p_joined_at, p.user_token as p_user_token
     FROM dates d
     LEFT JOIN participants p ON p.lunch_date_id = d.id
     WHERE d.id = ${id}
   `;
   if (rows.length === 0) return null;
-  const row = rows[0];
-  const participants: ParticipantPublic[] = (rows as Array<Record<string, unknown>>)
-    .filter((r) => r.p_alias != null)
-    .map((r) => ({
-      id: String(r.p_id),
-      alias: String(r.p_alias),
-      joinedAt: String(r.p_joined_at),
-    }));
-  const spotsLeft = Math.max(0, row.max_participants - 1 - participants.length);
+  const row = rows[0] as Record<string, unknown> & { creator_token: string; max_participants: number };
+  const participantRows = (rows as Array<Record<string, unknown>>).filter((r) => r.p_alias != null);
+  const participants: ParticipantPublic[] = participantRows.map((r) => ({
+    id: String(r.p_id),
+    alias: String(r.p_alias),
+    joinedAt: String(r.p_joined_at),
+  }));
+  const joinedExcludingCreator = participantRows.filter(
+    (r) => r.p_user_token !== row.creator_token
+  ).length;
+  const spotsLeft = Math.max(0, row.max_participants - 1 - joinedExcludingCreator);
   return {
     ...rowToDate(row as Parameters<typeof rowToDate>[0]),
     participants,
@@ -294,9 +305,15 @@ export async function joinDate(
   userToken: string
 ): Promise<{ ok: true; participant: ParticipantPublic } | { ok: false; error: string }> {
   if (!sql) return { ok: false, error: "not_found" };
+  const creatorCheck = await sql`
+    SELECT creator_token FROM dates WHERE id = ${id} LIMIT 1
+  `;
+  if (creatorCheck.length > 0 && (creatorCheck[0] as { creator_token: string }).creator_token === userToken) {
+    return { ok: false, error: "creator_cannot_join" };
+  }
   const date = await getDate(id);
   if (!date) return { ok: false, error: "not_found" };
-  if (date.status !== "open") return { ok: false, error: "not_open" };
+  if (date.status === "cancelled") return { ok: false, error: "not_open" };
   const existing = await sql`
     SELECT 1 FROM participants WHERE lunch_date_id = ${id} AND user_token = ${userToken} LIMIT 1
   `;

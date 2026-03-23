@@ -65,6 +65,10 @@ export default function HomeMapSection({
   };
 
   useEffect(() => {
+    fetchMapPins();
+  }, []);
+
+  useEffect(() => {
     const onFocus = () => fetchMapPins();
     window.addEventListener("focus", onFocus);
     return () => window.removeEventListener("focus", onFocus);
