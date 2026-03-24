@@ -25,6 +25,15 @@ const MAIN_TABS: {
   { href: "/settings", label: "Settings", icon: "/face.svg", isActive: (p) => p === "/settings" },
 ];
 
+/** Per-ikon CSS-modifierare (samma viewBox men olika visuell tyngd i SVG:erna) */
+const TAB_ICON_CLASS: Record<string, string> = {
+  "/map.svg": "app-tab-bar__tab__icon--find",
+  "/burger.svg": "app-tab-bar__tab__icon--bites",
+  "/invite.svg": "app-tab-bar__tab__icon--invite",
+  "/hands.svg": "app-tab-bar__tab__icon--hands",
+  "/face.svg": "app-tab-bar__tab__icon--face",
+};
+
 export default function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
@@ -83,7 +92,12 @@ export default function AppShell({ children }: { children: ReactNode }) {
                 <span className="app-tab-bar__tab__icon-slot" aria-hidden>
                   {tab.icon && (
                     <span
-                      className={`app-tab-bar__tab__icon${tab.icon === "/hands.svg" ? " app-tab-bar__tab__icon--hands" : ""}${tab.icon === "/face.svg" ? " app-tab-bar__tab__icon--face" : ""}`}
+                      className={[
+                        "app-tab-bar__tab__icon",
+                        tab.icon ? TAB_ICON_CLASS[tab.icon] : "",
+                      ]
+                        .filter(Boolean)
+                        .join(" ")}
                       style={{
                         WebkitMaskImage: `url(${tab.icon})`,
                         maskImage: `url(${tab.icon})`,

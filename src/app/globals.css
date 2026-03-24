@@ -428,6 +428,11 @@ a.danger-button:hover {
   }
 }
 
+/* Ingen extra top-padding på main när tabbar finns — undviker remsa ovanför header/hover */
+main:has(> header.app-shell-header) {
+  padding-top: 0;
+}
+
 /* Same horizontal inset as <main> (px-4): no negative margins — avoids edge tabs feeling “cut off” */
 .app-shell-header {
   width: 100%;
@@ -438,10 +443,8 @@ a.danger-button:hover {
   margin-bottom: 0.75rem;
   box-sizing: border-box;
   overflow: hidden;
-  /* Safe area + half a “tab button” height of breathing room above the bar */
-  padding-top: calc(
-    env(safe-area-inset-top, 0px) + (var(--app-tab-bar-min-height) * 0.08)
-  );
+  /* Endast safe area (notch); ingen extra remsa ovanför flikar som hover inte täcker */
+  padding-top: env(safe-area-inset-top, 0px);
   background: var(--tab-inactive-bg);
 }
 
@@ -571,19 +574,22 @@ a.danger-button:hover {
   }
 }
 
-/* Room for future icons above the label */
+/* Ikoner: samma underkant i slotten (flex-end), sedan lyfts alla lika med translateY */
 .app-tab-bar__tab__icon-slot {
   flex: 1 1 0;
   min-height: 1.125rem;
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   justify-content: center;
+  padding-bottom: 0.05rem;
 }
 
 .app-tab-bar__tab__icon {
   display: block;
   width: clamp(2.5rem, 8vw, 3.25rem);
   height: clamp(2.5rem, 8vw, 3.25rem);
+  flex-shrink: 0;
+  transform: translateY(-5px);
   -webkit-mask-size: contain;
   mask-size: contain;
   -webkit-mask-repeat: no-repeat;
@@ -594,24 +600,28 @@ a.danger-button:hover {
   background-color: var(--tab-active-bg);
 }
 
+/* Find / My Bites / Invite: motiv sitter visuellt lägre i filerna än Join & Settings → lyft extra */
+.app-tab-bar__tab__icon--find,
+.app-tab-bar__tab__icon--bites,
+.app-tab-bar__tab__icon--invite {
+  transform: translateY(-12px);
+}
+
 .app-tab-bar__tab--active .app-tab-bar__tab__icon,
 .app-tab-bar__tab[aria-current="page"] .app-tab-bar__tab__icon {
   /* Aktiv: vit */
   background-color: #ffffff;
 }
 
-/* Join (hands) icon – större, centrerad, liten nudge ned */
+/* Join (hands) & Settings (face): större, samma bottenlinje som övriga */
 .app-tab-bar__tab__icon--hands {
   width: clamp(3rem, 10vw, 4.25rem);
   height: clamp(3rem, 10vw, 4.25rem);
-  transform: translateY(2px);
 }
 
-/* Name (face) icon – större, centrerad, nudge ned */
 .app-tab-bar__tab__icon--face {
   width: clamp(3rem, 10vw, 4.25rem);
   height: clamp(3rem, 10vw, 4.25rem);
-  transform: translateY(2px);
 }
 
 .app-tab-bar__tab__label {
@@ -985,31 +995,22 @@ a.danger-button:hover {
   overflow: visible;
 }
 
-/* Map + My Bites + Join: day row – gap/padding som participant-segments */
+/* Map + My Bites + Join: dagrad fyller viewport (minus padding), flikar delar lika */
 .browse-subtab-row--days-only .browse-subtab-bar {
   flex: 1 1 100%;
+  width: 100%;
   min-width: 0;
   gap: 0.35rem;
   padding: 0.35rem;
   box-sizing: border-box;
 }
 
-@media (max-width: 420px) {
-  .browse-subtab-row--days-only .browse-subtab-bar {
-    flex: 0 0 auto;
-    min-width: max-content;
-  }
-
-  .browse-subtab-row--days-only .browse-subtab-bar .browse-subtab {
-    flex: 1 1 0;
-    min-width: 3.75rem;
-    max-width: none;
-  }
-}
-
 .browse-subtab-row--days-only {
   border-left: none;
   border-right: none;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
   overflow-x: auto;
   overflow-y: visible;
   -webkit-overflow-scrolling: touch;
@@ -1025,6 +1026,7 @@ a.danger-button:hover {
 .browse-subtab-row--days-only .browse-subtab.day-subtab {
   flex: 1 1 0;
   min-width: 0;
+  max-width: none;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1821,7 +1823,7 @@ a.danger-button:hover {
 }
 
 .settings-page-logo-wrap {
-  margin-top: 7rem;
+  margin-top: calc(7rem * 0.7);
   display: flex;
   justify-content: center;
 }
