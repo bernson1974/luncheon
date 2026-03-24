@@ -1745,7 +1745,7 @@ main:has(> header.app-shell-header) {
   /* Full-bleed mellangrön mot <main> px-5 py-6; fyll hela höjden så inget grått syns under */
   margin: -1.5rem -1.25rem;
   padding:
-    calc(3rem + env(safe-area-inset-top, 0px))
+    calc(1.5rem + env(safe-area-inset-top, 0px))
     1rem
     max(2.25rem, calc(1.5rem + env(safe-area-inset-bottom, 0px)));
   /* +3rem kompenserar mains py-6 så ytan täcker ända ner */
@@ -1764,7 +1764,7 @@ main:has(> header.app-shell-header) {
   width: 100%;
   max-width: 420px;
   margin: 0 auto;
-  padding-top: clamp(4.25rem, 17vh, 9rem);
+  padding-top: clamp(2.125rem, 8.5vh, 4.5rem);
 }
 
 /* Jämnt avstånd: rubrik — logga — formulär (loggan centrerad emellan) */
