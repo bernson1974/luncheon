@@ -257,7 +257,7 @@ export default function MyLunchPageClient({
       if (!byYmd[d.date]) byYmd[d.date] = d;
     }
     const firstBooked = windowList.find((w) => byYmd[w.ymd]);
-    setSelectedYmd(firstBooked ? firstBooked.ymd : null);
+    setSelectedYmd(firstBooked?.ymd ?? windowList[0]?.ymd ?? null);
 
     setLoading(false);
   }, []);
@@ -281,7 +281,12 @@ export default function MyLunchPageClient({
         for (const d of valid) {
           if (!byYmd[d.date]) byYmd[d.date] = d;
         }
-        setSelectedYmd((prev) => (prev && byYmd[prev] ? prev : Object.keys(byYmd)[0] ?? null));
+        setSelectedYmd((prev) => {
+          const ymdSet = new Set(windowList.map((w) => w.ymd));
+          if (prev && ymdSet.has(prev)) return prev;
+          const firstBooked = windowList.find((w) => byYmd[w.ymd]);
+          return firstBooked?.ymd ?? windowList[0]?.ymd ?? null;
+        });
         setLoading(false);
       } else {
         void load();
@@ -298,16 +303,19 @@ export default function MyLunchPageClient({
     return m;
   }, [dates]);
 
+  const bookedYmdKeys = useMemo(() => Object.keys(bookedByYmd), [bookedByYmd]);
+
   /* Prefer ?date=ymd from URL (e.g. from Find "already have a bite" link) */
   const dateFromUrl = searchParams.get("date");
 
   useEffect(() => {
     if (loading) return;
     setSelectedYmd((prev) => {
-      if (dateFromUrl && bookedByYmd[dateFromUrl]) return dateFromUrl;
-      if (prev && bookedByYmd[prev]) return prev;
-      const first = windowDates.find((w) => bookedByYmd[w.ymd]);
-      return first?.ymd ?? null;
+      const ymdSet = new Set(windowDates.map((w) => w.ymd));
+      if (dateFromUrl && ymdSet.has(dateFromUrl)) return dateFromUrl;
+      if (prev && ymdSet.has(prev)) return prev;
+      const firstBooked = windowDates.find((w) => bookedByYmd[w.ymd]);
+      return firstBooked?.ymd ?? windowDates[0]?.ymd ?? null;
     });
   }, [loading, windowDates, bookedByYmd, dateFromUrl]);
 
@@ -332,31 +340,9 @@ export default function MyLunchPageClient({
         onSelect={(ymd) => setSelectedYmd(ymd)}
         ariaLabel="Lunch by day"
         idPrefix="my-lunch"
-        isDisabled={(ymd) => !bookedByYmd[ymd]}
-        isActive={(ymd) => Boolean(bookedByYmd[ymd]) && selectedYmd === ymd}
+        isActive={(ymd) => selectedYmd === ymd}
+        myBitesBookedYmds={bookedYmdKeys}
       />
-
-      {!hasAnyBooking && (
-        <div className="empty-state" style={{ paddingTop: "0.5rem", color: "#064e3b" }}>
-          <p>You don't have a planned lunch date in this window (today + five days).</p>
-          <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem", marginTop: "1rem" }}>
-            <Link
-              href="/create"
-              className="primary-button"
-              style={{ maxWidth: "260px", marginInline: "auto" }}
-            >
-              Create an invite
-            </Link>
-            <Link
-              href="/browse"
-              className="secondary-button"
-              style={{ maxWidth: "260px", marginInline: "auto" }}
-            >
-              Join a Bite
-            </Link>
-          </div>
-        </div>
-      )}
 
       {hasAnyBooking && activeDate && (
         <MyLunchDayPanel
@@ -366,10 +352,34 @@ export default function MyLunchPageClient({
         />
       )}
 
-      {hasAnyBooking && !activeDate && (
-        <p className="secondary-text" style={{ textAlign: "center", paddingTop: "1rem" }}>
-          Pick a day with a booking in the tabs above.
-        </p>
+      {selectedYmd && !activeDate && (
+        <div
+          className="my-lunch-free-day"
+          role="tabpanel"
+          aria-labelledby={`my-lunch-tab-${selectedYmd}`}
+        >
+          <p className="my-lunch-free-day__text">You&apos;re free to grab a bite!</p>
+          <div className="my-lunch-free-day__logo-wrap">
+            <img
+              src="/welcome-logo.svg"
+              alt=""
+              className="my-lunch-free-day__logo"
+              width={192}
+              height={192}
+              decoding="async"
+            />
+          </div>
+          {!hasAnyBooking && (
+            <div className="my-lunch-free-day__cta">
+              <Link href="/create" className="primary-button" style={{ marginTop: 0 }}>
+                Create an invite
+              </Link>
+              <Link href="/browse" className="secondary-button">
+                Join a Bite
+              </Link>
+            </div>
+          )}
+        </div>
       )}
     </div>
   );

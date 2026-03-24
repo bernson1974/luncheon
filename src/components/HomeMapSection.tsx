@@ -140,6 +140,7 @@ export default function HomeMapSection({
         idPrefix="home-map"
         isDisabled={isDayDisabled}
         isActive={(ymd) => !isDayDisabled(ymd) && selectedYmd === ymd}
+        markPersonalBookedYmds={committedYmds}
       />
 
       <div style={{ position: "relative" }}>
@@ -150,8 +151,10 @@ export default function HomeMapSection({
               inset: 0,
               zIndex: 9999,
               display: "flex",
+              flexDirection: "column",
               alignItems: "center",
               justifyContent: "center",
+              gap: "1rem",
               pointerEvents: "auto",
               borderRadius: "0.75rem",
             }}
@@ -165,8 +168,18 @@ export default function HomeMapSection({
                 marginTop: 0,
               }}
             >
-              You're already booked this day.
+              You&apos;re already booked this day.
             </Link>
+            <div className="my-lunch-free-day__logo-wrap">
+              <img
+                src="/welcome-logo.svg"
+                alt=""
+                className="my-lunch-free-day__logo"
+                width={192}
+                height={192}
+                decoding="async"
+              />
+            </div>
           </div>
         )}
         <MapWrapper

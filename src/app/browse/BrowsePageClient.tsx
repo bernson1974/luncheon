@@ -167,7 +167,7 @@ export default function BrowsePageClient({ initialDates }: { initialDates: Lunch
 
   function onClearWrapTransitionEnd(e: TransitionEvent<HTMLDivElement>) {
     if (e.target !== e.currentTarget) return;
-    if (e.propertyName !== "max-width") return;
+    if (e.propertyName !== "max-width" && e.propertyName !== "flex-grow") return;
     setClearUi((u) => (u === "closing" ? "off" : u));
   }
 

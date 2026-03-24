@@ -15,6 +15,8 @@
   --tab-active-bg: #1e524e;
   /* Samma rundning på fält, kort, rutor, boxar */
   --radius-field: 0.5rem;
+  /* Avstånd dagflikar / Join-filter mot huvudtabbar */
+  --day-picker-stack-gap: 0.85rem;
 }
 
 *,
@@ -219,11 +221,17 @@ button {
   outline-offset: 2px;
 }
 
-/* Vald: mörkgrön bakgrund, vit siffra, ingen border (samma storlek via transparent border) */
+/* Vald: samma mörkbeige som aktiv dagflik, vit siffra, transparent border */
 .participant-segment--active,
 .participant-segment[aria-checked="true"] {
   border: 2px solid transparent;
-  background: var(--tab-active-bg);
+  background: #9e7340;
+  color: #ffffff;
+}
+
+.participant-segment--active:hover,
+.participant-segment[aria-checked="true"]:hover {
+  background: #b08850;
   color: #ffffff;
 }
 
@@ -313,13 +321,14 @@ button {
   outline-offset: 2px;
 }
 
+/* Samma mörkgröna som primary-button (tidigare röd “danger”-yta) */
 .danger-button {
   width: 100%;
   padding: 0.55rem 0.75rem;
   border-radius: var(--radius-field);
   border: none;
-  background: #b91c1c;
-  color: #fef2f2;
+  background: var(--tab-active-bg);
+  color: #ecfdf5;
   font-weight: 600;
   font-size: 0.82rem;
   font-family: inherit;
@@ -330,21 +339,21 @@ button {
 }
 
 .danger-button:hover:not(:disabled) {
-  background: #991b1b;
-  color: #ffffff;
+  background: #245d59;
+  color: #f8fafc;
 }
 
 .danger-button:active:not(:disabled) {
-  background: #7f1d1d;
+  background: #183d3a;
 }
 
 .danger-button:focus-visible {
-  outline: 2px solid #450a0a;
+  outline: 2px solid #022c22;
   outline-offset: 2px;
 }
 
 .danger-button:disabled {
-  opacity: 0.55;
+  opacity: 0.6;
   cursor: default;
 }
 
@@ -379,14 +388,10 @@ a.danger-button:hover {
   font-weight: 600;
 }
 
-.badge-open {
+.badge-open,
+.badge-full {
   background: #86efac;
   color: #14532d;
-}
-
-.badge-full {
-  background: #fecaca;
-  color: #b91c1c;
 }
 
 .badge-cancelled {
@@ -431,7 +436,7 @@ a.danger-button:hover {
   overflow: hidden;
   /* Safe area + half a “tab button” height of breathing room above the bar */
   padding-top: calc(
-    env(safe-area-inset-top, 0px) + (var(--app-tab-bar-min-height) * 0.5)
+    env(safe-area-inset-top, 0px) + (var(--app-tab-bar-min-height) * 0.08)
   );
   background: var(--tab-inactive-bg);
 }
@@ -692,6 +697,7 @@ a.danger-button:hover {
 /* ─── Browse (Join): filter subtabs + panel ───────────────────────────────── */
 
 .browse-filter-section {
+  margin-top: var(--day-picker-stack-gap);
   margin-bottom: 1.5rem;
 }
 
@@ -701,12 +707,13 @@ a.danger-button:hover {
   align-items: center;
   gap: 0.5rem;
   padding: 0.5rem 1rem;
-  margin-top: 1rem;
+  margin-top: 1.25rem;
   border: none;
   background: var(--page-content-bg);
 }
 
 .browse-hide-full-checkbox {
+  box-sizing: border-box;
   width: 1.31rem;
   height: 1.31rem;
   cursor: pointer;
@@ -719,9 +726,10 @@ a.danger-button:hover {
   position: relative;
 }
 
+/* Ikon: samma röda som Clear / accent-knappar, vit bock — 1px transparent border = samma yttre mått som okryssad */
 .browse-hide-full-checkbox:checked {
-  background: var(--input-field-bg);
-  border-color: var(--input-field-focus);
+  background: #a42d1e;
+  border: 1px solid transparent;
 }
 
 .browse-hide-full-checkbox:checked::after {
@@ -731,7 +739,7 @@ a.danger-button:hover {
   top: 0.12rem;
   width: 0.38rem;
   height: 0.7rem;
-  border: solid var(--input-field-focus);
+  border: solid #ffffff;
   border-width: 0 2px 2px 0;
   transform: rotate(45deg);
 }
@@ -787,13 +795,40 @@ a.danger-button:hover {
   flex: 1 1 auto;
   width: 100%;
   min-width: 6.85rem;
-  min-height: 44px;
+  min-height: 48px;
   border: none;
+  border-radius: 0.6rem;
   box-sizing: border-box;
+}
+
+/* Join: Clear samma bredd som varje filterflik (flex 3 : 1). Endast flex-grow animeras — inte
+   max-width (0 → none hoppar i webbläsare) och ingen translate-animation (krockar med flex). */
+.browse-subtab-row--join-filters .browse-subtab-clear-wrap {
+  flex: 0 0 0;
+  flex-grow: 0;
+  max-width: none;
+  min-width: 0;
+  overflow: hidden;
+  transition: flex-grow 0.34s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.browse-subtab-row--join-filters.browse-subtab-row--clear-open .browse-subtab-clear-wrap {
+  flex: 1 1 0;
+  flex-grow: 1;
+  max-width: none;
+  min-width: 0;
+}
+
+.browse-subtab-row--join-filters .browse-subtab-clear-wrap .browse-subtab--clear-filter {
+  min-width: 0;
 }
 
 .browse-subtab-row--clear-open .browse-subtab-clear-wrap .browse-subtab--clear-filter {
   animation: join-clear-slide-in 0.34s cubic-bezier(0.25, 0.8, 0.25, 1) both;
+}
+
+.browse-subtab-row--join-filters.browse-subtab-row--clear-open .browse-subtab-clear-wrap .browse-subtab--clear-filter {
+  animation: none;
 }
 
 .browse-subtab-clear-wrap--closing .browse-subtab--clear-filter {
@@ -890,88 +925,69 @@ a.danger-button:hover {
   z-index: 1;
 }
 
-/* Join: grön gränslinje endast mellan två närliggande inaktiva (Topic/Date/Place) */
+/* Join: filterkort som dagflikar — ljusgrön rad, ramar, inga vertikala gränsstreck */
 .browse-subtab-row--join-filters {
   border-left: none;
   border-right: none;
   overflow: visible;
+  background: var(--page-content-bg);
+  gap: 0.35rem;
+  padding: 0.35rem;
+  align-items: stretch;
+  box-sizing: border-box;
+}
+
+.browse-subtab-row--join-filters .browse-subtab-bar {
+  gap: 0.35rem;
+  min-width: 0;
+  flex: 1 1 0;
+  transition: flex-grow 0.34s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.browse-subtab-row--join-filters.browse-subtab-row--clear-open .browse-subtab-bar {
+  flex: 3 1 0;
 }
 
 .browse-subtab-row--join-filters .browse-subtab-bar > .browse-subtab {
-  border-left: none;
-  border-right: none;
+  min-height: 48px;
+  border: 2px solid #c9a566;
+  border-radius: 0.6rem;
+  background: #efe2b7;
+  color: #c9a566;
+  margin-top: 0;
+  transition:
+    color 0.12s ease,
+    background 0.12s ease,
+    border-color 0.12s ease;
 }
 
-/* Gränslinje 80% höjd, 10% marginal top/bottom (flytande i mitten) */
-.browse-subtab-row--join-filters .browse-subtab-bar > .browse-subtab:not(.browse-subtab--active) + .browse-subtab:not(.browse-subtab--active) {
-  position: relative;
+.browse-subtab-row--join-filters .browse-subtab-bar > .browse-subtab:hover:not(:disabled):not(.browse-subtab--active) {
+  background: #e6d9a8;
+  color: #c9a566;
 }
 
-.browse-subtab-row--join-filters .browse-subtab-bar > .browse-subtab:not(.browse-subtab--active) + .browse-subtab:not(.browse-subtab--active)::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 10%;
-  height: 80%;
-  width: 1px;
-  background: #c9a566;
+.browse-subtab-row--join-filters .browse-subtab-bar > .browse-subtab.browse-subtab--active {
+  border: 2px solid transparent;
+  background: #9e7340;
+  color: #ffffff;
 }
 
-.browse-subtab-row--join-filters .browse-subtab-bar > .browse-subtab:first-child.browse-subtab--active {
-  position: relative;
-}
-
-.browse-subtab-row--join-filters .browse-subtab-bar > .browse-subtab:first-child.browse-subtab--active::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 2px;
-  background: #c9a566;
-  transform: translateX(-100%);
-}
-
-.browse-subtab-row--join-filters .browse-subtab-bar > .browse-subtab:last-child.browse-subtab--active {
-  position: relative;
-}
-
-.browse-subtab-row--join-filters .browse-subtab-bar > .browse-subtab:last-child.browse-subtab--active::after {
-  content: "";
-  position: absolute;
-  right: 0;
-  top: 0;
-  bottom: 0;
-  width: 2px;
-  background: #c9a566;
-  transform: translateX(100%);
-}
-
-/* Clear filter till höger: täck vit linje när den är synlig */
-.browse-subtab-row--clear-open .browse-subtab-clear-wrap .browse-subtab--clear-filter {
-  position: relative;
-  border-right: 1px solid #a42d1e;
-}
-
-.browse-subtab-row--clear-open .browse-subtab-clear-wrap .browse-subtab--clear-filter::after {
-  content: "";
-  position: absolute;
-  right: 0;
-  top: 0;
-  bottom: 0;
-  width: 2px;
-  background: #a42d1e;
-  transform: translateX(100%);
+.browse-subtab-row--join-filters .browse-subtab-bar > .browse-subtab.browse-subtab--active:hover:not(:disabled) {
+  background: #b08850;
+  color: #ffffff;
 }
 
 .browse-subtab-row--clear-open .browse-subtab-clear-wrap {
   overflow: visible;
 }
 
-/* Map + My Bites: day row – flex-shrink 0 on mobile so it can scroll if needed */
+/* Map + My Bites + Join: day row – gap/padding som participant-segments */
 .browse-subtab-row--days-only .browse-subtab-bar {
   flex: 1 1 100%;
   min-width: 0;
+  gap: 0.35rem;
+  padding: 0.35rem;
+  box-sizing: border-box;
 }
 
 @media (max-width: 420px) {
@@ -993,60 +1009,16 @@ a.danger-button:hover {
   overflow-x: auto;
   overflow-y: visible;
   -webkit-overflow-scrolling: touch;
-}
-
-/* Grön gränslinje ENDAST mellan två närliggande inaktiva dagar; 80% höjd, flytande i mitten */
-.browse-subtab-row--days-only .browse-subtab-bar > .browse-subtab:not(.browse-subtab--active) + .browse-subtab:not(.browse-subtab--active) {
-  position: relative;
-}
-
-.browse-subtab-row--days-only .browse-subtab-bar > .browse-subtab:not(.browse-subtab--active) + .browse-subtab:not(.browse-subtab--active)::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 10%;
-  height: 80%;
-  width: 1px;
-  background: #c9a566;
-}
-
-.browse-subtab-row--days-only .browse-subtab-bar > .browse-subtab:first-child.browse-subtab--active {
-  position: relative;
-}
-
-.browse-subtab-row--days-only .browse-subtab-bar > .browse-subtab:first-child.browse-subtab--active::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 2px;
-  background: #c9a566;
-  transform: translateX(-100%);
-}
-
-.browse-subtab-row--days-only .browse-subtab-bar > .browse-subtab:last-child.browse-subtab--active {
-  position: relative;
-}
-
-.browse-subtab-row--days-only .browse-subtab-bar > .browse-subtab:last-child.browse-subtab--active::after {
-  content: "";
-  position: absolute;
-  right: 0;
-  top: 0;
-  bottom: 0;
-  width: 2px;
-  background: #c9a566;
-  transform: translateX(100%);
+  background: var(--page-content-bg);
 }
 
 .day-picker-subtabs {
-  margin-top: 0;
-  margin-bottom: 0.85rem;
+  margin-top: var(--day-picker-stack-gap);
+  margin-bottom: var(--day-picker-stack-gap);
 }
 
-/* Day cell: today = single “TODAY” line; others = weekday + date */
-.browse-subtab.day-subtab {
+/* Day cell: today = single “TODAY” line; others = weekday + date (segment-form som participant-siffror) */
+.browse-subtab-row--days-only .browse-subtab.day-subtab {
   flex: 1 1 0;
   min-width: 0;
   display: flex;
@@ -1055,8 +1027,41 @@ a.danger-button:hover {
   justify-content: center;
   gap: 0.08rem;
   min-height: 48px;
-  padding: 0.38rem 0.12rem;
+  padding: 0.35rem 0.2rem;
   line-height: 1.1;
+  box-sizing: border-box;
+  border: 2px solid #c9a566;
+  border-radius: 0.6rem;
+  background: #efe2b7;
+  color: #c9a566;
+  transition:
+    color 0.12s ease,
+    background 0.12s ease,
+    border-color 0.12s ease;
+}
+
+.browse-subtab-row--days-only .browse-subtab.day-subtab:hover:not(:disabled):not(.browse-subtab--active) {
+  background: #e6d9a8;
+  color: #c9a566;
+}
+
+/* Aktiv: ingen synlig border, mörkbeige bakgrund, alltid vit text */
+.browse-subtab-row--days-only .browse-subtab.day-subtab.browse-subtab--active {
+  border: 2px solid transparent;
+  background: #9e7340;
+  color: #ffffff;
+}
+
+.browse-subtab-row--days-only .browse-subtab.day-subtab.browse-subtab--active:hover:not(:disabled) {
+  background: #b08850;
+  border-color: transparent;
+  color: #ffffff;
+}
+
+.browse-subtab-row--days-only .browse-subtab.day-subtab:focus-visible {
+  outline: 2px solid #a42d1e;
+  outline-offset: 2px;
+  z-index: 1;
 }
 
 .day-subtab__top {
@@ -1069,25 +1074,30 @@ a.danger-button:hover {
 .day-subtab__top--weekday {
   font-size: clamp(0.62rem, 2.4vw, 0.72rem);
   font-weight: 700;
-  color: #14532d;
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
 
-.browse-subtab--active .day-subtab__top--weekday {
-  color: #a42d1e;
+.browse-subtab-row--days-only .browse-subtab.day-subtab:not(.browse-subtab--active):not(:disabled) .day-subtab__top--weekday,
+.browse-subtab-row--days-only .browse-subtab.day-subtab:not(.browse-subtab--active):not(:disabled) .day-subtab__date {
+  color: #c9a566;
+}
+
+.browse-subtab-row--days-only .browse-subtab.day-subtab.browse-subtab--active .day-subtab__top--weekday,
+.browse-subtab-row--days-only .browse-subtab.day-subtab.browse-subtab--active .day-subtab__date {
+  color: #ffffff;
+}
+
+.browse-subtab-row--days-only .browse-subtab.day-subtab.browse-subtab--active:hover:not(:disabled) .day-subtab__top--weekday,
+.browse-subtab-row--days-only .browse-subtab.day-subtab.browse-subtab--active:hover:not(:disabled) .day-subtab__date {
+  color: #ffffff;
 }
 
 .day-subtab__date {
   display: block;
   font-size: clamp(0.68rem, 2.6vw, 0.82rem);
   font-weight: 700;
-  color: #14532d;
   text-align: center;
-}
-
-.browse-subtab--active .day-subtab__date {
-  color: #a42d1e;
 }
 
 .browse-subtab:disabled {
@@ -1100,24 +1110,94 @@ a.danger-button:hover {
   color: inherit;
 }
 
-/* Dag-rad (Map + My Bites): dag utan bokning = ljusbeige med ljusbrun text */
+/* Dag utan bokning: mörkgrön border/text, ljusgrön bakgrund */
 .browse-subtab-row--days-only .browse-subtab.day-subtab:disabled {
   opacity: 1;
-  background: #efe2b7;
-  color: #9a8b73;
+  border: 2px solid var(--tab-active-bg);
+  background: var(--page-content-bg);
+  color: var(--tab-active-bg);
 }
 
-.browse-subtab-row--days-only .browse-subtab.day-subtab:disabled .day-subtab__top--weekday {
-  color: #9a8b73;
-}
-
+.browse-subtab-row--days-only .browse-subtab.day-subtab:disabled .day-subtab__top--weekday,
 .browse-subtab-row--days-only .browse-subtab.day-subtab:disabled .day-subtab__date {
-  color: #9a8b73;
+  color: var(--tab-active-bg);
 }
 
 .browse-subtab-row--days-only .browse-subtab.day-subtab:disabled:hover {
+  background: var(--page-content-bg);
+  color: var(--tab-active-bg);
+}
+
+/* Find: du har redan bokning den dagen, ej vald — ljusbeige + mörkbeige border/text */
+.day-picker-subtabs--find .browse-subtab.day-subtab.day-subtab--has-personal-booking:not(.browse-subtab--active) {
+  border: 2px solid #c9a566;
   background: #efe2b7;
-  color: #9a8b73;
+  color: #c9a566;
+}
+
+.day-picker-subtabs--find .browse-subtab.day-subtab.day-subtab--has-personal-booking:not(.browse-subtab--active) .day-subtab__top--weekday,
+.day-picker-subtabs--find .browse-subtab.day-subtab.day-subtab--has-personal-booking:not(.browse-subtab--active) .day-subtab__date {
+  color: #c9a566;
+}
+
+.day-picker-subtabs--find
+  .browse-subtab.day-subtab.day-subtab--has-personal-booking:not(.browse-subtab--active):hover:not(:disabled) {
+  background: #e6d9a8;
+  color: #c9a566;
+}
+
+.day-picker-subtabs--find
+  .browse-subtab.day-subtab.day-subtab--has-personal-booking:not(.browse-subtab--active):hover:not(:disabled)
+  .day-subtab__top--weekday,
+.day-picker-subtabs--find
+  .browse-subtab.day-subtab.day-subtab--has-personal-booking:not(.browse-subtab--active):hover:not(:disabled)
+  .day-subtab__date {
+  color: #c9a566;
+}
+
+/* Find: ledig för bokning (ingen egen bokning), ej vald — mörkgrön border + text, ljusgrön bakgrund */
+.day-picker-subtabs--find .browse-subtab.day-subtab.day-subtab--find-open-for-booking:not(.browse-subtab--active) {
+  border: 2px solid var(--tab-active-bg);
+  background: var(--page-content-bg);
+  color: var(--tab-active-bg);
+}
+
+.day-picker-subtabs--find .browse-subtab.day-subtab.day-subtab--find-open-for-booking:not(.browse-subtab--active) .day-subtab__top--weekday,
+.day-picker-subtabs--find .browse-subtab.day-subtab.day-subtab--find-open-for-booking:not(.browse-subtab--active) .day-subtab__date {
+  color: var(--tab-active-bg);
+}
+
+.day-picker-subtabs--find
+  .browse-subtab.day-subtab.day-subtab--find-open-for-booking:not(.browse-subtab--active):hover:not(:disabled) {
+  background: #9dccc2;
+  color: var(--tab-active-bg);
+}
+
+.day-picker-subtabs--find
+  .browse-subtab.day-subtab.day-subtab--find-open-for-booking:not(.browse-subtab--active):hover:not(:disabled)
+  .day-subtab__top--weekday,
+.day-picker-subtabs--find
+  .browse-subtab.day-subtab.day-subtab--find-open-for-booking:not(.browse-subtab--active):hover:not(:disabled)
+  .day-subtab__date {
+  color: var(--tab-active-bg);
+}
+
+/* My Bites: dag utan bokning men klickbar — samma look som tidigare :disabled */
+.day-picker-subtabs--my-lunch .browse-subtab.day-subtab.day-subtab--my-lunch-free-tab:not(.browse-subtab--active) {
+  border: 2px solid var(--tab-active-bg);
+  background: var(--page-content-bg);
+  color: var(--tab-active-bg);
+}
+
+.day-picker-subtabs--my-lunch .browse-subtab.day-subtab.day-subtab--my-lunch-free-tab:not(.browse-subtab--active) .day-subtab__top--weekday,
+.day-picker-subtabs--my-lunch .browse-subtab.day-subtab.day-subtab--my-lunch-free-tab:not(.browse-subtab--active) .day-subtab__date {
+  color: var(--tab-active-bg);
+}
+
+.day-picker-subtabs--my-lunch
+  .browse-subtab.day-subtab.day-subtab--my-lunch-free-tab:not(.browse-subtab--active):hover:not(:disabled) {
+  background: #9dccc2;
+  color: var(--tab-active-bg);
 }
 
 .browse-subtab-panels {
@@ -1206,65 +1286,6 @@ a.danger-button:hover {
 
 .browse-date-bg-card .topic-tag,
 .browse-date-bg-card .detail-row span.topic-tag {
-  color: #ffffff !important;
-  background: #14532d;
-}
-
-
-/* Fullbokade dejter: grå text (samma nyans som dagar utan bokning i My Bites) */
-.browse-dates-list .browse-date-bg-card.date-card--full .date-card-title,
-.browse-dates-list .browse-date-bg-card.date-card--full .date-card-restaurant,
-.browse-dates-list .browse-date-bg-card.date-card--full .date-card-footer,
-.browse-dates-list .browse-date-bg-card.date-card--full .date-card-footer span,
-.browse-date-bg-card.date-card--full .detail-label,
-.browse-date-bg-card.date-card--full .detail-row span,
-.browse-date-bg-card.date-card--full .secondary-text,
-.browse-date-bg-card.date-card--full .field-label,
-.browse-date-bg-card.date-card--full .date-card-title,
-.browse-date-bg-card.date-card--full .date-card-restaurant,
-.browse-date-bg-card.date-card--full .date-card-footer,
-.browse-date-bg-card.date-card--full .date-card-footer span,
-.browse-date-bg-card--full .detail-label,
-.browse-date-bg-card--full .detail-row span,
-.browse-date-bg-card--full .secondary-text,
-.browse-date-bg-card--full .field-label,
-.browse-date-bg-card--full .date-card-title,
-.browse-date-bg-card--full .date-card-restaurant,
-.browse-date-bg-card--full .date-card-footer,
-.browse-date-bg-card--full .date-card-footer span {
-  color: #a8dfd0 !important;
-}
-
-.browse-date-bg-card.date-card--full .topic-tag,
-.browse-date-bg-card.date-card--full .detail-row span.topic-tag,
-.browse-date-bg-card--full .topic-tag,
-.browse-date-bg-card--full .detail-row span.topic-tag {
-  color: #ffffff !important;
-  background: #14532d;
-}
-
-/* Full-badge: röd bakgrund, vit text */
-.browse-date-bg-card.date-card--full .badge-full,
-.browse-date-bg-card.date-card--full .detail-row span.badge-full,
-.browse-date-bg-card--full .badge-full,
-.browse-date-bg-card--full .detail-row span.badge-full,
-.browse-dates-list .browse-date-bg-card.date-card--full .badge-full,
-.browse-dates-list .browse-date-bg-card.date-card--full .date-card-header .badge-full,
-.browse-dates-list .browse-date-bg-card.date-card--full .date-card-footer .badge-full {
-  background: #b91c1c !important;
-  color: #ffffff !important;
-}
-
-/* My Bites: undantag – fullbokade dejter visar mörkgrön text (som öppna) */
-.my-lunch-content-wrap .browse-date-bg-card--full .detail-label,
-.my-lunch-content-wrap .browse-date-bg-card--full .detail-row span:not(.badge-full):not(.topic-tag),
-.my-lunch-content-wrap .browse-date-bg-card--full .secondary-text,
-.my-lunch-content-wrap .browse-date-bg-card--full .field-label {
-  color: #14532d !important;
-}
-
-.my-lunch-content-wrap .browse-date-bg-card--full .topic-tag,
-.my-lunch-content-wrap .browse-date-bg-card--full .detail-row span.topic-tag {
   color: #ffffff !important;
   background: #14532d;
 }
@@ -1379,6 +1400,46 @@ a.danger-button:hover {
 /* My Bites: samma bakgrundskort som Join */
 .my-lunch-content-wrap {
   padding: 0 1.1rem;
+}
+
+.my-lunch-free-day {
+  padding: 1.25rem 1.1rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.my-lunch-free-day__text {
+  margin: 0;
+  font-size: clamp(1rem, 3.2vw, 1.15rem);
+  font-weight: 700;
+  color: #064e3b;
+  line-height: 1.35;
+  max-width: 20rem;
+}
+
+.my-lunch-free-day__logo-wrap {
+  margin-top: 1rem;
+  display: flex;
+  justify-content: center;
+}
+
+.my-lunch-free-day__logo {
+  display: block;
+  width: clamp(144px, 44vw, 192px);
+  height: auto;
+  aspect-ratio: 1;
+  filter: drop-shadow(0 4px 14px rgba(6, 78, 59, 0.14));
+}
+
+.my-lunch-free-day__cta {
+  margin-top: 1.25rem;
+  width: 100%;
+  max-width: 17.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
 }
 
 .my-lunch-main-card__inner {
@@ -1568,7 +1629,7 @@ a.danger-button:hover {
   margin-bottom: 0;
 }
 
-/* Kompakt bredvid rubrik, samma rektangulära röda stil */
+/* Kompakt bredvid rubrik, samma rektangulära primärstil */
 .my-lunch-meeting-header .danger-button {
   width: auto;
   margin-top: 0;
@@ -1744,6 +1805,20 @@ a.danger-button:hover {
 
 .settings-form-bare {
   margin-bottom: 1rem;
+}
+
+.settings-page-logo-wrap {
+  margin-top: 7rem;
+  display: flex;
+  justify-content: center;
+}
+
+.settings-page-logo {
+  display: block;
+  width: clamp(86px, 26.4vw, 116px);
+  height: auto;
+  aspect-ratio: 1;
+  filter: drop-shadow(0 2px 8px rgba(6, 78, 59, 0.12));
 }
 
 .welcome-landing__name-label {

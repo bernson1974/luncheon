@@ -189,6 +189,17 @@ export default function SettingsPage() {
           </button>
         </div>
 
+        <div className="settings-page-logo-wrap">
+          <img
+            src="/welcome-logo.svg"
+            alt=""
+            className="settings-page-logo"
+            width={116}
+            height={116}
+            decoding="async"
+          />
+        </div>
+
         {showResetConfirm && (
           <div
             role="alertdialog"
