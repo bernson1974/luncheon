@@ -372,21 +372,12 @@ export default function BrowsePageClient({ initialDates }: { initialDates: Lunch
                         {date.restaurant.name} · {cuisineLabel(date.restaurant.cuisine)}
                       </div>
                     </div>
-                    <span
-                      className={`badge ${
-                        date.status === "open"
-                          ? "badge-open"
-                          : date.status === "full"
-                            ? "badge-full"
-                            : "badge-cancelled"
-                      }`}
-                    >
-                      {date.status === "open"
-                        ? "Open"
-                        : date.status === "full"
-                          ? "Full"
-                          : "Cancelled"}
-                    </span>
+                    {date.status === "full" && (
+                      <span className="badge badge-full">Full</span>
+                    )}
+                    {date.status === "cancelled" && (
+                      <span className="badge badge-cancelled">Cancelled</span>
+                    )}
                   </div>
                   <div className="date-card-footer">
                     <span>{lunchDateLabel(date.date)}</span>

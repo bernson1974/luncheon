@@ -125,12 +125,9 @@ function MyLunchDayPanel({
                 {date.timeStart}
                 {date.timeEnd ? `–${date.timeEnd}` : ""}
               </span>
-              {!isCancelled && (
-                <span
-                  className={`badge ${date.spotsLeft > 0 ? "badge-open" : "badge-full"}`}
-                  style={{ marginLeft: "auto" }}
-                >
-                  {date.spotsLeft > 0 ? "Open" : "Full"}
+              {!isCancelled && date.spotsLeft === 0 && (
+                <span className="badge badge-full" style={{ marginLeft: "auto" }}>
+                  Full
                 </span>
               )}
             </div>
@@ -158,6 +155,13 @@ function MyLunchDayPanel({
                       {", "}
                       {date.participants.map((p) => p.alias).join(", ")}
                     </>
+                  )}
+                  {!isCancelled && (
+                    <span className="secondary-text detail-row__participant-spots">
+                      {"\u00A0\u00A0\u00A0-\u00A0\u00A0\u00A0"}
+                      {date.spotsLeft}/{date.maxParticipants} spot
+                      {date.maxParticipants === 1 ? "" : "s"} available
+                    </span>
                   )}
                 </span>
               </span>

@@ -388,10 +388,14 @@ a.danger-button:hover {
   font-weight: 600;
 }
 
-.badge-open,
+/* Full: samma form som övriga knappar (rektangulär, --radius-field), inte pill */
 .badge-full {
-  background: #86efac;
-  color: #14532d;
+  background: #a42d1e;
+  color: #ffffff;
+  border-radius: var(--radius-field);
+  padding: 0.42rem 0.75rem;
+  font-size: 0.82rem;
+  line-height: 1.2;
 }
 
 .badge-cancelled {
@@ -1252,6 +1256,11 @@ a.danger-button:hover {
 .browse-dates-list {
   margin-top: 0.25rem;
   padding: 0 1.1rem;
+  /* Tydlig luft efter sista kort så det inte känns som mer innehåll under + safe area */
+  padding-bottom: max(
+    clamp(3.75rem, 11vh, 6.5rem),
+    calc(env(safe-area-inset-bottom, 0px) + 2.75rem)
+  );
 }
 
 /* Kortlista: bakgrundskort per dejt */
@@ -1288,6 +1297,10 @@ a.danger-button:hover {
 .browse-date-bg-card .detail-row span.topic-tag {
   color: #ffffff !important;
   background: #14532d;
+}
+
+.browse-date-bg-card .badge.badge-full {
+  color: #ffffff !important;
 }
 
 .browse-date-bg-card:hover {
