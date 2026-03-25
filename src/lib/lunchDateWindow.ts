@@ -42,6 +42,16 @@ export function lunchDateLabel(ymd: string): string {
   return formatInTimeZone(noon, LUNCH_TIMEZONE, "EEEE, MMM d", { locale: enUS });
 }
 
+/**
+ * In sentences, e.g. "today" or "on Thursday, Mar 27" (Stockholm calendar day).
+ */
+export function lunchDateNotificationPhrase(ymd: string, now: Date = new Date()): string {
+  if (ymd === stockholmTodayYmd(now)) return "today";
+  const noon = fromZonedTime(`${ymd}T12:00:00`, LUNCH_TIMEZONE);
+  const formatted = formatInTimeZone(noon, LUNCH_TIMEZONE, "EEEE, MMM d", { locale: enUS });
+  return `on ${formatted}`;
+}
+
 /** Short tab label, e.g. "Wed 3/19". */
 export function lunchDateShortTabLabel(ymd: string): string {
   const noon = fromZonedTime(`${ymd}T12:00:00`, LUNCH_TIMEZONE);

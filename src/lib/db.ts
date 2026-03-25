@@ -1,6 +1,6 @@
 import { neon } from "@neondatabase/serverless";
 import type { LunchDatePublic, ParticipantPublic } from "./models";
-import { selectableLunchDateYmds } from "./lunchDateWindow";
+import { lunchDateNotificationPhrase, selectableLunchDateYmds } from "./lunchDateWindow";
 
 const sql = process.env.POSTGRES_URL
   ? neon(process.env.POSTGRES_URL)
@@ -342,12 +342,13 @@ export async function cancelDate(
   const result = await sql`
     UPDATE dates SET status = 'cancelled'
     WHERE id = ${id} AND creator_token = ${creatorToken}
-    RETURNING id, topic, restaurant_name
+    RETURNING id, topic, restaurant_name, date
   `;
   if (!Array.isArray(result) || result.length === 0) return false;
 
-  const row = result[0] as { topic: string; restaurant_name: string };
-  const body = `Your lunch was cancelled. The host ended the invitation "${row.topic}" at ${row.restaurant_name}.`;
+  const row = result[0] as { topic: string; restaurant_name: string; date: string };
+  const dayPart = lunchDateNotificationPhrase(row.date);
+  const body = `Your lunch ${dayPart} was cancelled. The host ended the invitation "${row.topic}" at ${row.restaurant_name}.`;
 
   if (participantRows.length > 0) {
     try {
