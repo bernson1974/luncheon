@@ -12,6 +12,7 @@ export const metadata = {
   description: "Find lunch company on Lindholmen, Gothenburg",
   icons: {
     icon: [{ url: "/bite-club-favicon.svg", type: "image/svg+xml" }],
+    apple: [{ url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
   },
 };
 
