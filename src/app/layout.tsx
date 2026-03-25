@@ -5,8 +5,14 @@ import AppShell from "@/components/AppShell";
 import { AuthProvider } from "@/components/AuthProvider";
 
 export const metadata = {
-  title: "Luncheon · Lindholmen",
-  description: "Find lunch company on Lindholmen, Gothenburg"
+  title: {
+    default: "Bite Club",
+    template: "%s · Bite Club",
+  },
+  description: "Find lunch company on Lindholmen, Gothenburg",
+  icons: {
+    icon: [{ url: "/bite-club-favicon.svg", type: "image/svg+xml" }],
+  },
 };
 
 export const viewport: Viewport = {

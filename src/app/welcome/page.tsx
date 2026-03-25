@@ -13,6 +13,7 @@ export default function WelcomePage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [showDisclaimer, setShowDisclaimer] = useState(false);
+  const [forgotPasswordHint, setForgotPasswordHint] = useState(false);
 
   useEffect(() => {
     fetchMe().then((user) => {
@@ -93,7 +94,7 @@ export default function WelcomePage() {
                 onChange={(e) => { setEmail(e.target.value); setError(""); }}
                 required
               />
-              <label className="welcome-landing__name-label" htmlFor="welcome-password" style={{ marginTop: "1rem" }}>
+              <label className="welcome-landing__name-label" htmlFor="welcome-password" style={{ marginTop: "0.45rem" }}>
                 Password
               </label>
               <input
@@ -110,11 +111,29 @@ export default function WelcomePage() {
               <button type="submit" className="primary-button" style={{ marginTop: "1.25rem" }} disabled={loading}>
                 {loading ? "Logging in…" : "Log in"}
               </button>
+              <div className="welcome-landing__forgot-row">
+                <button
+                  type="button"
+                  className="welcome-landing__link-button"
+                  onClick={() => setForgotPasswordHint(true)}
+                >
+                  Forgot your password?
+                </button>
+              </div>
+              {forgotPasswordHint && (
+                <p className="welcome-landing__password-hint" role="status">
+                  Password reset by email isn&apos;t set up yet. Use Create account below, or ask whoever runs this app for help.
+                </p>
+              )}
               <button
                 type="button"
                 className="secondary-button"
-                style={{ marginTop: "0.5rem" }}
-                onClick={() => { setMode("signup"); setError(""); }}
+                style={{ marginTop: "1.25rem" }}
+                onClick={() => {
+                  setMode("signup");
+                  setError("");
+                  setForgotPasswordHint(false);
+                }}
               >
                 Create account
               </button>
@@ -170,7 +189,11 @@ export default function WelcomePage() {
                 type="button"
                 className="secondary-button"
                 style={{ marginTop: "0.5rem" }}
-                onClick={() => { setMode("login"); setError(""); }}
+                onClick={() => {
+                  setMode("login");
+                  setError("");
+                  setForgotPasswordHint(false);
+                }}
               >
                 Already have an account? Log in
               </button>

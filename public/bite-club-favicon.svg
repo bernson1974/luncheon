@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="Bite Club">
+  <rect width="32" height="32" rx="7" fill="#1e524e"/>
+  <text
+    x="16"
+    y="21"
+    font-size="11"
+    font-weight="800"
+    fill="#ffffff"
+    text-anchor="middle"
+    font-family="system-ui, -apple-system, Segoe UI, sans-serif"
+  >BC</text>
+</svg>

@@ -3,12 +3,10 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { Map as LeafletMap, LayerGroup as LeafletLayerGroup } from "leaflet";
 import { lunchDateLabel } from "@/lib/lunchDateWindow";
+import { getUserMapCenterOrFallback, MAP_FALLBACK_CENTER } from "@/lib/mapGeolocation";
 import MapSearchInput from "./MapSearchInput";
 
 type LeafletNs = typeof import("leaflet");
-
-const LINDHOLMEN_LAT = 57.7065;
-const LINDHOLMEN_LNG = 11.9384;
 
 export interface RestaurantPin {
   id: string;
@@ -94,10 +92,13 @@ export default function LindholmenMap({ pins = [], selectedYmd, greyedOut }: Pro
 
         if (cancelled || !containerRef.current || mapRef.current) return;
 
+        const center = await getUserMapCenterOrFallback(MAP_FALLBACK_CENTER);
+        if (cancelled || !containerRef.current || mapRef.current) return;
+
         const map = L.map(containerRef.current, {
           scrollWheelZoom: false,
           zoomControl: false,
-        }).setView([LINDHOLMEN_LAT, LINDHOLMEN_LNG], 16);
+        }).setView([center.lat, center.lng], 16);
 
         L.control.zoom({ position: "bottomleft" }).addTo(map);
 
