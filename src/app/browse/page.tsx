@@ -2,6 +2,9 @@ import { Suspense } from "react";
 import { listDates } from "@/lib/store";
 import BrowsePageClient from "./BrowsePageClient";
 
+/** Måste vara dynamisk annars fryses dejtlistan vid build / statisk cache (nya dejter syns inte). */
+export const dynamic = "force-dynamic";
+
 function BrowseFallback() {
   return (
     <p className="secondary-text" style={{ textAlign: "center", paddingTop: "2rem" }}>
