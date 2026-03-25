@@ -23,12 +23,6 @@ export type CountsByYmd = Record<string, Record<string, number>>;
 export type OneSpotLeftByYmd = Record<string, Record<string, boolean>>;
 
 
-function dayHasAnyBookings(ymd: string, countsByYmd: CountsByYmd): boolean {
-  const c = countsByYmd[ymd];
-  if (!c) return false;
-  return Object.values(c).some((n) => n > 0);
-}
-
 export default function HomeMapSection({
   days: serverDays,
   countsByYmd: serverCounts,
@@ -87,29 +81,12 @@ export default function HomeMapSection({
   const committedYmds = serverCommittedYmds.length > 0 ? serverCommittedYmds : (clientCommittedYmds ?? []);
   const alreadyHasDateOnDay = selectedYmd.length > 0 && committedYmds.includes(selectedYmd);
 
-  const hasAnyBookingsInWindow = useMemo(
-    () => days.some((d) => dayHasAnyBookings(d.ymd, countsByYmd)),
-    [days, countsByYmd]
-  );
-
-  /** Tomma dagar är ej klickbara när minst en annan dag har minst en dejt (som My Bites). */
-  const isDayDisabled = (ymd: string) =>
-    hasAnyBookingsInWindow && !dayHasAnyBookings(ymd, countsByYmd);
-
   useEffect(() => {
     setSelectedYmd((prev) => {
-      const prevOk =
-        prev &&
-        days.some((d) => d.ymd === prev) &&
-        (!hasAnyBookingsInWindow || dayHasAnyBookings(prev, countsByYmd));
-      if (prevOk) return prev;
-      if (hasAnyBookingsInWindow) {
-        const first = days.find((d) => dayHasAnyBookings(d.ymd, countsByYmd));
-        return first?.ymd ?? days[0]?.ymd ?? "";
-      }
+      if (prev && days.some((d) => d.ymd === prev)) return prev;
       return days[0]?.ymd ?? "";
     });
-  }, [days, countsByYmd, hasAnyBookingsInWindow]);
+  }, [days]);
 
   const pins = useMemo(() => {
     const counts = countsByYmd[selectedYmd] ?? {};
@@ -138,8 +115,6 @@ export default function HomeMapSection({
         onSelect={setSelectedYmd}
         ariaLabel="Choose day for map"
         idPrefix="home-map"
-        isDisabled={isDayDisabled}
-        isActive={(ymd) => !isDayDisabled(ymd) && selectedYmd === ymd}
         markPersonalBookedYmds={committedYmds}
       />
 
