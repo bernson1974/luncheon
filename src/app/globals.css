@@ -1570,6 +1570,24 @@ main:has(> header.app-shell-header) {
   margin-top: 0;
 }
 
+/* Avbokad dejt: tydlig röd yta med vit text (status, ej klickbar) */
+.date-detail-cancelled-notice-button {
+  display: block;
+  width: 100%;
+  margin: 0 0 0.75rem;
+  padding: 0.75rem 1rem;
+  border: none;
+  border-radius: var(--radius-field);
+  background: #a42d1e;
+  color: #ffffff;
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 600;
+  text-align: center;
+  line-height: 1.35;
+  box-sizing: border-box;
+}
+
 .date-detail-actions__split {
   display: flex;
   gap: 0.35rem;

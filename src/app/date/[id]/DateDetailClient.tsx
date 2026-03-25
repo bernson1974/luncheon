@@ -178,69 +178,71 @@ export default function DateDetailClient() {
       <div className="date-detail-card-area">
         <div className={`browse-date-bg-card browse-date-bg-card--${date.status}`}>
           <div className="date-detail-main-card__inner">
-          <div className="detail-row detail-row--with-status">
-            <span className="detail-label">Day</span>
-            <span>{lunchDateLabel(date.date)}</span>
-            {!isCancelled && isFull && (
-              <span className="badge badge-full" style={{ marginLeft: "auto" }}>
-                Full
-              </span>
-            )}
-          </div>
-          <div className="detail-row">
-            <span className="detail-label">Time</span>
-            <span>
-              {date.timeStart}
-              {date.timeEnd ? `–${date.timeEnd}` : ""}
-            </span>
-          </div>
-          <div className="detail-row">
-            <span className="detail-label">Restaurant</span>
-            <span>
-              {date.restaurant.name}
-              <span className="secondary-text" style={{ marginLeft: "0.4rem" }}>
-                ({cuisineLabel(date.restaurant.cuisine)})
-              </span>
-            </span>
-          </div>
-          <div className="detail-row detail-row--participants">
-            <span className="detail-label">Participants</span>
-            <span className="detail-row__participants-body">
-              <span className="detail-row__participant-names">
-                <strong>{date.creatorAlias}</strong>
-                <span className="secondary-text"> (host)</span>
-                {date.participants.length > 0 && (
-                  <>
-                    {", "}
-                    {date.participants.map((p) => p.alias).join(", ")}
-                  </>
-                )}
-                {!isCancelled && (
-                  <span className="secondary-text detail-row__participant-spots">
-                    {"\u00A0\u00A0\u00A0-\u00A0\u00A0\u00A0"}
-                    {date.spotsLeft}/{date.maxParticipants} spot
-                    {date.maxParticipants === 1 ? "" : "s"} available
-                  </span>
-                )}
-              </span>
-            </span>
-          </div>
-
-          {(role === "creator" || role === "participant") &&
-            date.meetingPoint?.latitude != null &&
-            date.meetingPoint?.longitude != null && (
-            <div className="date-detail-meeting-block">
-              <p className="field-label" style={{ marginBottom: "0.5rem" }}>Meeting point</p>
-              <MeetingPointPicker
-                center={{ lat: date.meetingPoint.latitude, lng: date.meetingPoint.longitude }}
-                value={{ lat: date.meetingPoint.latitude, lng: date.meetingPoint.longitude }}
-                onChange={() => {}}
-                readonly
-                description={date.meetingPoint.description}
-              />
+            <div className="detail-row detail-row--with-status">
+              <span className="detail-label">Day</span>
+              <span>{lunchDateLabel(date.date)}</span>
+              {!isCancelled && isFull && (
+                <span className="badge badge-full" style={{ marginLeft: "auto" }}>
+                  Full
+                </span>
+              )}
             </div>
-          )}
-        </div>
+            <div className="detail-row">
+              <span className="detail-label">Time</span>
+              <span>
+                {date.timeStart}
+                {date.timeEnd ? `–${date.timeEnd}` : ""}
+              </span>
+            </div>
+            <div className="detail-row">
+              <span className="detail-label">Restaurant</span>
+              <span>
+                {date.restaurant.name}
+                <span className="secondary-text" style={{ marginLeft: "0.4rem" }}>
+                  ({cuisineLabel(date.restaurant.cuisine)})
+                </span>
+              </span>
+            </div>
+            <div className="detail-row detail-row--participants">
+              <span className="detail-label">Participants</span>
+              <span className="detail-row__participants-body">
+                <span className="detail-row__participant-names">
+                  <strong>{date.creatorAlias}</strong>
+                  <span className="secondary-text"> (host)</span>
+                  {date.participants.length > 0 && (
+                    <>
+                      {", "}
+                      {date.participants.map((p) => p.alias).join(", ")}
+                    </>
+                  )}
+                  {!isCancelled && (
+                    <span className="secondary-text detail-row__participant-spots">
+                      {"\u00A0\u00A0\u00A0-\u00A0\u00A0\u00A0"}
+                      {date.spotsLeft}/{date.maxParticipants} spot
+                      {date.maxParticipants === 1 ? "" : "s"} available
+                    </span>
+                  )}
+                </span>
+              </span>
+            </div>
+
+            {(role === "creator" || role === "participant") &&
+              date.meetingPoint?.latitude != null &&
+              date.meetingPoint?.longitude != null && (
+                <div className="date-detail-meeting-block">
+                  <p className="field-label" style={{ marginBottom: "0.5rem" }}>
+                    Meeting point
+                  </p>
+                  <MeetingPointPicker
+                    center={{ lat: date.meetingPoint.latitude, lng: date.meetingPoint.longitude }}
+                    value={{ lat: date.meetingPoint.latitude, lng: date.meetingPoint.longitude }}
+                    onChange={() => {}}
+                    readonly
+                    description={date.meetingPoint.description}
+                  />
+                </div>
+              )}
+          </div>
         </div>
       </div>
 
@@ -352,8 +354,8 @@ export default function DateDetailClient() {
 
       {isCancelled && (
         <div className="date-detail-actions">
-          <div className="empty-state" style={{ padding: "1.5rem 0" }}>
-            <p>This date has been cancelled.</p>
+          <div className="date-detail-cancelled-notice-button" role="status">
+            This invitation was cancelled — it is no longer available.
           </div>
           <div className="date-detail-actions__split">
             <button

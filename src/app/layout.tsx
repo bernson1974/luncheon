@@ -17,7 +17,6 @@ export const metadata: Metadata = {
     title: "Bite Club",
     statusBarStyle: "default",
   },
-  themeColor: "#1e524e",
   icons: {
     icon: [{ url: "/bite-club-favicon.svg", type: "image/svg+xml" }],
     apple: [{ url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
@@ -28,6 +27,7 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
+  themeColor: "#1e524e",
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
