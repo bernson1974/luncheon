@@ -1,15 +1,23 @@
 import "./globals.css";
 import type { ReactNode } from "react";
-import type { Viewport } from "next";
+import type { Metadata, Viewport } from "next";
 import AppShell from "@/components/AppShell";
 import { AuthProvider } from "@/components/AuthProvider";
 
-export const metadata = {
+export const metadata: Metadata = {
   title: {
     default: "Bite Club",
     template: "%s · Bite Club",
   },
   description: "Find lunch company on Lindholmen, Gothenburg",
+  manifest: "/manifest.webmanifest",
+  /** iOS home screen: open without Safari URL bar (with apple-touch-icon). */
+  appleWebApp: {
+    capable: true,
+    title: "Bite Club",
+    statusBarStyle: "default",
+  },
+  themeColor: "#1e524e",
   icons: {
     icon: [{ url: "/bite-club-favicon.svg", type: "image/svg+xml" }],
     apple: [{ url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],

@@ -1,0 +1,18 @@
+{
+  "name": "Bite Club",
+  "short_name": "Bite Club",
+  "description": "Find lunch company on Lindholmen, Gothenburg",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#a8c9c2",
+  "theme_color": "#1e524e",
+  "icons": [
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
