@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, type ReactNode } from "react";
+import { Suspense, useEffect, type ReactNode } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/components/AuthProvider";
@@ -112,7 +112,9 @@ export default function AppShell({ children }: { children: ReactNode }) {
           })}
         </nav>
       </header>
-      <InAppNotificationBanner />
+      <Suspense fallback={null}>
+        <InAppNotificationBanner />
+      </Suspense>
       {children}
     </>
   );

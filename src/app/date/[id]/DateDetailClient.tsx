@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import type { LunchDatePublic } from "@/lib/models";
@@ -26,6 +26,8 @@ export default function DateDetailClient() {
     return "";
   }, [params]);
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const noticeFromNotification = searchParams.get("notice");
 
   const [date, setDate] = useState<LunchDatePublic | null>(null);
   const [loading, setLoading] = useState(true);
@@ -75,6 +77,18 @@ export default function DateDetailClient() {
   useEffect(() => {
     load();
   }, [load]);
+
+  useEffect(() => {
+    if (!noticeFromNotification) return;
+    return () => {
+      void fetch("/api/user/notifications", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ids: [noticeFromNotification] }),
+      });
+    };
+  }, [noticeFromNotification]);
 
   async function handleJoin() {
     if (joining) return;

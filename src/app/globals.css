@@ -433,43 +433,85 @@ main:has(> header.app-shell-header) {
   padding-top: 0;
 }
 
-/* In-app messages (e.g. invitation cancelled by host) — under huvudtabbar */
-.in-app-notification-stack {
-  width: 100%;
-  max-width: 100%;
-  margin-bottom: 0.65rem;
+/* In-app cancellation notice — modal centrerad ovanför innehåll */
+.in-app-notification-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 10050;
   display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem;
+  box-sizing: border-box;
+  background: rgba(15, 23, 42, 0.45);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.in-app-notification-modal {
+  width: 100%;
+  max-width: min(22rem, calc(100vw - 2.5rem));
+  border-radius: 0.75rem;
+  background: #a42d1e;
+  color: #ffffff;
+  padding: 1.15rem 1.2rem 1.05rem;
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.28);
   box-sizing: border-box;
 }
 
-.in-app-notification {
-  border-radius: var(--radius-field);
-  background: #efe2b7;
-  border: 2px solid #c9a566;
-  padding: 0.75rem 1rem;
-}
-
-.in-app-notification__body {
-  margin: 0 0 0.65rem;
-  font-size: 0.9rem;
-  color: #14532d;
+.in-app-notification-modal__body {
+  margin: 0 0 1rem;
+  font-size: 0.92rem;
+  font-weight: 600;
   line-height: 1.45;
+  color: #ffffff;
 }
 
-.in-app-notification__actions {
+.in-app-notification-modal__actions {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
-  align-items: center;
+  justify-content: stretch;
 }
 
-.in-app-notification__dismiss,
-.in-app-notification__link {
-  font-size: 0.82rem;
-  padding: 0.4rem 0.75rem;
-  min-height: 40px;
+.in-app-notification-modal__btn {
+  flex: 1 1 auto;
+  min-width: 6.5rem;
+  min-height: 44px;
+  padding: 0.45rem 0.75rem;
+  border-radius: var(--radius-field);
+  font: inherit;
+  font-size: 0.86rem;
+  font-weight: 700;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition:
+    background 0.12s ease,
+    color 0.12s ease,
+    border-color 0.12s ease;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+.in-app-notification-modal__btn--primary {
+  background: #ffffff;
+  color: #a42d1e;
+  border-color: #ffffff;
+}
+
+.in-app-notification-modal__btn--primary:hover {
+  background: #fef2f2;
+  color: #8d291b;
+}
+
+.in-app-notification-modal__btn--secondary {
+  background: transparent;
+  color: #ffffff;
+  border-color: #ffffff;
+}
+
+.in-app-notification-modal__btn--secondary:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
 }
 
 /* Same horizontal inset as <main> (px-4): no negative margins — avoids edge tabs feeling “cut off” */
