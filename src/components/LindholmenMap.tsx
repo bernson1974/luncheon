@@ -3,7 +3,11 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { Map as LeafletMap, LayerGroup as LeafletLayerGroup } from "leaflet";
 import { lunchDateLabel } from "@/lib/lunchDateWindow";
-import { getUserMapCenterOrFallback, MAP_FALLBACK_CENTER } from "@/lib/mapGeolocation";
+import {
+  getCachedMapUserCenter,
+  getUserMapCenterOrFallback,
+  MAP_FALLBACK_CENTER,
+} from "@/lib/mapGeolocation";
 import MapSearchInput from "./MapSearchInput";
 
 type LeafletNs = typeof import("leaflet");
@@ -92,13 +96,12 @@ export default function LindholmenMap({ pins = [], selectedYmd, greyedOut }: Pro
 
         if (cancelled || !containerRef.current || mapRef.current) return;
 
-        const center = await getUserMapCenterOrFallback(MAP_FALLBACK_CENTER);
-        if (cancelled || !containerRef.current || mapRef.current) return;
-
+        // Visa kartan direkt; geolocation körs i bakgrunden (undvik lång fördröjning vid tab-byte).
+        const initial = getCachedMapUserCenter(MAP_FALLBACK_CENTER);
         const map = L.map(containerRef.current, {
           scrollWheelZoom: false,
           zoomControl: false,
-        }).setView([center.lat, center.lng], 16);
+        }).setView([initial.lat, initial.lng], 16);
 
         L.control.zoom({ position: "bottomleft" }).addTo(map);
 
@@ -113,6 +116,11 @@ export default function LindholmenMap({ pins = [], selectedYmd, greyedOut }: Pro
         markersLayerRef.current = markersLayer;
         leafletRef.current = L;
         setMapReady(true);
+
+        void getUserMapCenterOrFallback(MAP_FALLBACK_CENTER).then((center) => {
+          if (cancelled || mapRef.current !== map) return;
+          map.setView([center.lat, center.lng], 16);
+        });
       } catch {
         if (!cancelled) setError(true);
       }
