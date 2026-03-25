@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { Fragment, useState, useEffect, useCallback, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import dynamic from "next/dynamic";
@@ -10,6 +10,7 @@ import { forgetCreatedDate } from "@/lib/creatorStorage";
 import { lunchDateLabel, selectableLunchDateYmds } from "@/lib/lunchDateWindow";
 import { cuisineLabel } from "@/lib/cuisineLabels";
 import DayPickerSubtabs from "@/components/DayPickerSubtabs";
+import ConfirmDialog from "@/components/ConfirmDialog";
 
 const MeetingPointPicker = dynamic(
   () => import("@/components/MeetingPointPicker"),
@@ -34,6 +35,7 @@ function MyLunchDayPanel({
 }) {
   const [acting, setActing] = useState(false);
   const [actionErr, setActionErr] = useState("");
+  const [confirmKind, setConfirmKind] = useState<null | "cancel" | "leave">(null);
 
   useEffect(() => {
     setActionErr("");
@@ -47,14 +49,9 @@ function MyLunchDayPanel({
   const isParticipant = date.role === "participant";
   const showBookingAction = !isCancelled && (isCreator || isParticipant);
 
-  async function handleCancelDejt() {
+  async function performCancelDejt() {
+    setConfirmKind(null);
     if (acting) return;
-    if (
-      !confirm(
-        "Cancel this invitation? It will be removed from the list. Anyone who joined will see a notice next time they open the app."
-      )
-    )
-      return;
     setActing(true);
     setActionErr("");
     try {
@@ -74,9 +71,9 @@ function MyLunchDayPanel({
     }
   }
 
-  async function handleLeaveDejt() {
+  async function performLeaveDejt() {
+    setConfirmKind(null);
     if (acting) return;
-    if (!confirm("Leave this lunch?")) return;
     setActing(true);
     setActionErr("");
     try {
@@ -101,7 +98,7 @@ function MyLunchDayPanel({
         type="button"
         className="danger-button"
         disabled={acting}
-        onClick={isCreator ? handleCancelDejt : handleLeaveDejt}
+        onClick={() => setConfirmKind(isCreator ? "cancel" : "leave")}
       >
       {acting
         ? "Please wait…"
@@ -115,6 +112,7 @@ function MyLunchDayPanel({
   const statusClass = isCancelled ? "cancelled" : date.spotsLeft > 0 ? "open" : "full";
 
   return (
+    <Fragment>
     <div
       role="tabpanel"
       aria-labelledby={ariaLabelledBy}
@@ -214,6 +212,28 @@ function MyLunchDayPanel({
 
       {cancelButton}
     </div>
+
+    <ConfirmDialog
+      open={confirmKind === "cancel"}
+      title="Cancel invitation?"
+      message="It will be removed from the list. Anyone who joined will see a notice next time they open the app."
+      cancelLabel="Not now"
+      confirmLabel="Cancel invitation"
+      confirmVariant="danger"
+      onCancel={() => setConfirmKind(null)}
+      onConfirm={() => void performCancelDejt()}
+    />
+    <ConfirmDialog
+      open={confirmKind === "leave"}
+      title="Leave this lunch?"
+      message="You will be removed from the participant list. You can join again from Join if there is space."
+      cancelLabel="Stay"
+      confirmLabel="Leave"
+      confirmVariant="danger"
+      onCancel={() => setConfirmKind(null)}
+      onConfirm={() => void performLeaveDejt()}
+    />
+    </Fragment>
   );
 }
 

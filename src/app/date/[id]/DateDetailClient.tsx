@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { Fragment, useState, useEffect, useCallback, useMemo } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import dynamic from "next/dynamic";
@@ -9,6 +9,7 @@ import { useAuth } from "@/components/AuthProvider";
 import { forgetCreatedDate } from "@/lib/creatorStorage";
 import { lunchDateLabel } from "@/lib/lunchDateWindow";
 import { cuisineLabel } from "@/lib/cuisineLabels";
+import ConfirmDialog from "@/components/ConfirmDialog";
 
 const MeetingPointPicker = dynamic(
   () => import("@/components/MeetingPointPicker"),
@@ -40,6 +41,7 @@ export default function DateDetailClient() {
   const [alreadyHasLunch, setAlreadyHasLunch] = useState(false);
 
   const [acting, setActing] = useState(false);
+  const [confirmKind, setConfirmKind] = useState<null | "cancel" | "leave">(null);
 
   const load = useCallback(async () => {
     if (!dateId) {
@@ -127,38 +129,41 @@ export default function DateDetailClient() {
     }
   }
 
-  async function handleLeave() {
+  async function performLeave() {
+    setConfirmKind(null);
     if (acting) return;
     setActing(true);
-
-    await fetch(`/api/dates/${dateId}/join`, {
-      method: "DELETE",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify({}),
-    });
-    router.push("/browse");
+    try {
+      const res = await fetch(`/api/dates/${dateId}/join`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({}),
+      });
+      if (!res.ok) throw new Error();
+      router.push("/browse");
+    } catch {
+      setActing(false);
+    }
   }
 
-  async function handleCancel() {
+  async function performCancelInvitation() {
+    setConfirmKind(null);
     if (acting) return;
-    if (
-      !confirm(
-        "Cancel this invitation? It will be removed from the list. Anyone who joined will see a notice next time they open the app."
-      )
-    )
-      return;
     setActing(true);
-
-    await fetch(`/api/dates/${dateId}`, {
-      method: "DELETE",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify({}),
-    });
-
-    forgetCreatedDate(dateId);
-    router.push("/browse");
+    try {
+      const res = await fetch(`/api/dates/${dateId}`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({}),
+      });
+      if (!res.ok) throw new Error();
+      forgetCreatedDate(dateId);
+      router.push("/browse");
+    } catch {
+      setActing(false);
+    }
   }
 
   if (loading) {
@@ -184,6 +189,7 @@ export default function DateDetailClient() {
   const isFull = date.status === "full";
 
   return (
+    <Fragment>
     <div className="date-detail-wrap date-detail-page">
       <h1 className="page-title" style={{ marginBottom: "1.25rem", color: "#064e3b" }}>
         {date.topic}
@@ -305,7 +311,7 @@ export default function DateDetailClient() {
                 <button
                   className="danger-button"
                   type="button"
-                  onClick={handleCancel}
+                  onClick={() => setConfirmKind("cancel")}
                   disabled={acting}
                 >
                   {acting ? "Cancelling…" : "Cancel invitation"}
@@ -327,7 +333,7 @@ export default function DateDetailClient() {
                 <button
                   className="danger-button"
                   type="button"
-                  onClick={handleLeave}
+                  onClick={() => setConfirmKind("leave")}
                   disabled={acting}
                 >
                   {acting ? "Cancelling…" : "Cancel lunch"}
@@ -386,5 +392,27 @@ export default function DateDetailClient() {
         </div>
       )}
     </div>
+
+    <ConfirmDialog
+      open={confirmKind === "cancel"}
+      title="Cancel invitation?"
+      message="It will be removed from the list. Anyone who joined will see a notice next time they open the app."
+      cancelLabel="Not now"
+      confirmLabel="Cancel invitation"
+      confirmVariant="danger"
+      onCancel={() => setConfirmKind(null)}
+      onConfirm={() => void performCancelInvitation()}
+    />
+    <ConfirmDialog
+      open={confirmKind === "leave"}
+      title="Leave this lunch?"
+      message="You will be removed from the participant list. You can join again from Join if there is space."
+      cancelLabel="Stay"
+      confirmLabel="Leave"
+      confirmVariant="danger"
+      onCancel={() => setConfirmKind(null)}
+      onConfirm={() => void performLeave()}
+    />
+    </Fragment>
   );
 }
