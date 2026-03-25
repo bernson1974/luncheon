@@ -286,17 +286,83 @@ export async function createDate(input: {
   return created;
 }
 
+export type UserNotificationRow = {
+  id: string;
+  body: string;
+  lunch_date_id: string | null;
+  created_at: string;
+};
+
+export async function listUnreadNotificationsForUser(
+  userToken: string
+): Promise<UserNotificationRow[]> {
+  if (!sql) return [];
+  try {
+    const rows = await sql`
+      SELECT id, body, lunch_date_id, created_at
+      FROM user_notifications
+      WHERE user_token = ${userToken} AND read_at IS NULL
+      ORDER BY created_at DESC
+      LIMIT 20
+    `;
+    return rows as UserNotificationRow[];
+  } catch {
+    return [];
+  }
+}
+
+export async function markUserNotificationsRead(
+  userToken: string,
+  ids: string[]
+): Promise<void> {
+  if (!sql || ids.length === 0) return;
+  try {
+    for (const nid of ids) {
+      await sql`
+        UPDATE user_notifications
+        SET read_at = NOW()
+        WHERE id = ${nid} AND user_token = ${userToken}
+      `;
+    }
+  } catch {
+    /* table missing or invalid id */
+  }
+}
+
 export async function cancelDate(
   id: string,
   creatorToken: string
 ): Promise<boolean> {
   if (!sql) return false;
+
+  const participantRows = await sql`
+    SELECT user_token FROM participants WHERE lunch_date_id = ${id}
+  `;
+
   const result = await sql`
     UPDATE dates SET status = 'cancelled'
     WHERE id = ${id} AND creator_token = ${creatorToken}
-    RETURNING id
+    RETURNING id, topic, restaurant_name
   `;
-  return Array.isArray(result) && result.length > 0;
+  if (!Array.isArray(result) || result.length === 0) return false;
+
+  const row = result[0] as { topic: string; restaurant_name: string };
+  const body = `Your lunch was cancelled. The host ended the invitation "${row.topic}" at ${row.restaurant_name}.`;
+
+  if (participantRows.length > 0) {
+    try {
+      for (const p of participantRows as { user_token: string }[]) {
+        await sql`
+          INSERT INTO user_notifications (user_token, kind, body, lunch_date_id)
+          VALUES (${p.user_token}, 'invitation_cancelled', ${body}, ${id})
+        `;
+      }
+    } catch (e) {
+      console.error("user_notifications insert (run migrate-user-notifications.sql):", e);
+    }
+  }
+
+  return true;
 }
 
 export async function joinDate(

@@ -49,7 +49,12 @@ function MyLunchDayPanel({
 
   async function handleCancelDejt() {
     if (acting) return;
-    if (!confirm("Cancel this date? It will be removed from the list.")) return;
+    if (
+      !confirm(
+        "Cancel this invitation? It will be removed from the list. Anyone who joined will see a notice next time they open the app."
+      )
+    )
+      return;
     setActing(true);
     setActionErr("");
     try {
@@ -101,7 +106,7 @@ function MyLunchDayPanel({
       {acting
         ? "Please wait…"
         : isCreator
-          ? "Cancel date"
+          ? "Cancel invitation"
           : "Cancel lunch"}
       </button>
     </div>

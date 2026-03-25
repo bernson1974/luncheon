@@ -10,5 +10,8 @@ export {
   cancelDate,
   joinDate,
   leaveDate,
+  listUnreadNotificationsForUser,
+  markUserNotificationsRead,
   type UserDateRole,
+  type UserNotificationRow,
 } from "./db";

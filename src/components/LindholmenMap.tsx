@@ -163,7 +163,7 @@ export default function LindholmenMap({ pins = [], selectedYmd, greyedOut }: Pro
               <a
                 href="${linkHref}"
                 style="display: block; margin-top: 0.55rem; padding: 0.55rem 0.75rem; border-radius: 0.5rem; background: #1e524e; color: #ecfdf5; font-weight: 600; font-size: 0.82rem; text-decoration: none; text-align: center; box-sizing: border-box;"
-              >View dates →</a>
+              >View invitations →</a>
             </div>
           `;
       L.marker([pin.lat, pin.lng], { icon })

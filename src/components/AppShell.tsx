@@ -4,6 +4,7 @@ import { useEffect, type ReactNode } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/components/AuthProvider";
+import InAppNotificationBanner from "@/components/InAppNotificationBanner";
 
 const PUBLIC_PATHS = new Set(["/welcome"]);
 
@@ -111,6 +112,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
           })}
         </nav>
       </header>
+      <InAppNotificationBanner />
       {children}
     </>
   );

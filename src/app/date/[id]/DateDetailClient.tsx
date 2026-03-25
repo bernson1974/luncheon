@@ -128,7 +128,12 @@ export default function DateDetailClient() {
 
   async function handleCancel() {
     if (acting) return;
-    if (!confirm("Cancel this date? It will be removed from the list.")) return;
+    if (
+      !confirm(
+        "Cancel this invitation? It will be removed from the list. Anyone who joined will see a notice next time they open the app."
+      )
+    )
+      return;
     setActing(true);
 
     await fetch(`/api/dates/${dateId}`, {
@@ -260,7 +265,7 @@ export default function DateDetailClient() {
               onClick={() => void handleJoin()}
               disabled={!user?.alias?.trim() || joining}
             >
-              {joining ? "Joining…" : "Join lunch date"}
+              {joining ? "Joining…" : "Join this lunch"}
             </button>
           </div>
         </div>
@@ -271,7 +276,7 @@ export default function DateDetailClient() {
           {role === "creator" && (
             <div className="date-detail-actions">
               <p className="secondary-text" style={{ marginBottom: "0.5rem" }}>
-                This is your date. You can cancel it below.
+                This is your invitation. You can cancel it below.
               </p>
               <div className="date-detail-actions__split">
                 <button
@@ -287,7 +292,7 @@ export default function DateDetailClient() {
                   onClick={handleCancel}
                   disabled={acting}
                 >
-                  {acting ? "Cancelling…" : "Cancel date"}
+                  {acting ? "Cancelling…" : "Cancel invitation"}
                 </button>
               </div>
             </div>
