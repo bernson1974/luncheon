@@ -86,6 +86,7 @@ export default function SettingsPage() {
   async function handleLogout() {
     setShowResetConfirm(false);
     await logout();
+    await refresh();
     router.replace("/welcome");
   }
 

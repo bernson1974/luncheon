@@ -164,7 +164,7 @@ export default function CreatePageClient() {
       if (!res.ok) throw new Error("Could not create lunch date");
 
       const date = await res.json();
-      rememberCreatedDate(date.id, user?.id ?? "");
+      if (user?.id) rememberCreatedDate(date.id, user.id);
 
       router.push(`/date/${date.id}`);
     } catch {

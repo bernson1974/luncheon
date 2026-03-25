@@ -25,6 +25,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
+  /** Synka med session-cookie om användaren byter konto i annan flik eller efter utloggning. */
+  useEffect(() => {
+    function onFocus() {
+      void fetchMe().then((u) => setUser(u));
+    }
+    function onVisibility() {
+      if (document.visibilityState === "visible") void fetchMe().then((u) => setUser(u));
+    }
+    window.addEventListener("focus", onFocus);
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => {
+      window.removeEventListener("focus", onFocus);
+      document.removeEventListener("visibilitychange", onVisibility);
+    };
+  }, []);
+
   return (
     <AuthContext.Provider value={{ user, loading, refresh }}>
       {children}

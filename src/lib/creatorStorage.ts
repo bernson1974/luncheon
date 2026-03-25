@@ -29,10 +29,12 @@ export function forgetCreatedDate(dateId: string): void {
 }
 
 export function isCreatorOfDateInStorage(dateId: string, userToken: string): boolean {
+  if (!userToken) return false;
   const v = localStorage.getItem(creatorStorageKey(dateId));
   if (v === userToken) return true;
   const legacy = localStorage.getItem("myCreatedDateId");
-  return legacy === dateId;
+  /** Legacy utan kopplat userToken får inte räknas som “din” för valfritt konto. */
+  return legacy === dateId && v === userToken;
 }
 
 export function listCreatorDateIdsFromStorage(): string[] {
