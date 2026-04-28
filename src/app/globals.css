@@ -1316,8 +1316,9 @@ main:has(> header.app-shell-header) {
 
 .day-picker-subtabs--find
   .browse-subtab.day-subtab.day-subtab--find-open-for-booking:not(.browse-subtab--active):hover:not(:disabled) {
-  background: #9dccc2;
-  color: var(--tab-active-bg);
+  background: #5fa89a;
+  color: #022c22;
+  border-color: #5fa89a;
 }
 
 .day-picker-subtabs--find
@@ -1326,7 +1327,7 @@ main:has(> header.app-shell-header) {
 .day-picker-subtabs--find
   .browse-subtab.day-subtab.day-subtab--find-open-for-booking:not(.browse-subtab--active):hover:not(:disabled)
   .day-subtab__date {
-  color: var(--tab-active-bg);
+  color: #022c22;
 }
 
 /* My Bites: dag utan bokning men klickbar — samma look som tidigare :disabled */
@@ -1343,8 +1344,18 @@ main:has(> header.app-shell-header) {
 
 .day-picker-subtabs--my-lunch
   .browse-subtab.day-subtab.day-subtab--my-lunch-free-tab:not(.browse-subtab--active):hover:not(:disabled) {
-  background: #9dccc2;
-  color: var(--tab-active-bg);
+  background: #5fa89a;
+  color: #022c22;
+  border-color: #5fa89a;
+}
+
+.day-picker-subtabs--my-lunch
+  .browse-subtab.day-subtab.day-subtab--my-lunch-free-tab:not(.browse-subtab--active):hover:not(:disabled)
+  .day-subtab__top--weekday,
+.day-picker-subtabs--my-lunch
+  .browse-subtab.day-subtab.day-subtab--my-lunch-free-tab:not(.browse-subtab--active):hover:not(:disabled)
+  .day-subtab__date {
+  color: #022c22;
 }
 
 .browse-subtab-panels {
