@@ -748,15 +748,17 @@ main:has(> header.app-shell-header) {
   background-color: #ffffff;
 }
 
-/* Join (hands) & Settings (face): större, samma bottenlinje som övriga */
+/* Join (hands): större motiv (lite mindre än max-varianten) */
 .app-tab-bar__tab__icon--hands {
-  width: clamp(3rem, 10vw, 4.25rem);
-  height: clamp(3rem, 10vw, 4.25rem);
+  width: clamp(2.85rem, 9.2vw, 3.95rem);
+  height: clamp(2.85rem, 9.2vw, 3.95rem);
 }
 
-.app-tab-bar__tab__icon--face {
-  width: clamp(3rem, 10vw, 4.25rem);
-  height: clamp(3rem, 10vw, 4.25rem);
+/* Settings (cog): mellanstor — mindre än Join, större än förra minskningen */
+.app-tab-bar__tab__icon--cog {
+  width: clamp(2.5rem, 7.4vw, 3.1rem);
+  height: clamp(2.5rem, 7.4vw, 3.1rem);
+  transform: translateY(-11px);
 }
 
 .app-tab-bar__tab__label {

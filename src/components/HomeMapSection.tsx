@@ -29,6 +29,7 @@ export default function HomeMapSection({
   oneSpotLeftByYmd: serverOneSpot = {},
   restaurants: serverRestaurants,
   committedYmds: serverCommittedYmds = [],
+  initialMapYmd,
 }: {
   days: HomeMapDay[];
   countsByYmd: CountsByYmd;
@@ -36,12 +37,17 @@ export default function HomeMapSection({
   restaurants: HomeRestaurantPinBase[];
   /** Days where user has a date (from server cookie) */
   committedYmds?: string[];
+  /** Default selected day on Find (e.g. first day with open invitations) */
+  initialMapYmd?: string;
 }) {
   const [days, setDays] = useState(serverDays);
   const [countsByYmd, setCountsByYmd] = useState(serverCounts);
   const [oneSpotLeftByYmd, setOneSpotLeftByYmd] = useState(serverOneSpot);
   const [restaurants, setRestaurants] = useState<HomeRestaurantPinBase[]>(serverRestaurants);
-  const [selectedYmd, setSelectedYmd] = useState(serverDays[0]?.ymd ?? "");
+  const [selectedYmd, setSelectedYmd] = useState(() => {
+    if (initialMapYmd && serverDays.some((d) => d.ymd === initialMapYmd)) return initialMapYmd;
+    return serverDays[0]?.ymd ?? "";
+  });
   const [clientCommittedYmds, setClientCommittedYmds] = useState<string[] | null>(null);
 
   const fetchMapPins = () => {

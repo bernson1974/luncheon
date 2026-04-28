@@ -2,9 +2,16 @@ import { NextResponse } from "next/server";
 import { createDate, joinDate } from "@/lib/store";
 import { selectableLunchDateYmds } from "@/lib/lunchDateWindow";
 
-/** Lindholmen bounding box (ne, sw) for Foursquare search */
-const LINDHOLMEN_NE = "57.72,11.97";
-const LINDHOLMEN_SW = "57.69,11.90";
+/**
+ * Fyra ne/sw-rutor som täcker tätbebyggt Göteborg (ungefär kommunens kärna),
+ * så Foursquare-sökningen inte bara träffar centrum.
+ */
+const GBG_QUADRANTS: Array<{ ne: string; sw: string }> = [
+  { ne: "57.780,11.940", sw: "57.705,11.680" },
+  { ne: "57.780,12.120", sw: "57.705,11.940" },
+  { ne: "57.705,11.940", sw: "57.625,11.680" },
+  { ne: "57.705,12.120", sw: "57.625,11.940" },
+];
 
 const FAKE_CREATOR_ALIASES = [
   "Anna", "Erik", "Sofia", "Marcus", "Lisa", "Johan", "Emma", "Gustav",
@@ -34,17 +41,25 @@ function extractCuisine(p: { categories?: Array<{ name?: string; primary?: boole
   return "restaurant";
 }
 
-/** Dev seed: ~30 bookings across visible restaurants, all days except one, fictive users only. */
-export async function POST() {
-  const apiKey = process.env.FOURSQUARE_API_KEY;
-  if (!apiKey) {
-    return NextResponse.json({ error: "Foursquare API key required" }, { status: 500 });
-  }
+type SeededRestaurant = {
+  fsq_id: string;
+  name: string;
+  latitude: number;
+  longitude: number;
+  cuisine: string;
+};
 
+const SEED_TARGET_BOOKINGS = 100;
+
+async function fetchRestaurantsInBbox(
+  apiKey: string,
+  ne: string,
+  sw: string
+): Promise<SeededRestaurant[]> {
   const url = new URL("https://places-api.foursquare.com/places/search");
   url.searchParams.set("query", "restaurant");
-  url.searchParams.set("ne", LINDHOLMEN_NE);
-  url.searchParams.set("sw", LINDHOLMEN_SW);
+  url.searchParams.set("ne", ne);
+  url.searchParams.set("sw", sw);
   url.searchParams.set("limit", "50");
   url.searchParams.set("fields", "fsq_place_id,latitude,longitude,name,categories");
 
@@ -57,23 +72,52 @@ export async function POST() {
     next: { revalidate: 0 },
   });
   if (!fsqRes.ok) {
-    return NextResponse.json({ error: "Failed to fetch restaurants" }, { status: 502 });
+    return [];
   }
-  const data = (await fsqRes.json()) as { results?: Array<{ fsq_id?: string; fsq_place_id?: string; latitude?: number; longitude?: number; name?: string; categories?: Array<{ name: string; primary?: boolean }> }> };
-  const restaurants = (data.results ?? []).map((p) => ({
+  const data = (await fsqRes.json()) as {
+    results?: Array<{
+      fsq_id?: string;
+      fsq_place_id?: string;
+      latitude?: number;
+      longitude?: number;
+      name?: string;
+      categories?: Array<{ name: string; primary?: boolean }>;
+    }>;
+  };
+  return (data.results ?? []).map((p) => ({
     fsq_id: p.fsq_id ?? p.fsq_place_id ?? "",
     name: p.name ?? "Unknown",
     latitude: p.latitude ?? 0,
     longitude: p.longitude ?? 0,
     cuisine: extractCuisine(p),
   }));
+}
+
+/** Dev seed: 100 bokningar, slumpade över alla lunchfönsterdagar och Göteborg (Foursquare-rutor). */
+export async function POST() {
+  const apiKey = process.env.FOURSQUARE_API_KEY;
+  if (!apiKey) {
+    return NextResponse.json({ error: "Foursquare API key required" }, { status: 500 });
+  }
+
+  const quadrantLists = await Promise.all(
+    GBG_QUADRANTS.map((q) => fetchRestaurantsInBbox(apiKey, q.ne, q.sw))
+  );
+  const byId = new Map<string, SeededRestaurant>();
+  for (const list of quadrantLists) {
+    for (const r of list) {
+      if (r.fsq_id) byId.set(r.fsq_id, r);
+    }
+  }
+  const restaurants = [...byId.values()];
   if (restaurants.length === 0) {
     return NextResponse.json({ error: "No restaurants found in area" }, { status: 404 });
   }
 
-  const days = selectableLunchDateYmds();
-  const skipIndex = Math.floor(Math.random() * days.length);
-  const daysToUse = days.filter((_, i) => i !== skipIndex);
+  const daysToUse = selectableLunchDateYmds();
+  if (daysToUse.length === 0) {
+    return NextResponse.json({ error: "No selectable days in window" }, { status: 400 });
+  }
 
   const times = ["11:30", "11:45", "12:00", "12:15", "12:30", "12:45", "13:00"];
   let creatorIndex = 0;
@@ -85,7 +129,7 @@ export async function POST() {
     return `seed-participant-${participantIndex++}`;
   }
 
-  const targetCount = 30;
+  const targetCount = SEED_TARGET_BOOKINGS;
   const created: Array<{ id: string; date: string; restaurant: string }> = [];
 
   for (let i = 0; i < targetCount; i++) {
@@ -115,14 +159,14 @@ export async function POST() {
     });
     created.push({ id: date.id, date: ymd, restaurant: restaurant.name });
 
-    // 3 fully booked, 8 with 1 spot left, rest random
+    // ~10 fulla, ~25 med 1 plats kvar, resten blandat
     let numJoins: number;
-    if (i < 3) {
-      numJoins = maxParticipants - 1; // fully booked
-    } else if (i < 11) {
-      numJoins = maxParticipants - 2; // 1 spot left
+    if (i < 10) {
+      numJoins = maxParticipants - 1;
+    } else if (i < 35) {
+      numJoins = maxParticipants - 2;
     } else {
-      numJoins = Math.floor(Math.random() * (maxParticipants - 2)); // at least 2 spots left
+      numJoins = Math.floor(Math.random() * (maxParticipants - 2));
     }
     for (let j = 0; j < numJoins; j++) {
       const alias = FAKE_PARTICIPANT_ALIASES[(participantIndex + j) % FAKE_PARTICIPANT_ALIASES.length];
@@ -135,7 +179,7 @@ export async function POST() {
     ok: true,
     created: created.length,
     restaurants: restaurants.length,
-    daysUsed: daysToUse.length,
-    skippedDay: days[skipIndex],
+    daysUsed: daysToUse,
+    area: "Göteborg (4 Foursquare bbox, sammanslagna)",
   });
 }

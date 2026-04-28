@@ -34,38 +34,55 @@ function rememberMapUserCenter(lat: number, lng: number) {
   }
 }
 
+/** En gemensam begäran – undviker Strict Mode / flera kartor som kör getCurrentPosition samtidigt (då kan en snabb timeout sätta Lindholmen medan den senare lyckade positionen kastas bort). */
+let inFlightUserCenter: Promise<{ lat: number; lng: number }> | null = null;
+
 /**
  * Försöker läsa enhetens position (webbläsarens dialog kan visas).
  * Vid fel/timeout: returnerar `fallback` (standard Lindholmen).
  */
-export async function getUserMapCenterOrFallback(
+export function getUserMapCenterOrFallback(
   fallback: { lat: number; lng: number } = MAP_FALLBACK_CENTER
 ): Promise<{ lat: number; lng: number }> {
-  if (typeof window === "undefined") return { lat: fallback.lat, lng: fallback.lng };
-  if (!navigator.geolocation) return { lat: fallback.lat, lng: fallback.lng };
+  if (typeof window === "undefined") return Promise.resolve({ lat: fallback.lat, lng: fallback.lng });
+  if (!navigator.geolocation) return Promise.resolve({ lat: fallback.lat, lng: fallback.lng });
 
-  return new Promise((resolve) => {
-    const finish = (c: { lat: number; lng: number }) => resolve(c);
-    const timeoutMs = 10000;
-    const timer = window.setTimeout(() => finish({ lat: fallback.lat, lng: fallback.lng }), timeoutMs);
+  if (!inFlightUserCenter) {
+    const innerTimeoutMs = 28_000;
+    const safetyTimeoutMs = 32_000;
 
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        window.clearTimeout(timer);
-        const lat = pos.coords.latitude;
-        const lng = pos.coords.longitude;
-        rememberMapUserCenter(lat, lng);
-        finish({ lat, lng });
-      },
-      () => {
-        window.clearTimeout(timer);
-        finish({ lat: fallback.lat, lng: fallback.lng });
-      },
-      {
-        enableHighAccuracy: false,
-        timeout: 9000,
-        maximumAge: 5 * 60 * 1000,
-      }
-    );
-  });
+    inFlightUserCenter = new Promise<{ lat: number; lng: number }>((resolve) => {
+      let settled = false;
+      const finish = (c: { lat: number; lng: number }, fromGps: boolean) => {
+        if (settled) return;
+        settled = true;
+        window.clearTimeout(safetyTimer);
+        if (fromGps) rememberMapUserCenter(c.lat, c.lng);
+        resolve(c);
+      };
+
+      const safetyTimer = window.setTimeout(
+        () => finish({ lat: fallback.lat, lng: fallback.lng }, false),
+        safetyTimeoutMs
+      );
+
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const lat = pos.coords.latitude;
+          const lng = pos.coords.longitude;
+          finish({ lat, lng }, true);
+        },
+        () => finish({ lat: fallback.lat, lng: fallback.lng }, false),
+        {
+          enableHighAccuracy: false,
+          timeout: innerTimeoutMs,
+          maximumAge: 5 * 60 * 1000,
+        }
+      );
+    }).finally(() => {
+      inFlightUserCenter = null;
+    });
+  }
+
+  return inFlightUserCenter;
 }

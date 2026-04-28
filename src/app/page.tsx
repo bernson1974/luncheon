@@ -56,10 +56,24 @@ export default async function HomePage() {
 
   const restaurantPins = Array.from(restaurantMap.values());
 
+  /** Första dagen med minst en öppen bokning — annars idag (så Find inte känns tom om seed bara ligger längre fram) */
+  const initialMapYmd =
+    ymds.find((ymd) => {
+      const c = countsByYmd[ymd];
+      return c && Object.keys(c).length > 0;
+    }) ?? ymds[0];
+
   return (
     <div className="home-page-stack" style={{ display: "flex", flexDirection: "column", flex: 1 }}>
       <div className="home-map-block">
-        <HomeMapSection days={days} countsByYmd={countsByYmd} oneSpotLeftByYmd={oneSpotLeftByYmd} restaurants={restaurantPins} committedYmds={committedYmds} />
+        <HomeMapSection
+          days={days}
+          countsByYmd={countsByYmd}
+          oneSpotLeftByYmd={oneSpotLeftByYmd}
+          restaurants={restaurantPins}
+          committedYmds={committedYmds}
+          initialMapYmd={initialMapYmd}
+        />
       </div>
     </div>
   );
