@@ -14,7 +14,9 @@
     "start": "next start",
     "reinstall": "rm -rf node_modules .next && npm install",
     "lint": "node -e \"console.log('ESLint removed from npm install (Vercel). Use editor lint or add eslint locally if needed.')\"",
-    "check": "npm run build"
+    "check": "npm run build",
+    "seed": "curl -s -X POST http://localhost:3000/api/seed",
+    "seed:cron": "curl -s -H \"Authorization: Bearer ${CRON_SECRET}\" \"http://localhost:3000/api/cron/seed-mock-dates?force=1\""
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.0.2",
